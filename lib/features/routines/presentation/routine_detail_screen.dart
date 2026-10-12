@@ -459,30 +459,37 @@ class _DetailTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SizedBox(
       height: 52,
-      child: Row(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          IconButton(
-            tooltip: 'Back',
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go(RoutePaths.today);
-              }
-            },
-            icon: const Icon(PhosphorIconsRegular.arrowLeft),
-          ),
-          const Spacer(),
-          PopupMenuButton<String>(
-            tooltip: 'More options',
-            onSelected: onMenuSelected,
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'edit', child: Text('Edit Routine')),
-              PopupMenuItem(value: 'history', child: Text('View History')),
+          Text('Routine Detail', style: theme.textTheme.titleMedium),
+          Row(
+            children: [
+              IconButton(
+                tooltip: 'Back',
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(RoutePaths.today);
+                  }
+                },
+                icon: const Icon(PhosphorIconsRegular.arrowLeft),
+              ),
+              const Spacer(),
+              PopupMenuButton<String>(
+                tooltip: 'More options',
+                onSelected: onMenuSelected,
+                itemBuilder: (context) => const [
+                  PopupMenuItem(value: 'edit', child: Text('Edit Routine')),
+                  PopupMenuItem(value: 'history', child: Text('View History')),
+                ],
+                icon: const Icon(PhosphorIconsRegular.dotsThreeVertical),
+              ),
             ],
-            icon: const Icon(PhosphorIconsRegular.dotsThreeVertical),
           ),
         ],
       ),

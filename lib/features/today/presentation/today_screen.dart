@@ -103,18 +103,26 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                   ),
                   sliver: SliverList.list(
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            "Assalamu'alaikum",
-                            style: theme.textTheme.titleSmall,
+                          Flexible(
+                            child: Text(
+                              "Assalamu'alaikum",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.titleSmall,
+                            ),
                           ),
-                          const SizedBox(height: IstiqamSpacing.xxs),
-                          Text(
-                            PrayerTimePresentation.date(_viewModel.now),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: colors.onSurfaceVariant,
+                          Flexible(
+                            child: Text(
+                              PrayerTimePresentation.date(_viewModel.now),
+                              maxLines: 1,
+                              textAlign: TextAlign.end,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
                             ),
                           ),
                         ],

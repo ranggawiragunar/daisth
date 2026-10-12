@@ -5,5 +5,6 @@ abstract interface class MosqueRepository {
   Future<List<MosquePlace>> findNearby({
     required GeoCoordinate origin,
     required int radiusMeters,
+    bool bypassCache = false,
   });
 }

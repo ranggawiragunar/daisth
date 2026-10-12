@@ -99,11 +99,21 @@ LocationGeolocatorService
 
 Repository names stay technology-neutral. Service names may expose the
 technology they directly call. `FindNearbyMosquesUseCase` coordinates the
-location repository and mosque repository, retries with broader nearby search
-radii, and returns session-only results. `AppDependencies` is the manual
-composition root and owns the shared HTTP client. Mosque search requests a
-foreground position only while the Finder is open; coordinates and search
-history are not persisted.
+location repository and mosque repository. Each search loads one geographically
+constrained 5 km dataset, then selects the smallest effective radius (1.5 km,
+3 km, or 5 km) locally based on whether it contains at least six places.
+Results are deduplicated, sorted nearest-first, and capped at twenty.
+
+`MosqueRepositoryData` owns a five-minute, in-memory cache keyed by rounded
+coordinate buckets and radius. It caches provider data only for the current app
+session and remaps distances for the current location. Explicit refresh bypasses
+the cache. `MosqueOverpassService` queries the primary public Overpass endpoint
+first and tries the secondary endpoint once after a retryable primary network or
+provider failure. Each endpoint has one nine-second attempt. These public endpoints are MVP infrastructure and
+availability is not guaranteed. `AppDependencies` is the manual composition
+root and owns the shared HTTP client. Mosque search requests a foreground
+position only while the Finder is open; coordinates and search history are not
+persisted.
 
 Prayer time calculation follows the same repository boundary:
 

@@ -27,7 +27,9 @@ class MosqueFinderViewModel extends ChangeNotifier {
   MosqueFinderState state = MosqueFinderState.checking;
   NearbyMosqueResult? result;
   bool _initialized = false;
-  bool _requestInProgress = false;
+  bool _operationInProgress = false;
+
+  bool get isBusy => _operationInProgress;
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -36,26 +38,18 @@ class MosqueFinderViewModel extends ChangeNotifier {
   }
 
   Future<void> requestLocation() async {
-    if (_requestInProgress) return;
-    _requestInProgress = true;
-    state = MosqueFinderState.checking;
-    notifyListeners();
-    try {
-      await _handleAccess(await findNearbyMosques.requestLocationAccess());
-    } catch (_) {
-      state = MosqueFinderState.denied;
-      notifyListeners();
-    } finally {
-      _requestInProgress = false;
-    }
+    await _checkAccess(
+      showExplanationForDenied: false,
+      requestPermission: true,
+    );
   }
 
   Future<void> refresh() async {
-    await _checkAccess(showExplanationForDenied: false);
+    await _checkAccess(showExplanationForDenied: false, forceRefresh: true);
   }
 
   Future<void> onAppResumed() async {
-    if (!_initialized || _requestInProgress) return;
+    if (!_initialized || _operationInProgress) return;
     await _checkAccess(showExplanationForDenied: false);
   }
 
@@ -67,14 +61,30 @@ class MosqueFinderViewModel extends ChangeNotifier {
     await findNearbyMosques.openLocationSettings();
   }
 
-  Future<void> _checkAccess({required bool showExplanationForDenied}) async {
+  Future<void> _checkAccess({
+    required bool showExplanationForDenied,
+    bool requestPermission = false,
+    bool forceRefresh = false,
+  }) async {
+    if (_operationInProgress) return;
+    _operationInProgress = true;
+    if (state != MosqueFinderState.results &&
+        state != MosqueFinderState.empty) {
+      state = MosqueFinderState.checking;
+    }
+    notifyListeners();
     try {
       await _handleAccess(
-        await findNearbyMosques.checkLocationAccess(),
+        requestPermission
+            ? await findNearbyMosques.requestLocationAccess()
+            : await findNearbyMosques.checkLocationAccess(),
         showExplanationForDenied: showExplanationForDenied,
+        forceRefresh: forceRefresh,
       );
     } catch (_) {
       state = MosqueFinderState.denied;
+    } finally {
+      _operationInProgress = false;
       notifyListeners();
     }
   }
@@ -82,10 +92,11 @@ class MosqueFinderViewModel extends ChangeNotifier {
   Future<void> _handleAccess(
     LocationAccessStatus access, {
     bool showExplanationForDenied = false,
+    bool forceRefresh = false,
   }) async {
     switch (access) {
       case LocationAccessStatus.granted:
-        await _loadResults();
+        await _loadResults(forceRefresh: forceRefresh);
       case LocationAccessStatus.denied:
         state = showExplanationForDenied
             ? MosqueFinderState.permissionExplanation
@@ -100,11 +111,11 @@ class MosqueFinderViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadResults() async {
+  Future<void> _loadResults({bool forceRefresh = false}) async {
     state = MosqueFinderState.loading;
     notifyListeners();
     try {
-      result = await findNearbyMosques();
+      result = await findNearbyMosques(forceRefresh: forceRefresh);
       state = result!.places.isEmpty
           ? MosqueFinderState.empty
           : MosqueFinderState.results;

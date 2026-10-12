@@ -93,20 +93,24 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
       useSafeArea: true,
       showDragHandle: true,
       builder: (sheetContext) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Tentang data peta',
-              style: Theme.of(context).textTheme.titleLarge,
+              'Tentang Data Peta',
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontSize: 18),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
               'Informasi lokasi masjid dan mushola diambil dari OpenStreetMap, '
               'peta kolaboratif yang dibuat dan diperbarui oleh komunitas. '
               'Datanya tersedia di bawah lisensi Open Database License (ODbL).',
+              textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -145,31 +149,36 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: SizedBox(
-        width: MediaQuery.sizeOf(context).width - 40,
-        height: 48,
-        child: FilledButton.icon(
-          key: const ValueKey('mosque-refresh-button'),
-          onPressed: _model.refresh,
-          style: FilledButton.styleFrom(
-            backgroundColor: theme.colorScheme.primary,
-            foregroundColor: theme.colorScheme.onPrimary,
-            minimumSize: const Size.fromHeight(48),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            textStyle: theme.textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(
-                color: theme.colorScheme.onPrimary.withValues(alpha: 0.18),
+      floatingActionButton:
+          _model.state == MosqueFinderState.results && !_model.isBusy
+          ? SizedBox(
+              width: MediaQuery.sizeOf(context).width - 40,
+              height: 48,
+              child: FilledButton.icon(
+                key: const ValueKey('mosque-refresh-button'),
+                onPressed: _model.refresh,
+                style: FilledButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  minimumSize: const Size.fromHeight(48),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  textStyle: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color: theme.colorScheme.onPrimary.withValues(
+                        alpha: 0.18,
+                      ),
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Muat ulang pencarian'),
               ),
-            ),
-          ),
-          icon: const Icon(Icons.refresh_rounded, size: 18),
-          label: const Text('Muat ulang pencarian'),
-        ),
-      ),
+            )
+          : null,
       body: SafeArea(
         top: false,
         child: AnimatedSwitcher(
@@ -217,10 +226,26 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
         action: 'Buka Pengaturan Lokasi',
         onPressed: _model.openLocationSettings,
       ),
-      MosqueFinderState.loading => const _LoadingState(
-        key: ValueKey('loading'),
-        message: 'Mencari masjid & mushola di sekitar…',
-      ),
+      MosqueFinderState.loading =>
+        _model.result == null
+            ? const _LoadingState(
+                key: ValueKey('loading'),
+                message: 'Mencari masjid & mushola di sekitar…',
+              )
+            : _model.result!.places.isEmpty
+            ? _RetryState(
+                key: const ValueKey('empty'),
+                title:
+                    'Belum menemukan masjid atau mushola di sekitar lokasi ini.',
+                message: 'Pencarian mencakup area hingga 5 km.',
+                onRetry: _model.refresh,
+              )
+            : _ResultsState(
+                key: const ValueKey('results'),
+                result: _model.result!,
+                isRefreshing: true,
+                onNavigate: _openDirections,
+              ),
       MosqueFinderState.locationUnavailable => _RetryState(
         key: const ValueKey('location-unavailable'),
         title: 'Lokasi belum tersedia',
@@ -229,14 +254,14 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
       ),
       MosqueFinderState.networkError => _RetryState(
         key: const ValueKey('network-error'),
-        title: 'Pencarian belum bisa dimuat',
-        message: 'Periksa koneksi lalu coba lagi.',
+        title: 'Pencarian tempat sholat belum bisa dimuat',
+        message: 'Layanan data sedang tidak tersedia. Coba lagi.',
         onRetry: _model.refresh,
       ),
       MosqueFinderState.serviceBusy => _RetryState(
         key: const ValueKey('service-busy'),
         title: 'Layanan pencarian sedang sibuk',
-        message: 'Coba lagi sebentar.',
+        message: 'Layanan data sedang sibuk. Coba lagi.',
         onRetry: _model.refresh,
       ),
       MosqueFinderState.empty => _RetryState(
@@ -393,11 +418,13 @@ class _ResultsState extends StatelessWidget {
   const _ResultsState({
     required this.result,
     required this.onNavigate,
+    this.isRefreshing = false,
     super.key,
   });
 
   final NearbyMosqueResult result;
   final ValueChanged<MosquePlace> onNavigate;
+  final bool isRefreshing;
 
   @override
   Widget build(BuildContext context) {
@@ -411,6 +438,14 @@ class _ResultsState extends StatelessWidget {
         104,
       ),
       children: [
+        if (isRefreshing) ...[
+          LinearProgressIndicator(
+            minHeight: 2,
+            color: theme.colorScheme.primary,
+            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
+          ),
+          const SizedBox(height: IstiqamSpacing.sm),
+        ],
         if (result.usedLastKnownLocation) ...[
           const _LastKnownNotice(),
           const SizedBox(height: IstiqamSpacing.md),

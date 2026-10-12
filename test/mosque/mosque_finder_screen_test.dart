@@ -72,7 +72,7 @@ void main() {
     await tester.tap(find.byTooltip('Informasi peta'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Tentang data peta'), findsOneWidget);
+    expect(find.text('Tentang Data Peta'), findsOneWidget);
     expect(find.textContaining('OpenStreetMap'), findsWidgets);
     expect(find.textContaining('Open Database License'), findsOneWidget);
     expect(find.textContaining('contributors'), findsNothing);
@@ -81,7 +81,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(openedUri, Uri.https('www.openstreetmap.org', '/copyright'));
-    expect(find.text('Tentang data peta'), findsNothing);
+    expect(find.text('Tentang Data Peta'), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
     harness.dispose();
   });
@@ -107,6 +107,34 @@ void main() {
     harness.dispose();
   });
 
+  testWidgets('keeps current results visible while refresh is running', (
+    tester,
+  ) async {
+    final harness = _Harness(
+      access: LocationAccessStatus.granted,
+      places: [_place('Masjid Al Ikhlas', 120)],
+    );
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+    expect(find.text('Masjid Al Ikhlas'), findsOneWidget);
+
+    final pending = Completer<List<MosquePlace>>();
+    harness.mosqueRepository.pendingResponse = pending;
+    await tester.tap(find.byKey(const ValueKey('mosque-refresh-button')));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Masjid Al Ikhlas'), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+
+    pending.complete([_place('Masjid Baru', 80)]);
+    await tester.pumpAndSettle();
+    expect(find.text('Masjid Baru'), findsOneWidget);
+    expect(find.text('Masjid Al Ikhlas'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    harness.dispose();
+  });
+
   testWidgets('shows retryable provider error', (tester) async {
     final harness = _Harness(
       access: LocationAccessStatus.granted,
@@ -116,8 +144,14 @@ void main() {
     );
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    expect(find.text('Pencarian belum bisa dimuat'), findsOneWidget);
-    expect(find.text('Periksa koneksi lalu coba lagi.'), findsOneWidget);
+    expect(
+      find.text('Pencarian tempat sholat belum bisa dimuat'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Layanan data sedang tidak tersedia. Coba lagi.'),
+      findsOneWidget,
+    );
     await tester.pumpWidget(const SizedBox.shrink());
     harness.dispose();
   });
@@ -167,6 +201,7 @@ class _Harness {
     this.repositoryError,
     this.launcher,
   }) : noticeController = IstiqamNoticeController() {
+    mosqueRepository = _FakeMosques(places: places, error: repositoryError);
     viewModel = MosqueFinderViewModel(
       findNearbyMosques: FindNearbyMosquesUseCase(
         locationRepository: _FakeLocation(
@@ -177,7 +212,7 @@ class _Harness {
               ? const GeoCoordinate(latitude: -6.21, longitude: 106.81)
               : null,
         ),
-        mosqueRepository: _FakeMosques(places: places, error: repositoryError),
+        mosqueRepository: mosqueRepository,
       ),
     );
   }
@@ -190,6 +225,7 @@ class _Harness {
   final Object? repositoryError;
   final ExternalUriLauncher? launcher;
   final IstiqamNoticeController noticeController;
+  late final _FakeMosques mosqueRepository;
   late final MosqueFinderViewModel viewModel;
 
   Widget app({ThemeData? theme}) => MaterialApp(
@@ -247,13 +283,16 @@ class _FakeMosques implements MosqueRepository {
 
   final List<MosquePlace> places;
   final Object? error;
+  Completer<List<MosquePlace>>? pendingResponse;
 
   @override
   Future<List<MosquePlace>> findNearby({
     required GeoCoordinate origin,
     required int radiusMeters,
+    bool bypassCache = false,
   }) async {
     if (error != null) throw error!;
+    if (pendingResponse != null) return pendingResponse!.future;
     return places;
   }
 }

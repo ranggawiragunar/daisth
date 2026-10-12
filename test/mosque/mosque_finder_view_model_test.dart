@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
 import 'package:istiqam/core/location/domain/models/location_access_status.dart';
 import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
 import 'package:istiqam/features/mosque/domain/models/mosque_place.dart';
+import 'package:istiqam/features/mosque/domain/models/mosque_search_failure.dart';
 import 'package:istiqam/features/mosque/domain/repositories/mosque_repository.dart';
 import 'package:istiqam/features/mosque/domain/use_cases/find_nearby_mosques_use_case.dart';
 import 'package:istiqam/features/mosque/presentation/view_models/mosque_finder_view_model.dart';
@@ -43,14 +46,65 @@ void main() {
       disabled.dispose();
     },
   );
+
+  test(
+    'keeps successful empty search distinct from provider failure',
+    () async {
+      final emptyMosques = _Mosques();
+      final empty = _viewModel(
+        _Location(LocationAccessStatus.granted),
+        emptyMosques,
+      );
+      await empty.initialize();
+      expect(empty.state, MosqueFinderState.empty);
+      empty.dispose();
+
+      final failed = _viewModel(
+        _Location(LocationAccessStatus.granted),
+        _Mosques(
+          error: const MosqueSearchFailure(MosqueSearchFailureType.unavailable),
+        ),
+      );
+      await failed.initialize();
+      expect(failed.state, MosqueFinderState.networkError);
+      failed.dispose();
+    },
+  );
+
+  test('ignores repeated refresh while a provider request is active', () async {
+    final mosque = _Mosques();
+    final viewModel = _viewModel(
+      _Location(LocationAccessStatus.granted),
+      mosque,
+    );
+    await viewModel.initialize();
+    expect(mosque.radiusRequests, [5000]);
+
+    final pending = Completer<List<MosquePlace>>();
+    mosque.pendingResponse = pending;
+    final refresh = viewModel.refresh();
+    await Future<void>.delayed(Duration.zero);
+    await viewModel.refresh();
+    await viewModel.refresh();
+
+    expect(viewModel.isBusy, isTrue);
+    expect(mosque.radiusRequests, [5000, 5000]);
+    expect(mosque.bypassCacheCalls, [false, true]);
+
+    pending.complete(const []);
+    await refresh;
+    expect(viewModel.isBusy, isFalse);
+    viewModel.dispose();
+  });
 }
 
-MosqueFinderViewModel _viewModel(_Location location) => MosqueFinderViewModel(
-  findNearbyMosques: FindNearbyMosquesUseCase(
-    locationRepository: location,
-    mosqueRepository: _Mosques(),
-  ),
-);
+MosqueFinderViewModel _viewModel(_Location location, [_Mosques? mosque]) =>
+    MosqueFinderViewModel(
+      findNearbyMosques: FindNearbyMosquesUseCase(
+        locationRepository: location,
+        mosqueRepository: mosque ?? _Mosques(),
+      ),
+    );
 
 class _Location implements LocationRepository {
   _Location(this.status);
@@ -78,9 +132,23 @@ class _Location implements LocationRepository {
 }
 
 class _Mosques implements MosqueRepository {
+  _Mosques({this.error});
+
+  final Object? error;
+  final radiusRequests = <int>[];
+  final bypassCacheCalls = <bool>[];
+  Completer<List<MosquePlace>>? pendingResponse;
+
   @override
   Future<List<MosquePlace>> findNearby({
     required GeoCoordinate origin,
     required int radiusMeters,
-  }) async => const [];
+    bool bypassCache = false,
+  }) async {
+    radiusRequests.add(radiusMeters);
+    bypassCacheCalls.add(bypassCache);
+    if (error != null) throw error!;
+    if (pendingResponse != null) return pendingResponse!.future;
+    return const [];
+  }
 }

@@ -37,7 +37,7 @@ void main() {
     final opened = <String>[];
     await _pumpToday(tester, session, onRoutineTap: opened.add);
 
-    expect(find.text('04:16'), findsOneWidget);
+    expect(find.text('04:16'), findsNWidgets(2));
     expect(find.text('11:41'), findsOneWidget);
     expect(find.text('14:42'), findsOneWidget);
     expect(find.text('17:46'), findsOneWidget);

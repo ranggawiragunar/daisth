@@ -25,14 +25,22 @@ persistent coordinate storage. The flow uses automatic current-device location
 and device-local time formatting, assuming the device timezone matches its
 physical location. Manual remote-location selection and coordinate-to-timezone
 lookup are future scope. History and Routines remain presentation placeholders.
-Mosque Finder uses OpenStreetMap data through the public
-Overpass API for MVP proximity discovery. Searches expand from 1.5 km to 3 km
-and then 5 km when fewer than six places are found, and the UI caps results at
-20. The public Overpass service is not assumed to be permanent production
-infrastructure; at significant scale, evaluate a replacement, proxy, or
-self-hosted service. Display visible OpenStreetMap attribution wherever its
-place data is shown. Location is foreground-only and session-only, with no
-location or search-history persistence.
+Mosque Finder uses OpenStreetMap data through public Overpass endpoints for MVP
+proximity discovery. Each search sends one geographically constrained request
+for a 5 km result set, then selects the effective 1.5 km, 3 km, or 5 km radius
+locally based on whether at least six places are available. Results are sorted
+nearest-first and capped at 20. Search data is cached in memory for five minutes
+by a rounded coordinate bucket; explicit refresh fetches a fresh location and
+bypasses that cache. The primary endpoint is
+`https://overpass-api.de/api/interpreter`; the fallback is
+`https://overpass.private.coffee/api/interpreter`. Each endpoint has a 9-second
+timeout. A retryable primary failure (network error, timeout, HTTP 429, or
+HTTP 5xx) moves directly to one fallback attempt; the same endpoint is not
+retried and no backoff delay is added. Public Overpass endpoints are MVP
+infrastructure and availability is not guaranteed. At significant scale,
+evaluate a replacement, proxy, or self-hosted service. Display visible
+OpenStreetMap attribution wherever its place data is shown. Location and search
+history are not persisted.
 
 The Zuhur Routine Detail includes an optional post-prayer dhikr session. It
 guides the user through 33 Subhanallah, 33 Alhamdulillah, 33 Allahu Akbar, and

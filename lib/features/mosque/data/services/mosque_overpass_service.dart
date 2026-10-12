@@ -15,20 +15,62 @@ class OverpassServiceException implements Exception {
 }
 
 class MosqueOverpassService {
-  MosqueOverpassService({required this.client});
+  MosqueOverpassService({
+    required this.client,
+    this.requestTimeout = const Duration(seconds: 9),
+  });
 
-  static final Uri endpoint = Uri.https('overpass-api.de', '/api/interpreter');
-
+  static final Uri primaryEndpoint = Uri.parse(
+    'https://overpass-api.de/api/interpreter',
+  );
+  static final Uri fallbackEndpoint = Uri.parse(
+    'https://overpass.private.coffee/api/interpreter',
+  );
+  static final Uri endpoint = primaryEndpoint;
+  static final List<Uri> endpoints = List.unmodifiable([
+    primaryEndpoint,
+    fallbackEndpoint,
+  ]);
   final http.Client client;
+  final Duration requestTimeout;
 
   Future<List<MosquePlaceData>> fetchPlaces({
     required GeoCoordinate origin,
     required int radiusMeters,
   }) async {
     final query = _buildQuery(origin, radiusMeters);
-    late final http.Response response;
+    _AttemptFailure? lastFailure;
+
+    for (final endpoint in endpoints) {
+      try {
+        final response = await _send(endpoint, query);
+        if (response.statusCode == 200) return _parse(response.body);
+        final retryable =
+            response.statusCode == 429 ||
+            (response.statusCode >= 500 && response.statusCode <= 599);
+        final failure = _AttemptFailure(
+          retryable
+              ? OverpassFailureReason.serviceBusy
+              : OverpassFailureReason.unavailable,
+          retryable: retryable,
+        );
+        throw failure;
+      } on _AttemptFailure catch (failure) {
+        lastFailure = failure;
+        if (!failure.retryable) {
+          throw OverpassServiceException(failure.reason);
+        }
+      }
+    }
+
+    throw OverpassServiceException(
+      lastFailure?.reason ?? OverpassFailureReason.unavailable,
+    );
+  }
+
+  Future<http.Response> _send(Uri endpoint, String query) async {
     try {
-      response = await client
+      return await client
           .post(
             endpoint,
             headers: const {
@@ -37,25 +79,29 @@ class MosqueOverpassService {
             },
             body: {'data': query},
           )
-          .timeout(const Duration(seconds: 18));
+          .timeout(requestTimeout);
     } on TimeoutException {
-      throw const OverpassServiceException(OverpassFailureReason.serviceBusy);
+      throw const _AttemptFailure(
+        OverpassFailureReason.unavailable,
+        retryable: true,
+      );
     } on http.ClientException {
-      throw const OverpassServiceException(OverpassFailureReason.unavailable);
+      throw const _AttemptFailure(
+        OverpassFailureReason.unavailable,
+        retryable: true,
+      );
     } on Exception {
-      throw const OverpassServiceException(OverpassFailureReason.unavailable);
+      throw const _AttemptFailure(
+        OverpassFailureReason.unavailable,
+        retryable: true,
+      );
     }
+  }
 
-    if (response.statusCode == 429 || response.statusCode >= 500) {
-      throw const OverpassServiceException(OverpassFailureReason.serviceBusy);
-    }
-    if (response.statusCode != 200) {
-      throw const OverpassServiceException(OverpassFailureReason.unavailable);
-    }
-
+  List<MosquePlaceData> _parse(String body) {
     late final Map<String, dynamic> payload;
     try {
-      final decoded = jsonDecode(response.body);
+      final decoded = jsonDecode(body);
       if (decoded is! Map<String, dynamic>) {
         throw const FormatException('Expected an Overpass JSON object.');
       }
@@ -135,4 +181,11 @@ out center tags;
     }
     return (latitude.toDouble(), longitude.toDouble());
   }
+}
+
+class _AttemptFailure implements Exception {
+  const _AttemptFailure(this.reason, {required this.retryable});
+
+  final OverpassFailureReason reason;
+  final bool retryable;
 }

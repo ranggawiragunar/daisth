@@ -37,21 +37,16 @@ class FindNearbyMosquesUseCase {
   Future<bool> openLocationSettings() =>
       resolveCurrentLocation.openLocationSettings();
 
-  Future<NearbyMosqueResult> call() async {
+  Future<NearbyMosqueResult> call({bool forceRefresh = false}) async {
     final location = await _resolveLocation();
+    final found = await mosqueRepository.findNearby(
+      origin: location.coordinate,
+      radiusMeters: searchRadiiMeters.last,
+      bypassCache: forceRefresh,
+    );
     final placesById = <String, MosquePlace>{};
-    var searchedRadius = searchRadiiMeters.first;
-
-    for (final radius in searchRadiiMeters) {
-      searchedRadius = radius;
-      final found = await mosqueRepository.findNearby(
-        origin: location.coordinate,
-        radiusMeters: radius,
-      );
-      for (final place in found) {
-        placesById.putIfAbsent(place.id, () => place);
-      }
-      if (placesById.length >= minimumUsefulResults) break;
+    for (final place in found) {
+      placesById.putIfAbsent(place.id, () => place);
     }
 
     final places = placesById.values.toList()
@@ -59,9 +54,23 @@ class FindNearbyMosquesUseCase {
         (first, second) =>
             first.distanceMeters.compareTo(second.distanceMeters),
       );
+    var searchedRadius = searchRadiiMeters.last;
+    for (final radius in searchRadiiMeters) {
+      final countWithinRadius = places
+          .where((place) => place.distanceMeters <= radius)
+          .length;
+      if (countWithinRadius >= minimumUsefulResults) {
+        searchedRadius = radius;
+        break;
+      }
+    }
+    final selectedPlaces = places
+        .where((place) => place.distanceMeters <= searchedRadius)
+        .take(maximumResults)
+        .toList();
     return NearbyMosqueResult(
       origin: location.coordinate,
-      places: places.take(maximumResults).toList(),
+      places: selectedPlaces,
       searchedRadiusMeters: searchedRadius,
       usedLastKnownLocation: location.usedLastKnownLocation,
     );
