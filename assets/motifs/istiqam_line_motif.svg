@@ -1,8 +1,7 @@
-<svg width="900" height="900" viewBox="0 0 900 900" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g opacity="0.16" stroke="#365F53" stroke-width="2">
-  <path d="M80 820V570C80 327 258 142 500 80"/>
-  <path d="M180 820V605C180 413 319 267 510 218"/>
-  <path d="M290 820V645C290 509 389 405 525 370"/>
-  <path d="M405 820V688C405 602 467 536 553 514"/>
-</g>
-</svg>
+<svg width="1200" height="1200" viewBox="0 0 1200 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g opacity="0.16" stroke="#365F53" stroke-width="3">
+<path d="M80 1120V740C80 410 312 170 660 70"/>
+<path d="M220 1120V790C220 545 397 355 654 292"/>
+<path d="M380 1120V850C380 680 503 550 679 505"/>
+<path d="M545 1120V910C545 802 623 720 735 690"/>
+</g></svg>

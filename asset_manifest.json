@@ -1,0 +1,127 @@
+{
+  "illustrations": {
+    "today_hero_light.png": {
+      "width": 1672,
+      "height": 941,
+      "format": "PNG"
+    },
+    "today_hero_dark.png": {
+      "width": 1672,
+      "height": 941,
+      "format": "PNG"
+    },
+    "routine_progress.png": {
+      "width": 1448,
+      "height": 1086,
+      "format": "PNG"
+    },
+    "reflection.png": {
+      "width": 1448,
+      "height": 1086,
+      "format": "PNG"
+    },
+    "reader.png": {
+      "width": 1448,
+      "height": 1086,
+      "format": "PNG"
+    },
+    "onboarding_scene.png": {
+      "width": 1448,
+      "height": 1086,
+      "format": "PNG"
+    }
+  },
+  "empty_states": {
+    "empty_routines.svg": {
+      "type": "vector",
+      "viewBox": "0 0 2048 1536"
+    },
+    "empty_routines_2048.png": {
+      "width": 2048,
+      "height": 1536,
+      "type": "raster-preview"
+    },
+    "empty_history.svg": {
+      "type": "vector",
+      "viewBox": "0 0 2048 1536"
+    },
+    "empty_history_2048.png": {
+      "width": 2048,
+      "height": 1536,
+      "type": "raster-preview"
+    },
+    "empty_settings.svg": {
+      "type": "vector",
+      "viewBox": "0 0 2048 1536"
+    },
+    "empty_settings_2048.png": {
+      "width": 2048,
+      "height": 1536,
+      "type": "raster-preview"
+    },
+    "no_location.svg": {
+      "type": "vector",
+      "viewBox": "0 0 2048 1536"
+    },
+    "no_location_2048.png": {
+      "width": 2048,
+      "height": 1536,
+      "type": "raster-preview"
+    },
+    "error_state.svg": {
+      "type": "vector",
+      "viewBox": "0 0 2048 1536"
+    },
+    "error_state_2048.png": {
+      "width": 2048,
+      "height": 1536,
+      "type": "raster-preview"
+    },
+    "feature_coming_soon.svg": {
+      "type": "vector",
+      "viewBox": "0 0 2048 1536"
+    },
+    "feature_coming_soon_2048.png": {
+      "width": 2048,
+      "height": 1536,
+      "type": "raster-preview"
+    }
+  },
+  "brand": {
+    "istiqam_adaptive_foreground.svg": {
+      "type": "vector"
+    },
+    "istiqam_adaptive_background.svg": {
+      "type": "vector"
+    },
+    "istiqam_mark.svg": {
+      "type": "vector"
+    },
+    "istiqam_app_icon_master.svg": {
+      "type": "vector"
+    },
+    "istiqam_app_icon_master_1024.png": {
+      "width": 1024,
+      "height": 1024
+    },
+    "istiqam_adaptive_foreground_1024.png": {
+      "width": 1024,
+      "height": 1024
+    },
+    "istiqam_mark_1024.png": {
+      "width": 1024,
+      "height": 1024
+    }
+  },
+  "motifs": {
+    "istiqam_line_motif.svg": {
+      "type": "vector"
+    },
+    "istiqam_geometric_pattern.svg": {
+      "type": "vector"
+    },
+    "istiqam_soft_arch_background.svg": {
+      "type": "vector"
+    }
+  }
+}

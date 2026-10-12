@@ -7,7 +7,7 @@ class HistoryPlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const IstiqamEmptyState(
-    imageAsset: 'assets/illustrations/empty_history.png',
+    imageAsset: 'assets/empty_states/empty_history_2048.png',
     title: 'Belum ada history',
     description:
         'Selesaikan routine untuk mulai melihat perjalanan konsistensimu.',

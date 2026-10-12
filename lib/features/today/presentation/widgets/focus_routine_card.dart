@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../../core/design_system/components/istiqam_button.dart';
+import '../../../../core/design_system/components/istiqam_notice.dart';
+import '../../../../core/design_system/components/istiqam_notice_controller.dart';
 import '../../../../core/design_system/theme/istiqam_theme_extension.dart';
 import '../../../../core/design_system/tokens/istiqam_colors.dart';
 import '../../../../core/design_system/tokens/istiqam_radius.dart';
@@ -12,12 +13,12 @@ class FocusRoutineCard extends StatelessWidget {
   const FocusRoutineCard({super.key});
 
   void _openRoutine(BuildContext context) {
-    HapticFeedback.selectionClick();
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Routine details are coming soon.')),
-      );
+    IstiqamNoticeScope.of(context).show(
+      context,
+      type: IstiqamNoticeType.info,
+      title: 'Routine detail segera hadir',
+      message: 'Halaman detail routine akan tersedia pada tahap berikutnya.',
+    );
   }
 
   @override
@@ -29,7 +30,7 @@ class FocusRoutineCard extends StatelessWidget {
     final cardColor = extension.softSurface;
     final heroAsset = isDark
         ? 'assets/illustrations/today_hero_dark.png'
-        : 'assets/illustrations/today_hero.png';
+        : 'assets/illustrations/today_hero_light.png';
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
@@ -63,6 +64,8 @@ class FocusRoutineCard extends StatelessWidget {
                 heroAsset,
                 fit: BoxFit.cover,
                 alignment: Alignment.centerRight,
+                filterQuality: FilterQuality.high,
+                isAntiAlias: true,
                 errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
             ),

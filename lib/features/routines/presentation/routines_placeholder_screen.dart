@@ -7,7 +7,7 @@ class RoutinesPlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const IstiqamEmptyState(
-    imageAsset: 'assets/illustrations/empty_routines.png',
+    imageAsset: 'assets/empty_states/empty_routines_2048.png',
     title: 'Routine-mu akan ada di sini',
     description: 'Kelola rutinitas harianmu dari satu tempat.',
   );

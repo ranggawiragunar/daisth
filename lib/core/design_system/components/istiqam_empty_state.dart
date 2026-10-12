@@ -40,6 +40,8 @@ class IstiqamEmptyState extends StatelessWidget {
                       width: 220,
                       height: 190,
                       fit: BoxFit.contain,
+                      filterQuality: FilterQuality.high,
+                      isAntiAlias: true,
                       semanticLabel: title,
                     ),
                   ),

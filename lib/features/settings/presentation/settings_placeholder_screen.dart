@@ -7,7 +7,7 @@ class SettingsPlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const IstiqamEmptyState(
-    imageAsset: 'assets/illustrations/empty_settings.png',
+    imageAsset: 'assets/empty_states/empty_settings_2048.png',
     title: 'Pengaturan segera hadir',
     description:
         'Lokasi, reminder, tampilan, dan preferensi lainnya akan tersedia di sini.',

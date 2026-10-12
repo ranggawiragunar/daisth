@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../tokens/istiqam_colors.dart';
 import '../tokens/istiqam_radius.dart';
 import '../tokens/istiqam_typography.dart';
+import 'istiqam_notice_palette.dart';
 import 'istiqam_theme_extension.dart';
 
 abstract final class IstiqamTheme {
@@ -27,7 +28,12 @@ abstract final class IstiqamTheme {
       outline: IstiqamColors.border,
       outlineVariant: IstiqamColors.divider,
     );
-    return _base(scheme, IstiqamColors.background, IstiqamThemeExtension.light);
+    return _base(
+      scheme,
+      IstiqamColors.background,
+      IstiqamThemeExtension.light,
+      IstiqamNoticePalette.light,
+    );
   }
 
   static ThemeData _buildDark() {
@@ -52,6 +58,7 @@ abstract final class IstiqamTheme {
       scheme,
       IstiqamColors.darkBackground,
       IstiqamThemeExtension.dark,
+      IstiqamNoticePalette.dark,
     );
   }
 
@@ -59,6 +66,7 @@ abstract final class IstiqamTheme {
     ColorScheme scheme,
     Color scaffoldBackground,
     IstiqamThemeExtension extension,
+    IstiqamNoticePalette noticePalette,
   ) {
     final base = ThemeData(
       useMaterial3: true,
@@ -68,7 +76,7 @@ abstract final class IstiqamTheme {
         bodyColor: scheme.onSurface,
         displayColor: scheme.onSurface,
       ),
-      extensions: [extension],
+      extensions: [extension, noticePalette],
     );
     return base.copyWith(
       dividerColor: extension.divider,

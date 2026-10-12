@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
+import '../core/design_system/components/istiqam_notice_controller.dart';
 import '../core/design_system/tokens/istiqam_radius.dart';
 import '../features/history/presentation/history_placeholder_screen.dart';
 import '../features/routines/presentation/routines_placeholder_screen.dart';
@@ -17,6 +18,7 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
+  final _noticeController = IstiqamNoticeController();
 
   static const _screens = [
     TodayScreen(),
@@ -47,31 +49,40 @@ class _AppShellState extends State<AppShell> {
   }
 
   @override
+  void dispose() {
+    _noticeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _screens),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Container(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            border: Border(
-              top: BorderSide(color: theme.colorScheme.outlineVariant),
+    return IstiqamNoticeScope(
+      controller: _noticeController,
+      child: Scaffold(
+        body: IndexedStack(index: _selectedIndex, children: _screens),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              border: Border(
+                top: BorderSide(color: theme.colorScheme.outlineVariant),
+              ),
             ),
-          ),
-          padding: const EdgeInsets.fromLTRB(10, 6, 10, 4),
-          child: Row(
-            children: [
-              for (var index = 0; index < _destinations.length; index++)
-                Expanded(
-                  child: _NavigationItem(
-                    destination: _destinations[index],
-                    selected: _selectedIndex == index,
-                    onTap: () => _select(index),
+            padding: const EdgeInsets.fromLTRB(10, 6, 10, 4),
+            child: Row(
+              children: [
+                for (var index = 0; index < _destinations.length; index++)
+                  Expanded(
+                    child: _NavigationItem(
+                      destination: _destinations[index],
+                      selected: _selectedIndex == index,
+                      onTap: () => _select(index),
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

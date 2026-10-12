@@ -54,7 +54,7 @@ unrecorded, and not scheduled today. The palette adapts for dark mode.
 
 ## Hero art, timeline, and assets
 
-Today's focus card selects the approved `today_hero.png` or
+Today's focus card selects the approved `today_hero_light.png` or
 `today_hero_dark.png` to match the active theme, as a clipped, right-weighted
 background layer with a left text scrim. The timeline keeps
 completed entries compact, gives the next routine a sage highlight and ring
@@ -62,8 +62,35 @@ node, and softens upcoming connectors. The current timeline state and card use
 tonal surfaces instead of separate elevated cards.
 
 Use only approved assets from `assets/`. Do not draw, generate, or substitute
-product illustrations. Register the raster illustration and motif assets in
-`pubspec.yaml`; no runtime SVG renderer is used. The approved visual-direction
-board informed the hero composition, timeline emphasis, segmented progress,
-warm atmosphere, and navigation. Empty History, Routines, and Settings use
-their approved project illustrations.
+product illustrations. Register runtime assets in `pubspec.yaml`; no runtime
+SVG renderer is used. The approved visual-direction board informed the hero
+composition, timeline emphasis, segmented progress, warm atmosphere, and
+navigation. Empty History, Routines, and Settings use their approved project
+illustrations.
+
+### Asset Pack v2 Complete
+
+Asset Pack v2 Complete is the current visual source of truth. Runtime files are
+organized under `assets/brand/`, `assets/illustrations/`, and
+`assets/empty_states/`; approved SVG sources and optional decorative motifs
+remain in the pack but are not rendered by the app. Use the bundled raster
+sources directly, preserve their aspect ratio, and avoid `cacheWidth`,
+`cacheHeight`, reduced `ResizeImage` decoding, recompression, or lower-resolution
+derivatives. Prominent artwork uses `FilterQuality.high` and, where suitable,
+anti-aliased clipping. The Today hero uses the light or dark source selected by
+the active theme, while placeholder screens use the `*_2048.png` empty-state
+files.
+
+### Transient notices
+
+`IstiqamNotice` and `IstiqamNoticeController` provide the reusable floating
+notice for transient feedback. Notices support success, info, warning, error,
+and neutral semantic variants, each with a tonal theme-aware surface and a
+Phosphor icon. A notice can include supporting text, an action, and a close
+button. The controller presents one notice at a time below the top safe area,
+allows the rest of the app to remain interactive, and uses a brief fade/slide
+animation with reduced-motion handling. Notices without an action dismiss after
+four seconds by default; action notices remain visible until acted on or closed.
+
+Use this notice system for product feedback. Do not introduce default Material
+SnackBars or toast styling in the implemented app UI.

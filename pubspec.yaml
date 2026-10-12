@@ -57,12 +57,9 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/brand/
     - assets/illustrations/
-    - assets/motifs/motif_line.png
-    - assets/motifs/motif_shape.png
-    - assets/motifs/motif_shadow.png
-    - assets/brand/istiqam_app_icon_master_1024.png
-    - assets/brand/istiqam_mark_foreground_1024.png
+    - assets/empty_states/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -93,7 +90,7 @@ flutter_launcher_icons:
   image_path: assets/brand/istiqam_app_icon_master_1024.png
   remove_alpha_ios: true
   adaptive_icon_background: '#1E3A34'
-  adaptive_icon_foreground: assets/brand/istiqam_mark_foreground_1024.png
+  adaptive_icon_foreground: assets/brand/istiqam_adaptive_foreground_1024.png
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
