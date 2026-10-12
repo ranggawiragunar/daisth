@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:istiqam/app/app.dart';
 import 'package:istiqam/core/design_system/components/istiqam_notice.dart';
+import 'package:istiqam/features/routines/presentation/routine_detail_screen.dart';
 
 void main() {
   testWidgets('Today is the initial destination and navigation works', (
@@ -17,17 +18,32 @@ void main() {
     await tester.tap(find.text('Open Routine'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Routine detail segera hadir'), findsOneWidget);
+    expect(find.byType(RoutineDetailScreen), findsOneWidget);
+    expect(find.text('Rangkaian'), findsOneWidget);
+    expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
+
+    await tester.tap(find.text('Mark Zuhur Done'));
+    await tester.pumpAndSettle();
+    expect(find.text('Zuhur recorded'), findsOneWidget);
     expect(find.byType(IstiqamNotice), findsOneWidget);
     expect(find.byType(SnackBar), findsNothing);
 
     await tester.tap(find.byTooltip('Dismiss notification'));
     await tester.pumpAndSettle();
     expect(find.byType(IstiqamNotice), findsNothing);
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('navigation-history')));
     await tester.pumpAndSettle();
 
+    expect(find.text('Belum ada history'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('navigation-today')));
+    await tester.pumpAndSettle();
+    expect(find.text('Open Routine'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('navigation-history')));
+    await tester.pumpAndSettle();
     expect(find.text('Belum ada history'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('navigation-routines')));
@@ -61,6 +77,7 @@ void main() {
       Theme.of(tester.element(find.text('Appearance'))).brightness,
       Brightness.dark,
     );
+    expect(find.byKey(const ValueKey('navigation-settings')), findsOneWidget);
 
     await tester.tap(find.text('Light'));
     await tester.pumpAndSettle();
@@ -68,6 +85,7 @@ void main() {
       tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
       ThemeMode.light,
     );
+    expect(find.byKey(const ValueKey('navigation-settings')), findsOneWidget);
 
     await tester.tap(find.text('System'));
     await tester.pumpAndSettle();

@@ -2,24 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../../core/design_system/components/istiqam_button.dart';
-import '../../../../core/design_system/components/istiqam_notice.dart';
-import '../../../../core/design_system/components/istiqam_notice_controller.dart';
 import '../../../../core/design_system/theme/istiqam_theme_extension.dart';
 import '../../../../core/design_system/tokens/istiqam_colors.dart';
 import '../../../../core/design_system/tokens/istiqam_radius.dart';
 import '../../../../core/design_system/tokens/istiqam_spacing.dart';
 
 class FocusRoutineCard extends StatelessWidget {
-  const FocusRoutineCard({super.key});
+  const FocusRoutineCard({this.onOpenRoutine, super.key});
 
-  void _openRoutine(BuildContext context) {
-    IstiqamNoticeScope.of(context).show(
-      context,
-      type: IstiqamNoticeType.info,
-      title: 'Routine detail segera hadir',
-      message: 'Halaman detail routine akan tersedia pada tahap berikutnya.',
-    );
-  }
+  final VoidCallback? onOpenRoutine;
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +138,7 @@ class FocusRoutineCard extends StatelessWidget {
                     const SizedBox(height: IstiqamSpacing.lg),
                     IstiqamButton(
                       label: 'Open Routine',
-                      onPressed: () => _openRoutine(context),
+                      onPressed: onOpenRoutine,
                       compact: true,
                       icon: PhosphorIconsRegular.arrowRight,
                     ),

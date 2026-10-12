@@ -7,9 +7,14 @@ import 'widgets/focus_routine_card.dart';
 import 'widgets/routine_timeline.dart';
 
 class TodayScreen extends StatelessWidget {
-  const TodayScreen({this.bottomContentPadding = 0, super.key});
+  const TodayScreen({
+    this.bottomContentPadding = 0,
+    this.onRoutineTap,
+    super.key,
+  });
 
   final double bottomContentPadding;
+  final ValueChanged<String>? onRoutineTap;
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +71,11 @@ class TodayScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: IstiqamSpacing.xl),
-                      const FocusRoutineCard(),
+                      FocusRoutineCard(
+                        onOpenRoutine: onRoutineTap == null
+                            ? null
+                            : () => onRoutineTap!('zuhur'),
+                      ),
                       const SizedBox(height: IstiqamSpacing.xxl),
                       const DailyProgress(),
                       const SizedBox(height: IstiqamSpacing.section),
@@ -75,7 +84,7 @@ class TodayScreen extends StatelessWidget {
                         style: theme.textTheme.titleMedium,
                       ),
                       const SizedBox(height: IstiqamSpacing.lg),
-                      const RoutineTimeline(),
+                      RoutineTimeline(onRoutineTap: onRoutineTap),
                     ],
                   ),
                 ),

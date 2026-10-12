@@ -1,0 +1,1 @@
+enum AppRoute { today, history, routines, settings, routineDetail }

@@ -1,33 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
-import '../core/design_system/components/istiqam_notice_controller.dart';
 import '../core/design_system/tokens/istiqam_radius.dart';
 import '../core/design_system/tokens/istiqam_spacing.dart';
 import '../core/design_system/theme/istiqam_theme_extension.dart';
-import '../features/history/presentation/history_placeholder_screen.dart';
-import '../features/routines/presentation/routines_placeholder_screen.dart';
-import '../features/settings/presentation/settings_placeholder_screen.dart';
-import '../features/today/presentation/today_screen.dart';
 
-class AppShell extends StatefulWidget {
-  const AppShell({
-    required this.themeMode,
-    required this.onThemeModeChanged,
-    super.key,
-  });
+class AppShell extends StatelessWidget {
+  const AppShell({required this.navigationShell, super.key});
 
-  final ThemeMode themeMode;
-  final ValueChanged<ThemeMode> onThemeModeChanged;
+  static const contentBottomPadding = 92.0;
 
-  @override
-  State<AppShell> createState() => _AppShellState();
-}
-
-class _AppShellState extends State<AppShell> {
-  int _selectedIndex = 0;
-  final _noticeController = IstiqamNoticeController();
-
+  final StatefulNavigationShell navigationShell;
   static const _destinations = [
     _Destination('Today', PhosphorIconsRegular.house, PhosphorIconsFill.house),
     _Destination(
@@ -43,105 +27,79 @@ class _AppShellState extends State<AppShell> {
     _Destination('Settings', PhosphorIconsRegular.gear, PhosphorIconsFill.gear),
   ];
 
-  void _select(int index) {
-    if (index == _selectedIndex) return;
-    setState(() => _selectedIndex = index);
-  }
-
-  @override
-  void dispose() {
-    _noticeController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final extension = theme.extension<IstiqamThemeExtension>()!;
     const dockHeight = 68.0;
     const dockBottomGap = 8.0;
-    const dockContentGap = 16.0;
     const dockHorizontalMargin = 14.0;
-    final contentBottomPadding = dockHeight + dockBottomGap + dockContentGap;
-    final screens = [
-      TodayScreen(bottomContentPadding: contentBottomPadding),
-      HistoryPlaceholderScreen(bottomContentPadding: contentBottomPadding),
-      RoutinesPlaceholderScreen(bottomContentPadding: contentBottomPadding),
-      SettingsPlaceholderScreen(
-        themeMode: widget.themeMode,
-        onThemeModeChanged: widget.onThemeModeChanged,
-        bottomContentPadding: contentBottomPadding,
-      ),
-    ];
-    return IstiqamNoticeScope(
-      controller: _noticeController,
-      child: Scaffold(
-        extendBody: true,
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            IndexedStack(index: _selectedIndex, children: screens),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    dockHorizontalMargin,
-                    0,
-                    dockHorizontalMargin,
-                    dockBottomGap,
-                  ),
-                  child: Container(
-                    height: dockHeight,
-                    decoration: BoxDecoration(
-                      color: theme.brightness == Brightness.dark
-                          ? extension.softSurface
-                          : theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(
-                        IstiqamRadius.xLarge + 4,
-                      ),
-                      border: Border.all(color: extension.border),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(
-                            alpha: theme.brightness == Brightness.dark
-                                ? 0.22
-                                : 0.075,
-                          ),
-                          blurRadius: 22,
-                          offset: const Offset(0, 7),
-                        ),
-                      ],
+    return Scaffold(
+      extendBody: true,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          navigationShell,
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  dockHorizontalMargin,
+                  0,
+                  dockHorizontalMargin,
+                  dockBottomGap,
+                ),
+                child: Container(
+                  height: dockHeight,
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.dark
+                        ? extension.softSurface
+                        : theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(
+                      IstiqamRadius.xLarge + 4,
                     ),
-                    padding: const EdgeInsets.all(IstiqamSpacing.xs),
-                    child: Row(
-                      children: [
-                        for (
-                          var index = 0;
-                          index < _destinations.length;
-                          index++
-                        )
-                          Expanded(
-                            child: _NavigationItem(
-                              key: ValueKey(
-                                'navigation-${_destinations[index].label.toLowerCase()}',
-                              ),
-                              destination: _destinations[index],
-                              selected: _selectedIndex == index,
-                              onTap: () => _select(index),
+                    border: Border.all(color: extension.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: theme.brightness == Brightness.dark
+                              ? 0.22
+                              : 0.075,
+                        ),
+                        blurRadius: 22,
+                        offset: const Offset(0, 7),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(IstiqamSpacing.xs),
+                  child: Row(
+                    children: [
+                      for (var index = 0; index < _destinations.length; index++)
+                        Expanded(
+                          child: _NavigationItem(
+                            key: ValueKey(
+                              'navigation-${_destinations[index].label.toLowerCase()}',
+                            ),
+                            destination: _destinations[index],
+                            selected: navigationShell.currentIndex == index,
+                            onTap: () => navigationShell.goBranch(
+                              index,
+                              initialLocation:
+                                  index == navigationShell.currentIndex,
                             ),
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
