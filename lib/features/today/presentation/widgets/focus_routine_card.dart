@@ -8,9 +8,18 @@ import '../../../../core/design_system/tokens/istiqam_radius.dart';
 import '../../../../core/design_system/tokens/istiqam_spacing.dart';
 
 class FocusRoutineCard extends StatelessWidget {
-  const FocusRoutineCard({this.onOpenRoutine, super.key});
+  const FocusRoutineCard({
+    required this.title,
+    required this.status,
+    required this.time,
+    required this.onOpenRoutine,
+    super.key,
+  });
 
-  final VoidCallback? onOpenRoutine;
+  final String title;
+  final String status;
+  final String time;
+  final VoidCallback onOpenRoutine;
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +108,7 @@ class FocusRoutineCard extends StatelessWidget {
                         ),
                         const SizedBox(width: IstiqamSpacing.sm),
                         Text(
-                          'NEXT ROUTINE',
+                          'PRAYER FOCUS',
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: colors.primary,
                             letterSpacing: 1.15,
@@ -110,12 +119,12 @@ class FocusRoutineCard extends StatelessWidget {
                     ),
                     const SizedBox(height: IstiqamSpacing.lg),
                     Text(
-                      'Sholat Zuhur',
+                      title,
                       style: theme.textTheme.titleLarge?.copyWith(fontSize: 19),
                     ),
                     const SizedBox(height: IstiqamSpacing.xs),
                     Text(
-                      'Starts in 12 minutes',
+                      status,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: 10,
                         color: colors.onSurfaceVariant,
@@ -131,7 +140,7 @@ class FocusRoutineCard extends StatelessWidget {
                         ),
                         const SizedBox(width: IstiqamSpacing.sm),
                         Text(
-                          '11:47',
+                          time,
                           style: theme.textTheme.labelLarge?.copyWith(
                             fontSize: 12,
                             color: colors.primary,

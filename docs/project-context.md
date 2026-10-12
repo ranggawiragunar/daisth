@@ -9,15 +9,23 @@ The application is built with Flutter and targets Android first while retaining
 the generated iOS project. It is intended to support multiple users in a later
 stage. Firebase is planned for later, after the initial product foundation.
 
-This first implementation includes a Material 3 light and dark theme, reusable
-design system components, a four destination app shell, and a static Today
-screen. The Today sample displays routine progress, a next routine focus card,
-a timeline, a daily reflection, and a day closing entry.
+The app includes a Material 3 light and dark theme, reusable design system
+components, and a four destination app shell. Today calculates daily prayer
+times locally with the Indonesia (KEMENAG) method and Shafi Asr, using current
+foreground device location. It displays the five mandatory prayer times,
+preferred times for Dhuha and Sholat Malam, a prayer focus card, routine
+progress, daily reflection, and day closing entry. Settings shows the current
+prayer and location configuration, and all five mandatory prayer details can
+reuse the same post-prayer dhikr sequence.
 
-There is no Firebase integration, authentication, prayer-time calculation,
-notification scheduling, or persisted routine state in this scope. History,
-Routines, and Settings are presentation placeholders. Mosque Finder is the
-first network-backed feature: it uses OpenStreetMap data through the public
+There is no Firebase integration, authentication, notification scheduling, or
+persisted routine state in this scope. Prayer calculations run on device using
+`adhan_dart`; there is no runtime Kemenag API call, background location, or
+persistent coordinate storage. The flow uses automatic current-device location
+and device-local time formatting, assuming the device timezone matches its
+physical location. Manual remote-location selection and coordinate-to-timezone
+lookup are future scope. History and Routines remain presentation placeholders.
+Mosque Finder uses OpenStreetMap data through the public
 Overpass API for MVP proximity discovery. Searches expand from 1.5 km to 3 km
 and then 5 km when fewer than six places are found, and the UI caps results at
 20. The public Overpass service is not assumed to be permanent production

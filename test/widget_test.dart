@@ -3,19 +3,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:istiqam/app/app.dart';
 import 'package:istiqam/core/design_system/components/istiqam_notice.dart';
 import 'package:istiqam/features/routines/presentation/routine_detail_screen.dart';
+import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
+import 'package:istiqam/core/location/domain/models/location_access_status.dart';
+import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
 
 void main() {
   testWidgets('Today is the initial destination and navigation works', (
     tester,
   ) async {
-    await tester.pumpWidget(const IstiqamApp());
+    await tester.pumpWidget(_testApp());
 
     expect(find.text("Assalamu'alaikum"), findsOneWidget);
     expect(find.text('3 of 7 routines recorded'), findsOneWidget);
-    expect(find.text('Sholat Zuhur'), findsNWidgets(2));
+    expect(find.text('Sholat Zuhur'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Open Routine'));
-    await tester.tap(find.text('Open Routine'));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('today-routine-zuhur')),
+    );
+    await tester.tap(find.byKey(const ValueKey('today-routine-zuhur')));
     await tester.pumpAndSettle();
 
     expect(find.byType(RoutineDetailScreen), findsOneWidget);
@@ -42,7 +47,7 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('navigation-today')));
     await tester.pumpAndSettle();
-    expect(find.text('Open Routine'), findsOneWidget);
+    expect(find.byKey(const ValueKey('today-routine-zuhur')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('navigation-history')));
     await tester.pumpAndSettle();
     expect(find.text('Belum ada history'), findsOneWidget);
@@ -53,16 +58,16 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('navigation-settings')));
     await tester.pumpAndSettle();
-    expect(find.text('Pengaturan segera hadir'), findsOneWidget);
+    expect(find.text('Prayer & Location'), findsOneWidget);
     expect(find.text('Appearance'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('navigation-today')));
     await tester.pumpAndSettle();
-    expect(find.text('Open Routine'), findsOneWidget);
+    expect(find.byKey(const ValueKey('today-routine-zuhur')), findsOneWidget);
   });
 
   testWidgets('Appearance selector changes the app ThemeMode', (tester) async {
-    await tester.pumpWidget(const IstiqamApp());
+    await tester.pumpWidget(_testApp());
 
     await tester.tap(find.byKey(const ValueKey('navigation-settings')));
     await tester.pumpAndSettle();
@@ -118,7 +123,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const IstiqamApp());
+    await tester.pumpWidget(_testApp());
     await tester.pumpAndSettle();
     final compactWidthException = tester.takeException();
     expect(compactWidthException, isNull, reason: '$compactWidthException');
@@ -133,7 +138,7 @@ void main() {
   });
 
   testWidgets('selected navigation treatment is a label pill', (tester) async {
-    await tester.pumpWidget(const IstiqamApp());
+    await tester.pumpWidget(_testApp());
 
     final todayLabel = tester.widget<AnimatedContainer>(
       find.byKey(const ValueKey('navigation-label-today')),
@@ -189,4 +194,25 @@ void main() {
     );
     expect(inactiveTodayDecoration.color, Colors.transparent);
   });
+}
+
+Widget _testApp() =>
+    IstiqamApp(startTodayClock: false, locationRepository: _DeniedLocation());
+
+class _DeniedLocation implements LocationRepository {
+  @override
+  Future<LocationAccessStatus> checkAccess() async =>
+      LocationAccessStatus.denied;
+  @override
+  Future<GeoCoordinate> getCurrentLocation() async =>
+      throw StateError('permission denied');
+  @override
+  Future<GeoCoordinate?> getLastKnownLocation() async => null;
+  @override
+  Future<bool> openAppSettings() async => true;
+  @override
+  Future<bool> openLocationSettings() async => true;
+  @override
+  Future<LocationAccessStatus> requestAccess() async =>
+      LocationAccessStatus.denied;
 }

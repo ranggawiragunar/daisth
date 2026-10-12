@@ -12,6 +12,9 @@ import '../../../core/design_system/components/istiqam_surface.dart';
 import '../../../core/design_system/theme/istiqam_theme_extension.dart';
 import '../../../core/design_system/tokens/istiqam_radius.dart';
 import '../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../prayer_times/domain/models/prayer_name.dart';
+import '../../prayer_times/presentation/prayer_schedule_session.dart';
+import '../../prayer_times/presentation/prayer_time_presentation.dart';
 import '../domain/models/routine.dart';
 import '../domain/models/routine_status.dart' as routine_domain;
 import '../domain/models/routine_step.dart';
@@ -24,11 +27,13 @@ class RoutineDetailScreen extends StatefulWidget {
   const RoutineDetailScreen({
     required this.routine,
     required this.noticeController,
+    this.prayerScheduleSession,
     super.key,
   });
 
   final Routine routine;
   final IstiqamNoticeController noticeController;
+  final PrayerScheduleSession? prayerScheduleSession;
 
   @override
   State<RoutineDetailScreen> createState() => _RoutineDetailScreenState();
@@ -50,6 +55,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     super.initState();
     _viewModel = RoutineDetailViewModel(widget.routine);
     _viewModel.addListener(_onViewModelChanged);
+    widget.prayerScheduleSession?.addListener(_onViewModelChanged);
   }
 
   void _onViewModelChanged() {
@@ -61,17 +67,35 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     _viewModel
       ..removeListener(_onViewModelChanged)
       ..dispose();
+    widget.prayerScheduleSession?.removeListener(_onViewModelChanged);
     super.dispose();
   }
 
   String get _statusLabel => switch (_completionState) {
-    routine_domain.RoutineStatus.pending =>
-      _routine.id == 'zuhur' ? 'Due now' : 'Belum dimulai',
+    routine_domain.RoutineStatus.pending => 'Belum dimulai',
     routine_domain.RoutineStatus.partial =>
       'Partial · $_completedRequiredCount of $_requiredCount',
     routine_domain.RoutineStatus.completed => _completedStatusLabel,
     routine_domain.RoutineStatus.notToday => 'Tidak dilakukan hari ini',
   };
+
+  String? get _scheduledPrayerTime {
+    final prayer = _prayerForRoutine(_routine.id);
+    final schedule = widget.prayerScheduleSession?.schedule;
+    if (prayer == null || schedule == null) return null;
+    return PrayerTimePresentation.time(schedule.timeFor(prayer));
+  }
+
+  PrayerName? _prayerForRoutine(String id) => switch (id) {
+    'subuh' => PrayerName.fajr,
+    'zuhur' => PrayerName.dhuhr,
+    'asar' => PrayerName.asr,
+    'maghrib' => PrayerName.maghrib,
+    'isya' => PrayerName.isha,
+    _ => null,
+  };
+
+  bool get _isMandatoryPrayer => _prayerForRoutine(_routine.id) != null;
 
   String get _completedStatusLabel {
     if (_routine.id == 'dhuha') {
@@ -105,9 +129,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     HapticFeedback.mediumImpact();
     _showNotice(
       type: IstiqamNoticeType.success,
-      title: _routine.id == 'zuhur'
-          ? 'Zuhur recorded'
-          : '${_routine.title} recorded',
+      title: '${_routine.title.replaceFirst('Sholat ', '')} recorded',
     );
   }
 
@@ -123,7 +145,10 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   void _markSimplePrayerDone() {
     if (!_viewModel.markRequiredStepsDone()) return;
     HapticFeedback.mediumImpact();
-    _showNotice(type: IstiqamNoticeType.success, title: 'Zuhur recorded');
+    _showNotice(
+      type: IstiqamNoticeType.success,
+      title: '${_routine.title.replaceFirst('Sholat ', '')} recorded',
+    );
   }
 
   Future<void> _markNotToday() async {
@@ -162,7 +187,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     final extension = theme.extension<IstiqamThemeExtension>()!;
     final hasIllustration = _routine.illustrationAsset != null;
     final metadata = [
-      _routine.preferredTime,
+      _scheduledPrayerTime ?? _routine.preferredTime,
       _routine.contextLabel,
     ].where((value) => value.isNotEmpty).join(' · ');
 
@@ -265,7 +290,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                   onTap: _onGuidanceTap,
                                 ),
                               ],
-                              if (_routine.id == 'zuhur') ...[
+                              if (_isMandatoryPrayer) ...[
                                 const SizedBox(height: IstiqamSpacing.section),
                                 RoutineHelpfulActions(
                                   onTap: _openHelpfulAction,
@@ -362,7 +387,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   }
 
   Widget _buildBottomActions(ThemeData theme, IstiqamThemeExtension extension) {
-    final isSimplePrayer = _routine.id == 'zuhur';
+    final isSimplePrayer = _isMandatoryPrayer;
     final showPrimary =
         _completionState != routine_domain.RoutineStatus.notToday &&
         (isSimplePrayer
@@ -374,7 +399,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     if (!showPrimary && !showNotToday) return const SizedBox.shrink();
 
     final label = isSimplePrayer
-        ? 'Mark Zuhur Done'
+        ? 'Mark ${_routine.title.replaceFirst('Sholat ', '')} Done'
         : _steps.any((step) => step.completed)
         ? 'Mark Remaining Done'
         : 'Mark All Done';

@@ -41,7 +41,7 @@ void main() {
 
     harness.router.go('/routines/zuhur');
     await tester.pumpAndSettle();
-    expect(find.text('Due now'), findsOneWidget);
+    expect(find.text('Belum dimulai'), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-settings')), findsNothing);
   });
 
@@ -67,7 +67,10 @@ void main() {
     (tester) async {
       final harness = _RouterHarness(
         initialLocation: '/routines/zuhur',
-        dependencies: AppDependencies(locationRepository: _DeniedLocation()),
+        dependencies: AppDependencies(
+          locationRepository: _DeniedLocation(),
+          startTodayClock: false,
+        ),
       );
       addTearDown(harness.dispose);
       await tester.pumpWidget(harness.app);
@@ -97,10 +100,12 @@ void main() {
     await tester.pumpWidget(harness.app);
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Open Routine'));
-    await tester.tap(find.text('Open Routine'));
+    final zuhurRow = find.byKey(const ValueKey('today-routine-zuhur'));
+    await Scrollable.ensureVisible(tester.element(zuhurRow), alignment: 0.5);
     await tester.pumpAndSettle();
-    expect(find.text('Due now'), findsOneWidget);
+    await tester.tap(zuhurRow);
+    await tester.pumpAndSettle();
+    expect(find.text('Belum dimulai'), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
     expect(harness.router.canPop(), isTrue);
 
@@ -113,8 +118,10 @@ void main() {
     );
     expect(find.byKey(const ValueKey('navigation-today')), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Sholat Dhuha'));
-    await tester.tap(find.text('Sholat Dhuha'));
+    final dhuhaRow = find.byKey(const ValueKey('today-routine-dhuha'));
+    await Scrollable.ensureVisible(tester.element(dhuhaRow), alignment: 0.5);
+    await tester.pumpAndSettle();
+    await tester.tap(dhuhaRow);
     await tester.pumpAndSettle();
     expect(find.text('Belum dimulai'), findsOneWidget);
     expect(harness.router.canPop(), isTrue);
@@ -133,7 +140,12 @@ class _RouterHarness {
   _RouterHarness({
     required String initialLocation,
     AppDependencies? dependencies,
-  }) : dependencies = dependencies ?? AppDependencies() {
+  }) : dependencies =
+           dependencies ??
+           AppDependencies(
+             locationRepository: _DeniedLocation(),
+             startTodayClock: false,
+           ) {
     router = createAppRouter(
       noticeController: noticeController,
       dependencies: this.dependencies,

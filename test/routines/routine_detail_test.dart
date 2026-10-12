@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:istiqam/core/design_system/components/istiqam_notice_controller.dart';
 import 'package:istiqam/core/design_system/theme/istiqam_theme.dart';
+import 'package:istiqam/app/dependencies/app_dependencies.dart';
 import 'package:istiqam/app/app.dart';
+import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
+import 'package:istiqam/core/location/domain/models/location_access_status.dart';
+import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
+import 'package:istiqam/features/dhikr/data/demo/dhikr_demo_data.dart';
 import 'package:istiqam/features/routines/data/demo/routine_demo_data.dart';
 import 'package:istiqam/features/routines/domain/models/routine.dart';
 import 'package:istiqam/features/routines/presentation/routine_detail_screen.dart';
+import 'package:istiqam/features/prayer_times/domain/models/prayer_day_schedule.dart';
+import 'package:istiqam/features/prayer_times/domain/models/prayer_calculation_settings.dart';
+import 'package:istiqam/features/prayer_times/presentation/prayer_schedule_session.dart';
 
 void main() {
   testWidgets('Sholat Malam tracks partial progress, completion, and undo', (
@@ -122,8 +130,63 @@ void main() {
     await _dismissNotice(tester, controller);
   });
 
+  testWidgets('all five mandatory prayer details use calculated times', (
+    tester,
+  ) async {
+    final controller = IstiqamNoticeController();
+    final dependencies = AppDependencies(locationRepository: _TestLocation());
+    addTearDown(controller.dispose);
+    addTearDown(dependencies.dispose);
+    final day = DateTime(2026, 10, 10);
+    dependencies.prayerScheduleSession.schedule = PrayerDaySchedule(
+      date: day,
+      coordinate: const GeoCoordinate(latitude: -6.2, longitude: 106.8),
+      fajr: day.add(const Duration(hours: 4, minutes: 16)),
+      sunrise: day.add(const Duration(hours: 5, minutes: 30)),
+      dhuhr: day.add(const Duration(hours: 11, minutes: 41)),
+      asr: day.add(const Duration(hours: 14, minutes: 42)),
+      maghrib: day.add(const Duration(hours: 17, minutes: 46)),
+      isha: day.add(const Duration(hours: 18, minutes: 56)),
+      calculationSettings: PrayerCalculationSettings.defaultSettings,
+    );
+    final cases = [
+      (RoutineDemoData.subuh, '04:16', 'Mark Subuh Done'),
+      (RoutineDemoData.zuhur, '11:41', 'Mark Zuhur Done'),
+      (RoutineDemoData.asar, '14:42', 'Mark Asar Done'),
+      (RoutineDemoData.maghrib, '17:46', 'Mark Maghrib Done'),
+      (RoutineDemoData.isya, '18:56', 'Mark Isya Done'),
+    ];
+
+    for (final (routine, time, completeLabel) in cases) {
+      await _pumpRoutine(
+        tester,
+        routine,
+        controller,
+        prayerScheduleSession: dependencies.prayerScheduleSession,
+      );
+      expect(find.text(time), findsOneWidget);
+      expect(find.text(completeLabel), findsOneWidget);
+      expect(find.text('Not Today'), findsNothing);
+      expect(find.text('Nearby Mosque'), findsOneWidget);
+      expect(find.text('Post-Prayer Dhikr'), findsOneWidget);
+      expect(find.text('Available after prayer'), findsOneWidget);
+    }
+
+    for (final id in ['subuh', 'zuhur', 'asar', 'maghrib', 'isya']) {
+      expect(
+        DhikrDemoData.byRoute(id, 'post-prayer'),
+        same(DhikrDemoData.postPrayer),
+      );
+    }
+  });
+
   testWidgets('Today timeline opens the Malam and Dhuha demos', (tester) async {
-    await tester.pumpWidget(const IstiqamApp());
+    await tester.pumpWidget(
+      IstiqamApp(
+        startTodayClock: false,
+        locationRepository: _TestLocation(access: LocationAccessStatus.denied),
+      ),
+    );
 
     await tester.ensureVisible(find.text('Sholat Malam'));
     await tester.tap(find.text('Sholat Malam'));
@@ -189,16 +252,42 @@ Future<void> _pumpRoutine(
   Routine data,
   IstiqamNoticeController controller, {
   bool dark = false,
+  PrayerScheduleSession? prayerScheduleSession,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
       theme: IstiqamTheme.light,
       darkTheme: IstiqamTheme.dark,
       themeMode: dark ? ThemeMode.dark : ThemeMode.light,
-      home: RoutineDetailScreen(routine: data, noticeController: controller),
+      home: RoutineDetailScreen(
+        key: ValueKey('test-routine-${data.id}'),
+        routine: data,
+        noticeController: controller,
+        prayerScheduleSession: prayerScheduleSession,
+      ),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _TestLocation implements LocationRepository {
+  _TestLocation({this.access = LocationAccessStatus.granted});
+
+  final LocationAccessStatus access;
+
+  @override
+  Future<LocationAccessStatus> checkAccess() async => access;
+  @override
+  Future<GeoCoordinate> getCurrentLocation() async =>
+      const GeoCoordinate(latitude: -6.2, longitude: 106.8);
+  @override
+  Future<GeoCoordinate?> getLastKnownLocation() async => null;
+  @override
+  Future<bool> openAppSettings() async => true;
+  @override
+  Future<bool> openLocationSettings() async => true;
+  @override
+  Future<LocationAccessStatus> requestAccess() async => access;
 }
 
 Future<void> _dismissNotice(

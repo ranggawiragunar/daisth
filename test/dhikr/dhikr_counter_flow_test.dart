@@ -126,7 +126,7 @@ void main() {
     await tester.tap(find.text('Keluar'));
     await tester.pumpAndSettle();
     expect(find.byType(DhikrCounterScreen), findsNothing);
-    expect(find.text('Due now'), findsOneWidget);
+    expect(find.text('Belum dimulai'), findsOneWidget);
   });
 
   testWidgets('reset session requires confirmation before clearing count', (

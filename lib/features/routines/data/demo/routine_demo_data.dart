@@ -78,8 +78,8 @@ abstract final class RoutineDemoData {
     id: 'zuhur',
     title: 'Sholat Zuhur',
     description: 'Laksanakan sholat Zuhur.',
-    preferredTime: '11:47',
-    contextLabel: 'Due now',
+    preferredTime: '',
+    contextLabel: '',
     isOptional: false,
     steps: [
       RoutineStep(
@@ -99,10 +99,79 @@ abstract final class RoutineDemoData {
     ],
   );
 
+  static final subuh = _mandatoryPrayer(
+    id: 'subuh',
+    title: 'Sholat Subuh',
+    rakaaCount: 2,
+    additionalSteps: [
+      RoutineStep(
+        id: 'qabliyah-subuh',
+        title: 'Qabliyah Subuh',
+        subtitle: '2 rakaat',
+        requirement: RoutineRequirement.optional,
+        badge: 'Sunnah',
+        rakaatCount: 2,
+      ),
+    ],
+  );
+
+  static final asar = _mandatoryPrayer(
+    id: 'asar',
+    title: 'Sholat Asar',
+    rakaaCount: 4,
+  );
+
+  static final maghrib = _mandatoryPrayer(
+    id: 'maghrib',
+    title: 'Sholat Maghrib',
+    rakaaCount: 3,
+  );
+
+  static final isya = _mandatoryPrayer(
+    id: 'isya',
+    title: 'Sholat Isya',
+    rakaaCount: 4,
+  );
+
+  static Routine _mandatoryPrayer({
+    required String id,
+    required String title,
+    required int rakaaCount,
+    List<RoutineStep> additionalSteps = const [],
+  }) => Routine(
+    id: id,
+    title: title,
+    description: 'Laksanakan ${title.toLowerCase()}.',
+    preferredTime: '',
+    contextLabel: '',
+    isOptional: false,
+    steps: [
+      ...additionalSteps,
+      RoutineStep(
+        id: id,
+        title: title,
+        subtitle: '$rakaaCount rakaat',
+        rakaatCount: rakaaCount,
+      ),
+      RoutineStep(
+        id: 'post-prayer-dhikr',
+        title: 'Dzikir setelah sholat',
+        subtitle: 'Bisa dilanjutkan setelah sholat',
+        requirement: RoutineRequirement.optional,
+        guidanceTitle: 'Dzikir setelah sholat',
+        guidanceType: 'Guidance',
+      ),
+    ],
+  );
+
   static Routine? byId(String id) => switch (id) {
     'sholat-malam' => sholatMalam,
     'dhuha' => dhuha,
+    'subuh' => subuh,
     'zuhur' => zuhur,
+    'asar' => asar,
+    'maghrib' => maghrib,
+    'isya' => isya,
     _ => null,
   };
 }

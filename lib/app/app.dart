@@ -3,12 +3,20 @@ import 'package:go_router/go_router.dart';
 
 import '../core/design_system/components/istiqam_notice_controller.dart';
 import '../core/design_system/theme/istiqam_theme.dart';
+import '../core/location/domain/repositories/location_repository.dart';
 import 'app_preferences_scope.dart';
 import 'dependencies/app_dependencies.dart';
 import 'router/app_router.dart';
 
 class IstiqamApp extends StatefulWidget {
-  const IstiqamApp({super.key});
+  const IstiqamApp({
+    this.startTodayClock = true,
+    this.locationRepository,
+    super.key,
+  });
+
+  final bool startTodayClock;
+  final LocationRepository? locationRepository;
 
   @override
   State<IstiqamApp> createState() => _IstiqamAppState();
@@ -24,7 +32,10 @@ class _IstiqamAppState extends State<IstiqamApp> {
   void initState() {
     super.initState();
     _noticeController = IstiqamNoticeController();
-    _dependencies = AppDependencies();
+    _dependencies = AppDependencies(
+      locationRepository: widget.locationRepository,
+      startTodayClock: widget.startTodayClock,
+    );
     _router = createAppRouter(
       noticeController: _noticeController,
       dependencies: _dependencies,

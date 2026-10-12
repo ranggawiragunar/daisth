@@ -104,3 +104,28 @@ radii, and returns session-only results. `AppDependencies` is the manual
 composition root and owns the shared HTTP client. Mosque search requests a
 foreground position only while the Finder is open; coordinates and search
 history are not persisted.
+
+Prayer time calculation follows the same repository boundary:
+
+```text
+PrayerTimeRepository
+↑
+PrayerTimeRepositoryData
+↓
+PrayerTimeAdhanService
+```
+
+`PrayerTimeAdhanService` is the only layer that depends on `adhan_dart`.
+`PrayerTimeRepositoryData` maps its result into `PrayerDaySchedule`, and
+`LoadTodayPrayerScheduleUseCase` coordinates the shared
+`ResolveCurrentLocationUseCase` with `PrayerTimeRepository`. The session-level
+`PrayerScheduleSession` holds the current schedule in memory for Today, Settings,
+and Routine Detail without repeating location reads for each route.
+
+Prayer times are calculated locally with the Indonesia (KEMENAG) preset and
+Shafi Asr by default. The app uses foreground current-device location and
+formats the returned values using the device's local timezone. This assumes the
+device timezone matches the physical location; remote location selection and
+coordinate-to-timezone lookup are not implemented. Coordinates and settings
+are not persisted, and calculation does not use a Kemenag network service or
+background location.

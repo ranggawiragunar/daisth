@@ -36,7 +36,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.byTooltip('Informasi peta'), findsOneWidget);
-    expect(find.text('Muat ulang'), findsOneWidget);
+    expect(find.text('Muat ulang pencarian'), findsOneWidget);
     expect(find.text('OpenStreetMap'), findsNothing);
     final screenSize = tester.getSize(find.byType(Scaffold));
     final refreshButton = tester.getRect(

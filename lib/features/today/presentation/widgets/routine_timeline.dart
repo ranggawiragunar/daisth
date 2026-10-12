@@ -5,6 +5,10 @@ import '../../../../core/design_system/theme/istiqam_theme_extension.dart'
     as design;
 import '../../../../core/design_system/tokens/istiqam_radius.dart';
 import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../prayer_times/domain/models/prayer_day_schedule.dart';
+import '../../../prayer_times/domain/models/prayer_name.dart';
+import '../../../prayer_times/domain/models/prayer_period_state.dart';
+import '../../../prayer_times/presentation/prayer_time_presentation.dart';
 
 class _RoutineEntry {
   const _RoutineEntry({
@@ -13,6 +17,7 @@ class _RoutineEntry {
     required this.status,
     this.detail,
     this.routineId,
+    this.prayer,
     this.isCurrent = false,
     this.isEvening = false,
   });
@@ -22,88 +27,93 @@ class _RoutineEntry {
   final design.RoutineStatus status;
   final String? detail;
   final String? routineId;
+  final PrayerName? prayer;
   final bool isCurrent;
   final bool isEvening;
 }
 
 class RoutineTimeline extends StatelessWidget {
-  const RoutineTimeline({this.onRoutineTap, super.key});
+  const RoutineTimeline({
+    required this.schedule,
+    required this.period,
+    this.onRoutineTap,
+    super.key,
+  });
 
+  final PrayerDaySchedule? schedule;
+  final PrayerPeriodState? period;
   final ValueChanged<String>? onRoutineTap;
 
-  static const _entries = [
-    _RoutineEntry(
-      time: '03:00',
-      title: 'Sholat Malam',
-      routineId: 'sholat-malam',
-      status: design.RoutineStatus.completed,
-      detail: 'Completed · 03:38',
-    ),
-    _RoutineEntry(
-      time: '04:31',
-      title: 'Sholat Subuh',
-      status: design.RoutineStatus.completed,
-      detail: 'Completed · 04:52',
-    ),
-    _RoutineEntry(
-      time: '07:00',
-      title: 'Sholat Dhuha',
-      routineId: 'dhuha',
-      status: design.RoutineStatus.completed,
-      detail: 'Completed · 07:19',
-    ),
-    _RoutineEntry(
-      time: '11:47',
-      title: 'Sholat Zuhur',
-      routineId: 'zuhur',
-      status: design.RoutineStatus.upcoming,
-      detail: 'Next routine',
-      isCurrent: true,
-    ),
-    _RoutineEntry(
-      time: '15:08',
-      title: 'Sholat Asar',
-      status: design.RoutineStatus.upcoming,
-    ),
-    _RoutineEntry(
-      time: '17:52',
-      title: 'Sholat Maghrib',
-      status: design.RoutineStatus.upcoming,
-    ),
-    _RoutineEntry(
-      time: '19:01',
-      title: 'Sholat Isya',
-      status: design.RoutineStatus.upcoming,
-    ),
-    _RoutineEntry(
-      time: '20:30',
-      title: 'Daily Reflection',
-      status: design.RoutineStatus.upcoming,
-      isEvening: true,
-    ),
-    _RoutineEntry(
-      time: '21:00',
-      title: 'Penutup Hari',
-      status: design.RoutineStatus.upcoming,
-    ),
-  ];
+  List<_RoutineEntry> _entries() {
+    _RoutineEntry prayerEntry(PrayerName prayer) {
+      final isFocused = period?.focusPrayer == prayer;
+      return _RoutineEntry(
+        time: schedule == null
+            ? '--:--'
+            : PrayerTimePresentation.time(schedule!.timeFor(prayer)),
+        title: 'Sholat ${PrayerTimePresentation.label(prayer)}',
+        routineId: PrayerTimePresentation.routineId(prayer),
+        prayer: prayer,
+        status: isFocused && period?.currentPrayer == prayer
+            ? design.RoutineStatus.due
+            : design.RoutineStatus.upcoming,
+        detail: isFocused ? period?.focusLabel : null,
+        isCurrent: isFocused,
+      );
+    }
+
+    return [
+      const _RoutineEntry(
+        time: '03:00',
+        title: 'Sholat Malam',
+        routineId: 'sholat-malam',
+        status: design.RoutineStatus.upcoming,
+      ),
+      prayerEntry(PrayerName.fajr),
+      const _RoutineEntry(
+        time: '07:00',
+        title: 'Sholat Dhuha',
+        routineId: 'dhuha',
+        status: design.RoutineStatus.upcoming,
+      ),
+      prayerEntry(PrayerName.dhuhr),
+      prayerEntry(PrayerName.asr),
+      prayerEntry(PrayerName.maghrib),
+      prayerEntry(PrayerName.isha),
+      const _RoutineEntry(
+        time: '20:30',
+        title: 'Daily Reflection',
+        status: design.RoutineStatus.upcoming,
+        isEvening: true,
+      ),
+      const _RoutineEntry(
+        time: '21:00',
+        title: 'Penutup Hari',
+        status: design.RoutineStatus.upcoming,
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     final extension = Theme.of(
       context,
     ).extension<design.IstiqamThemeExtension>()!;
+    final entries = _entries();
     return Column(
       children: [
-        for (var index = 0; index < _entries.length; index++)
+        for (var index = 0; index < entries.length; index++)
           _TimelineRow(
-            entry: _entries[index],
-            onTap: _entries[index].routineId == null || onRoutineTap == null
+            key: ValueKey(
+              'today-routine-${entries[index].routineId ?? entries[index].title}',
+            ),
+            entry: entries[index],
+            onTap: entries[index].routineId == null || onRoutineTap == null
                 ? null
-                : () => onRoutineTap!(_entries[index].routineId!),
-            isLast: index == _entries.length - 1,
+                : () => onRoutineTap!(entries[index].routineId!),
+            isLast: index == entries.length - 1,
             connectorColor:
-                _entries[index].status == design.RoutineStatus.completed
+                entries[index].status == design.RoutineStatus.completed
                 ? extension.completed.withValues(alpha: 0.42)
                 : extension.divider,
             currentFill: extension.softSurface,
@@ -115,6 +125,7 @@ class RoutineTimeline extends StatelessWidget {
 
 class _TimelineRow extends StatelessWidget {
   const _TimelineRow({
+    super.key,
     required this.entry,
     required this.isLast,
     required this.connectorColor,

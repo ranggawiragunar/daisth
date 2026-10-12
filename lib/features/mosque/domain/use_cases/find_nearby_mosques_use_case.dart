@@ -1,6 +1,8 @@
-import '../../../../core/location/domain/models/geo_coordinate.dart';
 import '../../../../core/location/domain/models/location_access_status.dart';
+import '../../../../core/location/domain/models/location_unavailable_exception.dart';
+import '../../../../core/location/domain/models/resolved_location.dart';
 import '../../../../core/location/domain/repositories/location_repository.dart';
+import '../../../../core/location/domain/use_cases/resolve_current_location_use_case.dart';
 import '../models/mosque_search_failure.dart';
 import '../models/nearby_mosque_result.dart';
 import '../models/mosque_place.dart';
@@ -8,27 +10,32 @@ import '../repositories/mosque_repository.dart';
 
 class FindNearbyMosquesUseCase {
   FindNearbyMosquesUseCase({
-    required this.locationRepository,
+    required LocationRepository locationRepository,
     required this.mosqueRepository,
-  });
+    ResolveCurrentLocationUseCase? resolveCurrentLocation,
+  }) : resolveCurrentLocation =
+           resolveCurrentLocation ??
+           ResolveCurrentLocationUseCase(
+             locationRepository: locationRepository,
+           );
 
   static const searchRadiiMeters = [1500, 3000, 5000];
   static const minimumUsefulResults = 6;
   static const maximumResults = 20;
 
-  final LocationRepository locationRepository;
   final MosqueRepository mosqueRepository;
+  final ResolveCurrentLocationUseCase resolveCurrentLocation;
 
   Future<LocationAccessStatus> checkLocationAccess() =>
-      locationRepository.checkAccess();
+      resolveCurrentLocation.checkAccess();
 
   Future<LocationAccessStatus> requestLocationAccess() =>
-      locationRepository.requestAccess();
+      resolveCurrentLocation.requestAccess();
 
-  Future<bool> openAppSettings() => locationRepository.openAppSettings();
+  Future<bool> openAppSettings() => resolveCurrentLocation.openAppSettings();
 
   Future<bool> openLocationSettings() =>
-      locationRepository.openLocationSettings();
+      resolveCurrentLocation.openLocationSettings();
 
   Future<NearbyMosqueResult> call() async {
     final location = await _resolveLocation();
@@ -56,26 +63,14 @@ class FindNearbyMosquesUseCase {
       origin: location.coordinate,
       places: places.take(maximumResults).toList(),
       searchedRadiusMeters: searchedRadius,
-      usedLastKnownLocation: location.usedLastKnown,
+      usedLastKnownLocation: location.usedLastKnownLocation,
     );
   }
 
-  Future<({GeoCoordinate coordinate, bool usedLastKnown})>
-  _resolveLocation() async {
+  Future<ResolvedLocation> _resolveLocation() async {
     try {
-      return (
-        coordinate: await locationRepository.getCurrentLocation(),
-        usedLastKnown: false,
-      );
-    } catch (_) {
-      try {
-        final lastKnown = await locationRepository.getLastKnownLocation();
-        if (lastKnown != null) {
-          return (coordinate: lastKnown, usedLastKnown: true);
-        }
-      } catch (_) {
-        // The domain error below intentionally hides plugin-specific details.
-      }
+      return await resolveCurrentLocation();
+    } on LocationUnavailableException {
       throw const LocationUnavailableFailure();
     }
   }

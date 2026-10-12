@@ -44,7 +44,16 @@ abstract final class DhikrDemoData {
   );
 
   static DhikrSequence? byRoute(String routineId, String dhikrId) {
-    if (routineId == 'zuhur' && dhikrId == postPrayer.id) return postPrayer;
+    if (const {
+          'subuh',
+          'zuhur',
+          'asar',
+          'maghrib',
+          'isya',
+        }.contains(routineId) &&
+        dhikrId == postPrayer.id) {
+      return postPrayer;
+    }
     return null;
   }
 }

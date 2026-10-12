@@ -44,6 +44,8 @@ GoRouter createAppRouter({
               path: RoutePaths.today,
               name: AppRoute.today.name,
               builder: (context, state) => TodayScreen(
+                prayerScheduleSession: dependencies.prayerScheduleSession,
+                startClock: dependencies.startTodayClock,
                 bottomContentPadding: AppShell.contentBottomPadding,
                 onRoutineTap: (routineId) =>
                     context.push(RoutePaths.routineDetail(routineId)),
@@ -83,6 +85,7 @@ GoRouter createAppRouter({
                 return SettingsPlaceholderScreen(
                   themeMode: preferences.themeMode,
                   onThemeModeChanged: preferences.onThemeModeChanged,
+                  prayerScheduleSession: dependencies.prayerScheduleSession,
                   bottomContentPadding: AppShell.contentBottomPadding,
                 );
               },
@@ -105,6 +108,7 @@ GoRouter createAppRouter({
           key: ValueKey('routine-detail-$routineId'),
           routine: routine,
           noticeController: noticeController,
+          prayerScheduleSession: dependencies.prayerScheduleSession,
         );
       },
       routes: [

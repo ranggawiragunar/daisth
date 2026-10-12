@@ -1,35 +1,228 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
-import '../../../core/design_system/components/istiqam_empty_state.dart';
+import '../../../core/design_system/components/istiqam_surface.dart';
 import '../../../core/design_system/theme/istiqam_theme_extension.dart';
 import '../../../core/design_system/tokens/istiqam_radius.dart';
 import '../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../core/location/domain/models/location_access_status.dart';
+import '../../prayer_times/presentation/prayer_schedule_session.dart';
+import '../../prayer_times/presentation/prayer_time_presentation.dart';
 
-class SettingsPlaceholderScreen extends StatelessWidget {
+class SettingsPlaceholderScreen extends StatefulWidget {
   const SettingsPlaceholderScreen({
     required this.themeMode,
     required this.onThemeModeChanged,
+    required this.prayerScheduleSession,
     this.bottomContentPadding = 0,
     super.key,
   });
 
   final ThemeMode themeMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
+  final PrayerScheduleSession prayerScheduleSession;
   final double bottomContentPadding;
 
   @override
+  State<SettingsPlaceholderScreen> createState() =>
+      _SettingsPlaceholderScreenState();
+}
+
+class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
+  PrayerScheduleSession get _session => widget.prayerScheduleSession;
+
+  @override
+  void initState() {
+    super.initState();
+    _session.addListener(_onChanged);
+  }
+
+  @override
+  void dispose() {
+    _session.removeListener(_onChanged);
+    super.dispose();
+  }
+
+  void _onChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _refresh() => unawaited(_session.refresh(requestPermission: true));
+
+  @override
   Widget build(BuildContext context) {
-    return IstiqamEmptyState(
-      imageAsset: 'assets/empty_states/empty_settings_2048.png',
-      title: 'Pengaturan segera hadir',
-      description:
-          'Lokasi, reminder, tampilan, dan preferensi lainnya akan tersedia di sini.',
-      bottomContentPadding: bottomContentPadding,
-      footer: _AppearanceSelector(
-        themeMode: themeMode,
-        onChanged: onThemeModeChanged,
+    final theme = Theme.of(context);
+    final schedule = _session.schedule;
+    final updatedAt = _session.lastUpdated;
+    final locationValue = schedule == null
+        ? 'Not configured'
+        : _session.usedLastKnownLocation
+        ? 'Automatic / Current device · lokasi terakhir'
+        : 'Automatic / Current device';
+
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              IstiqamSpacing.screenHorizontal,
+              IstiqamSpacing.xl,
+              IstiqamSpacing.screenHorizontal,
+              widget.bottomContentPadding + IstiqamSpacing.xxl,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Settings', style: theme.textTheme.headlineSmall),
+                const SizedBox(height: IstiqamSpacing.section),
+                Text('Prayer & Location', style: theme.textTheme.titleMedium),
+                const SizedBox(height: IstiqamSpacing.md),
+                IstiqamSurface(
+                  padding: const EdgeInsets.all(IstiqamSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _SettingsValueRow(
+                        label: 'Location',
+                        value: locationValue,
+                      ),
+                      const SizedBox(height: IstiqamSpacing.md),
+                      const _SettingsValueRow(
+                        label: 'Calculation',
+                        value: 'Indonesia (KEMENAG)',
+                      ),
+                      const SizedBox(height: IstiqamSpacing.md),
+                      const _SettingsValueRow(label: 'Asar', value: 'Shafi'),
+                      const SizedBox(height: IstiqamSpacing.md),
+                      _SettingsValueRow(
+                        label: 'Last updated',
+                        value: updatedAt == null
+                            ? '—'
+                            : PrayerTimePresentation.time(updatedAt),
+                      ),
+                      if (_session.calculationError != null ||
+                          _session.isLocationUnavailable) ...[
+                        const SizedBox(height: IstiqamSpacing.md),
+                        Text(
+                          _session.accessStatus ==
+                                  LocationAccessStatus.serviceDisabled
+                              ? 'Layanan lokasi tidak aktif.'
+                              : 'Jadwal belum dapat dimuat. Periksa akses lokasi lalu coba lagi.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.error,
+                          ),
+                        ),
+                      ],
+                      if (schedule == null) ...[
+                        const SizedBox(height: IstiqamSpacing.md),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed:
+                                _session.isCheckingAccess || _session.isLoading
+                                ? null
+                                : _refresh,
+                            child: const Text('Set up'),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: IstiqamSpacing.sm),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed:
+                              _session.isCheckingAccess || _session.isLoading
+                              ? null
+                              : _refresh,
+                          icon: _session.isLoading
+                              ? const SizedBox.square(
+                                  dimension: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.refresh_rounded),
+                          label: const Text('Refresh prayer times'),
+                        ),
+                      ),
+                      if (_session.accessStatus ==
+                              LocationAccessStatus.deniedForever ||
+                          _session.accessStatus ==
+                              LocationAccessStatus.serviceDisabled) ...[
+                        const SizedBox(height: IstiqamSpacing.xs),
+                        TextButton(
+                          onPressed:
+                              _session.accessStatus ==
+                                  LocationAccessStatus.deniedForever
+                              ? _session.openAppSettings
+                              : _session.openLocationSettings,
+                          child: Text(
+                            _session.accessStatus ==
+                                    LocationAccessStatus.deniedForever
+                                ? 'Buka Pengaturan'
+                                : 'Buka Pengaturan Lokasi',
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: IstiqamSpacing.section),
+                _AppearanceSelector(
+                  themeMode: widget.themeMode,
+                  onChanged: widget.onThemeModeChanged,
+                ),
+                const SizedBox(height: IstiqamSpacing.lg),
+                Text(
+                  'Waktu sholat dihitung di perangkat menggunakan lokasi saat ini. Lokasi tidak disimpan.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
+    );
+  }
+}
+
+class _SettingsValueRow extends StatelessWidget {
+  const _SettingsValueRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        const SizedBox(width: IstiqamSpacing.md),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
