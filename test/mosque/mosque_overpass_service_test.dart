@@ -241,8 +241,171 @@ void main() {
       expect(requests, 2);
 
       now = now.add(const Duration(minutes: 5, seconds: 1));
+      final stale = await repository.getCachedNearby(
+        origin: origin,
+        radiusMeters: 5000,
+      );
+      expect(stale, isNotNull);
+      expect(stale!.isFresh, isFalse);
+      expect(stale.places, hasLength(1));
       await repository.findNearby(origin: origin, radiusMeters: 5000);
       expect(requests, 3);
+    },
+  );
+
+  test('empty refresh does not replace a same-area non-empty cache', () async {
+    var responseIndex = 0;
+    final client = MockClient((_) async {
+      responseIndex++;
+      return http.Response(
+        responseIndex == 1
+            ? _payload([_node(1, -6.201, 106.8, _muslimMosqueTags)])
+            : _payload([]),
+        200,
+      );
+    });
+    final repository = _repository(client);
+
+    final first = await repository.findNearby(
+      origin: origin,
+      radiusMeters: 5000,
+    );
+    final refreshed = await repository.findNearby(
+      origin: origin,
+      radiusMeters: 5000,
+      bypassCache: true,
+    );
+    final retained = await repository.getCachedNearby(
+      origin: origin,
+      radiusMeters: 5000,
+    );
+
+    expect(first, hasLength(1));
+    expect(refreshed, isEmpty);
+    expect(retained!.places.map((place) => place.id), ['node/1']);
+  });
+
+  test(
+    'a different coordinate bucket cannot read another area cache',
+    () async {
+      var requestCount = 0;
+      final client = MockClient((_) async {
+        requestCount++;
+        if (requestCount == 1) {
+          return http.Response(
+            _payload([_node(1, -6.201, 106.8, _muslimMosqueTags)]),
+            200,
+          );
+        }
+        return http.Response('busy', 503);
+      });
+      final repository = _repository(client);
+      await repository.findNearby(origin: origin, radiusMeters: 5000);
+      const otherArea = GeoCoordinate(latitude: -6.3, longitude: 106.8);
+
+      expect(
+        await repository.getCachedNearby(origin: otherArea, radiusMeters: 5000),
+        isNull,
+      );
+      await expectLater(
+        repository.findNearby(origin: otherArea, radiusMeters: 5000),
+        throwsA(isA<MosqueSearchFailure>()),
+      );
+    },
+  );
+
+  test(
+    'a different area can return empty without exposing the old cache',
+    () async {
+      var requestCount = 0;
+      final client = MockClient((_) async {
+        requestCount++;
+        return http.Response(
+          requestCount == 1
+              ? _payload([_node(1, -6.201, 106.8, _muslimMosqueTags)])
+              : _payload([]),
+          200,
+        );
+      });
+      final repository = _repository(client);
+      final original = await repository.findNearby(
+        origin: origin,
+        radiusMeters: 5000,
+      );
+      const otherArea = GeoCoordinate(latitude: -6.3, longitude: 106.8);
+
+      final otherAreaResult = await repository.findNearby(
+        origin: otherArea,
+        radiusMeters: 5000,
+      );
+
+      expect(original, hasLength(1));
+      expect(otherAreaResult, isEmpty);
+      expect(
+        await repository.getCachedNearby(origin: otherArea, radiusMeters: 5000),
+        isNotNull,
+      );
+      expect(
+        (await repository.getCachedNearby(
+          origin: origin,
+          radiusMeters: 5000,
+        ))!.places,
+        hasLength(1),
+      );
+    },
+  );
+
+  test(
+    'stale cache is retained after provider failure and refreshed on success',
+    () async {
+      var now = DateTime(2026, 1, 1);
+      var responseIndex = 0;
+      final client = MockClient((_) async {
+        responseIndex++;
+        if (responseIndex == 1) {
+          return http.Response(
+            _payload([_node(1, -6.201, 106.8, _muslimMosqueTags)]),
+            200,
+          );
+        }
+        if (responseIndex <= 3) return http.Response('busy', 503);
+        return http.Response(
+          _payload([_node(2, -6.202, 106.8, _muslimMosqueTags)]),
+          200,
+        );
+      });
+      final repository = _repository(client, clock: () => now);
+      await repository.findNearby(origin: origin, radiusMeters: 5000);
+      now = now.add(const Duration(minutes: 6));
+
+      await expectLater(
+        repository.findNearby(
+          origin: origin,
+          radiusMeters: 5000,
+          bypassCache: true,
+        ),
+        throwsA(isA<MosqueSearchFailure>()),
+      );
+      expect(
+        (await repository.getCachedNearby(
+          origin: origin,
+          radiusMeters: 5000,
+        ))!.places.map((place) => place.id),
+        ['node/1'],
+      );
+
+      final fresh = await repository.findNearby(
+        origin: origin,
+        radiusMeters: 5000,
+        bypassCache: true,
+      );
+      final replaced = await repository.getCachedNearby(
+        origin: origin,
+        radiusMeters: 5000,
+      );
+      expect(fresh.map((place) => place.id), ['node/2']);
+      expect(replaced!.places.map((place) => place.id), ['node/2']);
+      expect(replaced.isFresh, isTrue);
     },
   );
 }

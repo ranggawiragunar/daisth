@@ -1,4 +1,5 @@
 import '../../../../core/location/domain/models/geo_coordinate.dart';
+import '../../domain/models/cached_mosque_places.dart';
 import '../../domain/models/mosque_place.dart';
 import '../../domain/models/mosque_search_failure.dart';
 import '../../domain/repositories/mosque_repository.dart';
@@ -23,6 +24,20 @@ class MosqueRepositoryData implements MosqueRepository {
   final Map<String, _CachedPlaces> _cache = {};
 
   @override
+  Future<CachedMosquePlaces?> getCachedNearby({
+    required GeoCoordinate origin,
+    required int radiusMeters,
+  }) async {
+    final cached = _cache[_cacheKey(origin, radiusMeters)];
+    if (cached == null) return null;
+    final now = _clock();
+    return CachedMosquePlaces(
+      places: _mapAndFilter(cached.places, origin),
+      isFresh: now.isBefore(cached.storedAt.add(cacheTtl)),
+    );
+  }
+
+  @override
   Future<List<MosquePlace>> findNearby({
     required GeoCoordinate origin,
     required int radiusMeters,
@@ -30,9 +45,10 @@ class MosqueRepositoryData implements MosqueRepository {
   }) async {
     final key = _cacheKey(origin, radiusMeters);
     final now = _clock();
-    _cache.removeWhere((_, value) => !now.isBefore(value.expiresAt));
     final cached = bypassCache ? null : _cache[key];
-    if (cached != null) return _mapAndFilter(cached.places, origin);
+    if (cached != null && now.isBefore(cached.storedAt.add(cacheTtl))) {
+      return _mapAndFilter(cached.places, origin);
+    }
 
     try {
       final data = await service.fetchPlaces(
@@ -40,11 +56,14 @@ class MosqueRepositoryData implements MosqueRepository {
         radiusMeters: radiusMeters,
       );
       final immutableData = List<MosquePlaceData>.unmodifiable(data);
-      _cache[key] = _CachedPlaces(
-        places: immutableData,
-        expiresAt: now.add(cacheTtl),
-      );
-      return _mapAndFilter(immutableData, origin);
+      final freshPlaces = _mapAndFilter(immutableData, origin);
+      final previous = _cache[key];
+      final previousHasPlaces =
+          previous != null && _mapAndFilter(previous.places, origin).isNotEmpty;
+      if (freshPlaces.isNotEmpty || !previousHasPlaces) {
+        _cache[key] = _CachedPlaces(places: immutableData, storedAt: now);
+      }
+      return freshPlaces;
     } on OverpassServiceException catch (error) {
       throw MosqueSearchFailure(
         error.reason == OverpassFailureReason.serviceBusy
@@ -79,8 +98,8 @@ class MosqueRepositoryData implements MosqueRepository {
 }
 
 class _CachedPlaces {
-  const _CachedPlaces({required this.places, required this.expiresAt});
+  const _CachedPlaces({required this.places, required this.storedAt});
 
   final List<MosquePlaceData> places;
-  final DateTime expiresAt;
+  final DateTime storedAt;
 }

@@ -30,8 +30,12 @@ proximity discovery. Each search sends one geographically constrained request
 for a 5 km result set, then selects the effective 1.5 km, 3 km, or 5 km radius
 locally based on whether at least six places are available. Results are sorted
 nearest-first and capped at 20. Search data is cached in memory for five minutes
-by a rounded coordinate bucket; explicit refresh fetches a fresh location and
-bypasses that cache. The primary endpoint is
+by a rounded coordinate bucket. Fresh same-area cache can satisfy a normal load;
+stale same-area results stay visible while the provider refreshes. A non-empty
+fresh response replaces the cache, while an empty response or failure preserves
+existing non-empty data. A newly resolved area never uses another bucket's
+results. Explicit refresh resolves location again and bypasses the fresh-cache
+shortcut. The primary endpoint is
 `https://overpass-api.de/api/interpreter`; the fallback is
 `https://overpass.private.coffee/api/interpreter`. Each endpoint has a 9-second
 timeout. A retryable primary failure (network error, timeout, HTTP 429, or

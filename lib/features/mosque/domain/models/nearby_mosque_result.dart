@@ -7,10 +7,12 @@ class NearbyMosqueResult {
     required List<MosquePlace> places,
     required this.searchedRadiusMeters,
     required this.usedLastKnownLocation,
+    this.isUsingCachedResults = false,
   }) : places = List.unmodifiable(places);
 
   final GeoCoordinate origin;
   final List<MosquePlace> places;
   final int searchedRadiusMeters;
   final bool usedLastKnownLocation;
+  final bool isUsingCachedResults;
 }

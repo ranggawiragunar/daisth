@@ -5,6 +5,8 @@ import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
 import 'package:istiqam/core/location/domain/models/location_access_status.dart';
 import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
 import 'package:istiqam/features/mosque/domain/models/mosque_place.dart';
+import 'package:istiqam/features/mosque/domain/models/mosque_place_type.dart';
+import 'package:istiqam/features/mosque/domain/models/cached_mosque_places.dart';
 import 'package:istiqam/features/mosque/domain/models/mosque_search_failure.dart';
 import 'package:istiqam/features/mosque/domain/repositories/mosque_repository.dart';
 import 'package:istiqam/features/mosque/domain/use_cases/find_nearby_mosques_use_case.dart';
@@ -96,6 +98,44 @@ void main() {
     expect(viewModel.isBusy, isFalse);
     viewModel.dispose();
   });
+
+  test(
+    'keeps same-area cached results visible during an empty refresh',
+    () async {
+      final cachedPlace = MosquePlace(
+        id: 'cached',
+        name: 'Cached mosque',
+        coordinate: const GeoCoordinate(latitude: 0, longitude: 0),
+        distanceMeters: 100,
+        type: MosquePlaceType.mosque,
+      );
+      final mosque = _Mosques(
+        cached: CachedMosquePlaces(places: [cachedPlace], isFresh: false),
+      );
+      final pending = Completer<List<MosquePlace>>();
+      mosque.pendingResponse = pending;
+      final viewModel = _viewModel(
+        _Location(LocationAccessStatus.granted),
+        mosque,
+      );
+      addTearDown(viewModel.dispose);
+
+      final loading = viewModel.initialize();
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(viewModel.state, MosqueFinderState.loading);
+      expect(viewModel.result?.places.single.id, 'cached');
+      expect(viewModel.result?.isUsingCachedResults, isTrue);
+
+      pending.complete(const []);
+      await loading;
+
+      expect(viewModel.state, MosqueFinderState.results);
+      expect(viewModel.result?.places.single.id, 'cached');
+      expect(viewModel.result?.isUsingCachedResults, isTrue);
+    },
+  );
 }
 
 MosqueFinderViewModel _viewModel(_Location location, [_Mosques? mosque]) =>
@@ -132,12 +172,19 @@ class _Location implements LocationRepository {
 }
 
 class _Mosques implements MosqueRepository {
-  _Mosques({this.error});
+  _Mosques({this.error, this.cached});
 
   final Object? error;
+  final CachedMosquePlaces? cached;
   final radiusRequests = <int>[];
   final bypassCacheCalls = <bool>[];
   Completer<List<MosquePlace>>? pendingResponse;
+
+  @override
+  Future<CachedMosquePlaces?> getCachedNearby({
+    required GeoCoordinate origin,
+    required int radiusMeters,
+  }) async => cached;
 
   @override
   Future<List<MosquePlace>> findNearby({

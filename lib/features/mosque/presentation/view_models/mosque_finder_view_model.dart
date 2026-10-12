@@ -115,17 +115,29 @@ class MosqueFinderViewModel extends ChangeNotifier {
     state = MosqueFinderState.loading;
     notifyListeners();
     try {
-      result = await findNearbyMosques(forceRefresh: forceRefresh);
+      result = await findNearbyMosques(
+        forceRefresh: forceRefresh,
+        onCacheResolved: (cachedResult) {
+          result = cachedResult;
+          if (cachedResult != null && !cachedResult.isUsingCachedResults) {
+            state = MosqueFinderState.results;
+          }
+          notifyListeners();
+        },
+      );
       state = result!.places.isEmpty
           ? MosqueFinderState.empty
           : MosqueFinderState.results;
     } on LocationUnavailableFailure {
+      result = null;
       state = MosqueFinderState.locationUnavailable;
     } on MosqueSearchFailure catch (failure) {
+      result = null;
       state = failure.type == MosqueSearchFailureType.serviceBusy
           ? MosqueFinderState.serviceBusy
           : MosqueFinderState.networkError;
     } catch (_) {
+      result = null;
       state = MosqueFinderState.networkError;
     }
     notifyListeners();

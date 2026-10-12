@@ -105,9 +105,14 @@ constrained 5 km dataset, then selects the smallest effective radius (1.5 km,
 Results are deduplicated, sorted nearest-first, and capped at twenty.
 
 `MosqueRepositoryData` owns a five-minute, in-memory cache keyed by rounded
-coordinate buckets and radius. It caches provider data only for the current app
-session and remaps distances for the current location. Explicit refresh bypasses
-the cache. `MosqueOverpassService` queries the primary public Overpass endpoint
+coordinate buckets and radius. Fresh entries can satisfy normal loads. Expired
+entries remain available as same-area fallback while the use case revalidates
+them after resolving the current location. Distances are remapped from that
+location. A successful non-empty response replaces the cache; an empty response
+or provider failure preserves an existing non-empty entry. A different area
+never reuses the old bucket. Explicit refresh bypasses a fresh-cache shortcut
+while retaining same-area fallback. Cache data remains in memory for the app
+session. `MosqueOverpassService` queries the primary public Overpass endpoint
 first and tries the secondary endpoint once after a retryable primary network or
 provider failure. Each endpoint has one nine-second attempt. These public endpoints are MVP infrastructure and
 availability is not guaranteed. `AppDependencies` is the manual composition

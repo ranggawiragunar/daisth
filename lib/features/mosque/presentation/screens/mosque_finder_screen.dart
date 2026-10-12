@@ -4,6 +4,7 @@ import '../../../../core/design_system/components/istiqam_notice.dart';
 import '../../../../core/design_system/components/istiqam_notice_controller.dart';
 import '../../../../core/design_system/components/istiqam_surface.dart';
 import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/tokens/istiqam_radius.dart';
 import '../../../../core/maps/services/map_navigation_service.dart';
 import '../../domain/models/mosque_place.dart';
 import '../../domain/models/mosque_place_type.dart';
@@ -446,6 +447,10 @@ class _ResultsState extends StatelessWidget {
           ),
           const SizedBox(height: IstiqamSpacing.sm),
         ],
+        if (result.isUsingCachedResults) ...[
+          _CachedResultsNotice(isRefreshing: isRefreshing),
+          const SizedBox(height: IstiqamSpacing.md),
+        ],
         if (result.usedLastKnownLocation) ...[
           const _LastKnownNotice(),
           const SizedBox(height: IstiqamSpacing.md),
@@ -487,6 +492,49 @@ class _ResultsState extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _CachedResultsNotice extends StatelessWidget {
+  const _CachedResultsNotice({required this.isRefreshing});
+
+  final bool isRefreshing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: IstiqamSpacing.md,
+        vertical: IstiqamSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(
+          alpha: 0.55,
+        ),
+        borderRadius: BorderRadius.circular(IstiqamRadius.medium),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isRefreshing ? Icons.sync_rounded : Icons.history_rounded,
+            size: 16,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: IstiqamSpacing.sm),
+          Expanded(
+            child: Text(
+              isRefreshing
+                  ? 'Menampilkan hasil terakhir sambil memperbarui.'
+                  : 'Menampilkan hasil terakhir. Data terbaru belum tersedia.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

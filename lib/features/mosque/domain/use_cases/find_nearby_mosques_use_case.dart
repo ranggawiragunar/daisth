@@ -37,13 +37,53 @@ class FindNearbyMosquesUseCase {
   Future<bool> openLocationSettings() =>
       resolveCurrentLocation.openLocationSettings();
 
-  Future<NearbyMosqueResult> call({bool forceRefresh = false}) async {
+  Future<NearbyMosqueResult> call({
+    bool forceRefresh = false,
+    void Function(NearbyMosqueResult? cachedResult)? onCacheResolved,
+  }) async {
     final location = await _resolveLocation();
-    final found = await mosqueRepository.findNearby(
+    final cached = await mosqueRepository.getCachedNearby(
       origin: location.coordinate,
       radiusMeters: searchRadiiMeters.last,
-      bypassCache: forceRefresh,
     );
+    final cachedResult = cached == null
+        ? null
+        : _buildResult(
+            cached.places,
+            location,
+            isUsingCachedResults: !cached.isFresh || forceRefresh,
+          );
+    final usableCachedResult =
+        cachedResult != null && cachedResult.places.isNotEmpty
+        ? cachedResult
+        : null;
+    onCacheResolved?.call(usableCachedResult);
+
+    if (cached != null && cached.isFresh && !forceRefresh) {
+      return cachedResult!;
+    }
+
+    try {
+      final found = await mosqueRepository.findNearby(
+        origin: location.coordinate,
+        radiusMeters: searchRadiiMeters.last,
+        bypassCache: forceRefresh || (cached != null && !cached.isFresh),
+      );
+      if (found.isEmpty && usableCachedResult != null) {
+        return usableCachedResult;
+      }
+      return _buildResult(found, location);
+    } catch (_) {
+      if (usableCachedResult != null) return usableCachedResult;
+      rethrow;
+    }
+  }
+
+  NearbyMosqueResult _buildResult(
+    Iterable<MosquePlace> found,
+    ResolvedLocation location, {
+    bool isUsingCachedResults = false,
+  }) {
     final placesById = <String, MosquePlace>{};
     for (final place in found) {
       placesById.putIfAbsent(place.id, () => place);
@@ -73,6 +113,7 @@ class FindNearbyMosquesUseCase {
       places: selectedPlaces,
       searchedRadiusMeters: searchedRadius,
       usedLastKnownLocation: location.usedLastKnownLocation,
+      isUsingCachedResults: isUsingCachedResults,
     );
   }
 

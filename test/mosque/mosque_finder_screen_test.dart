@@ -9,6 +9,7 @@ import 'package:istiqam/core/location/domain/models/location_access_status.dart'
 import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
 import 'package:istiqam/core/maps/services/map_navigation_service.dart';
 import 'package:istiqam/features/mosque/domain/models/mosque_place.dart';
+import 'package:istiqam/features/mosque/domain/models/cached_mosque_places.dart';
 import 'package:istiqam/features/mosque/domain/models/mosque_place_type.dart';
 import 'package:istiqam/features/mosque/domain/models/mosque_search_failure.dart';
 import 'package:istiqam/features/mosque/domain/repositories/mosque_repository.dart';
@@ -135,6 +136,46 @@ void main() {
     harness.dispose();
   });
 
+  testWidgets('shows stale cached results and a compact fallback notice', (
+    tester,
+  ) async {
+    final pending = Completer<List<MosquePlace>>();
+    final cachedPlace = _place('Masjid tersimpan', 120);
+    final harness = _Harness(
+      access: LocationAccessStatus.granted,
+      cached: CachedMosquePlaces(places: [cachedPlace], isFresh: false),
+      pendingResponse: pending,
+    );
+    await tester.pumpWidget(harness.app());
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Masjid tersimpan'), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(
+      find.text('Menampilkan hasil terakhir sambil memperbarui.'),
+      findsOneWidget,
+    );
+
+    pending.complete(const []);
+    await tester.pumpAndSettle();
+    expect(find.text('Masjid tersimpan'), findsOneWidget);
+    expect(
+      find.text('Menampilkan hasil terakhir. Data terbaru belum tersedia.'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Belum menemukan masjid atau mushola di sekitar lokasi ini.'),
+      findsNothing,
+    );
+    expect(
+      find.text('Pencarian tempat sholat belum bisa dimuat'),
+      findsNothing,
+    );
+    await tester.pumpWidget(const SizedBox.shrink());
+    harness.dispose();
+  });
+
   testWidgets('shows retryable provider error', (tester) async {
     final harness = _Harness(
       access: LocationAccessStatus.granted,
@@ -200,8 +241,14 @@ class _Harness {
     this.places = const [],
     this.repositoryError,
     this.launcher,
+    this.cached,
+    this.pendingResponse,
   }) : noticeController = IstiqamNoticeController() {
-    mosqueRepository = _FakeMosques(places: places, error: repositoryError);
+    mosqueRepository = _FakeMosques(
+      places: places,
+      error: repositoryError,
+      cached: cached,
+    )..pendingResponse = pendingResponse;
     viewModel = MosqueFinderViewModel(
       findNearbyMosques: FindNearbyMosquesUseCase(
         locationRepository: _FakeLocation(
@@ -224,6 +271,8 @@ class _Harness {
   final List<MosquePlace> places;
   final Object? repositoryError;
   final ExternalUriLauncher? launcher;
+  final CachedMosquePlaces? cached;
+  final Completer<List<MosquePlace>>? pendingResponse;
   final IstiqamNoticeController noticeController;
   late final _FakeMosques mosqueRepository;
   late final MosqueFinderViewModel viewModel;
@@ -279,11 +328,19 @@ class _FakeLocation implements LocationRepository {
 }
 
 class _FakeMosques implements MosqueRepository {
-  _FakeMosques({required this.places, this.error});
+  _FakeMosques({required this.places, this.error, this.cached});
 
   final List<MosquePlace> places;
   final Object? error;
+  final CachedMosquePlaces? cached;
   Completer<List<MosquePlace>>? pendingResponse;
+  CachedMosquePlaces? _storedCache;
+
+  @override
+  Future<CachedMosquePlaces?> getCachedNearby({
+    required GeoCoordinate origin,
+    required int radiusMeters,
+  }) async => cached ?? _storedCache;
 
   @override
   Future<List<MosquePlace>> findNearby({
@@ -292,7 +349,12 @@ class _FakeMosques implements MosqueRepository {
     bool bypassCache = false,
   }) async {
     if (error != null) throw error!;
-    if (pendingResponse != null) return pendingResponse!.future;
-    return places;
+    final results = pendingResponse != null
+        ? await pendingResponse!.future
+        : places;
+    if (results.isNotEmpty) {
+      _storedCache = CachedMosquePlaces(places: results, isFresh: true);
+    }
+    return results;
   }
 }

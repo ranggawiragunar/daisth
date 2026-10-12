@@ -4,6 +4,7 @@ import 'package:istiqam/core/location/domain/models/location_access_status.dart'
 import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
 import 'package:istiqam/features/mosque/domain/models/mosque_place.dart';
 import 'package:istiqam/features/mosque/domain/models/mosque_place_type.dart';
+import 'package:istiqam/features/mosque/domain/models/cached_mosque_places.dart';
 import 'package:istiqam/features/mosque/domain/repositories/mosque_repository.dart';
 import 'package:istiqam/features/mosque/domain/use_cases/find_nearby_mosques_use_case.dart';
 
@@ -113,6 +114,65 @@ void main() {
     expect(result.origin, lastKnown);
     expect(result.usedLastKnownLocation, isTrue);
   });
+
+  test(
+    'returns a fresh same-area cache without requesting provider data',
+    () async {
+      final cachedPlaces = List.generate(
+        6,
+        (index) => _place('cached-$index', 100.0 + index),
+      );
+      final mosque = _MosqueRepository(
+        const [],
+        cached: CachedMosquePlaces(places: cachedPlaces, isFresh: true),
+      );
+      final result = await _useCase(mosque)();
+
+      expect(mosque.requests, isEmpty);
+      expect(
+        result.places.map((place) => place.id),
+        cachedPlaces.map((place) => place.id),
+      );
+    },
+  );
+
+  test('keeps stale cached places when fresh provider data is empty', () async {
+    final cachedPlaces = List.generate(
+      2,
+      (index) => _place('cached-$index', 100.0 + index),
+    );
+    final mosque = _MosqueRepository(
+      const [],
+      cached: CachedMosquePlaces(places: cachedPlaces, isFresh: false),
+    );
+    final result = await _useCase(mosque)();
+
+    expect(result.places.map((place) => place.id), ['cached-0', 'cached-1']);
+    expect(result.isUsingCachedResults, isTrue);
+    expect(mosque.bypassCacheCalls, [true]);
+  });
+
+  test('keeps stale cached places when provider refresh fails', () async {
+    final cachedPlaces = [_place('cached', 100)];
+    final mosque = _MosqueRepository(
+      const [],
+      cached: CachedMosquePlaces(places: cachedPlaces, isFresh: false),
+      error: StateError('provider unavailable'),
+    );
+    final result = await _useCase(mosque)();
+
+    expect(result.places.single.id, 'cached');
+    expect(result.isUsingCachedResults, isTrue);
+  });
+
+  test('does not reuse cache from another area', () async {
+    final mosque = _MosqueRepository(
+      const [],
+      error: StateError('provider unavailable'),
+    );
+
+    await expectLater(_useCase(mosque)(), throwsStateError);
+  });
 }
 
 FindNearbyMosquesUseCase _useCase(_MosqueRepository mosque) =>
@@ -132,11 +192,19 @@ MosquePlace _place(String id, double distance) => MosquePlace(
 );
 
 class _MosqueRepository implements MosqueRepository {
-  _MosqueRepository(this.places);
+  _MosqueRepository(this.places, {this.cached, this.error});
 
   final List<MosquePlace> places;
+  final CachedMosquePlaces? cached;
+  final Object? error;
   final requests = <int>[];
   final bypassCacheCalls = <bool>[];
+
+  @override
+  Future<CachedMosquePlaces?> getCachedNearby({
+    required GeoCoordinate origin,
+    required int radiusMeters,
+  }) async => cached;
 
   @override
   Future<List<MosquePlace>> findNearby({
@@ -146,6 +214,7 @@ class _MosqueRepository implements MosqueRepository {
   }) async {
     requests.add(radiusMeters);
     bypassCacheCalls.add(bypassCache);
+    if (error != null) throw error!;
     return places;
   }
 }
