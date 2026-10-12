@@ -7,7 +7,9 @@ import 'widgets/focus_routine_card.dart';
 import 'widgets/routine_timeline.dart';
 
 class TodayScreen extends StatelessWidget {
-  const TodayScreen({super.key});
+  const TodayScreen({this.bottomContentPadding = 0, super.key});
+
+  final double bottomContentPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +41,11 @@ class TodayScreen extends StatelessWidget {
             child: CustomScrollView(
               slivers: [
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
+                  padding: EdgeInsets.fromLTRB(
                     IstiqamSpacing.screenHorizontal,
                     IstiqamSpacing.lg,
                     IstiqamSpacing.screenHorizontal,
-                    IstiqamSpacing.massive,
+                    bottomContentPadding,
                   ),
                   sliver: SliverList.list(
                     children: [

@@ -32,7 +32,14 @@ class IstiqamButton extends StatelessWidget {
             children: [
               Icon(icon, size: 18),
               const SizedBox(width: IstiqamSpacing.sm),
-              Text(label),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           );
     final shape = RoundedRectangleBorder(

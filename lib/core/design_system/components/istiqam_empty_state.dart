@@ -8,12 +8,16 @@ class IstiqamEmptyState extends StatelessWidget {
     required this.imageAsset,
     required this.title,
     required this.description,
+    this.footer,
+    this.bottomContentPadding = IstiqamSpacing.section,
     super.key,
   });
 
   final String imageAsset;
   final String title;
   final String description;
+  final Widget? footer;
+  final double bottomContentPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +26,12 @@ class IstiqamEmptyState extends StatelessWidget {
     return SafeArea(
       child: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(IstiqamSpacing.section),
+          padding: EdgeInsets.fromLTRB(
+            IstiqamSpacing.section,
+            IstiqamSpacing.section,
+            IstiqamSpacing.section,
+            bottomContentPadding,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 360),
             child: Column(
@@ -60,6 +69,10 @@ class IstiqamEmptyState extends StatelessWidget {
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
+                if (footer != null) ...[
+                  const SizedBox(height: IstiqamSpacing.section),
+                  footer!,
+                ],
               ],
             ),
           ),

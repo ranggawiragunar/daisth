@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../core/design_system/components/istiqam_notice_controller.dart';
 import '../core/design_system/tokens/istiqam_radius.dart';
+import '../core/design_system/tokens/istiqam_spacing.dart';
+import '../core/design_system/theme/istiqam_theme_extension.dart';
 import '../features/history/presentation/history_placeholder_screen.dart';
 import '../features/routines/presentation/routines_placeholder_screen.dart';
 import '../features/settings/presentation/settings_placeholder_screen.dart';
 import '../features/today/presentation/today_screen.dart';
 
 class AppShell extends StatefulWidget {
-  const AppShell({super.key});
+  const AppShell({
+    required this.themeMode,
+    required this.onThemeModeChanged,
+    super.key,
+  });
+
+  final ThemeMode themeMode;
+  final ValueChanged<ThemeMode> onThemeModeChanged;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -19,13 +27,6 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
   final _noticeController = IstiqamNoticeController();
-
-  static const _screens = [
-    TodayScreen(),
-    HistoryPlaceholderScreen(),
-    RoutinesPlaceholderScreen(),
-    SettingsPlaceholderScreen(),
-  ];
 
   static const _destinations = [
     _Destination('Today', PhosphorIconsRegular.house, PhosphorIconsFill.house),
@@ -44,7 +45,6 @@ class _AppShellState extends State<AppShell> {
 
   void _select(int index) {
     if (index == _selectedIndex) return;
-    HapticFeedback.selectionClick();
     setState(() => _selectedIndex = index);
   }
 
@@ -57,33 +57,90 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final extension = theme.extension<IstiqamThemeExtension>()!;
+    const dockHeight = 68.0;
+    const dockBottomGap = 8.0;
+    const dockContentGap = 16.0;
+    const dockHorizontalMargin = 14.0;
+    final contentBottomPadding = dockHeight + dockBottomGap + dockContentGap;
+    final screens = [
+      TodayScreen(bottomContentPadding: contentBottomPadding),
+      HistoryPlaceholderScreen(bottomContentPadding: contentBottomPadding),
+      RoutinesPlaceholderScreen(bottomContentPadding: contentBottomPadding),
+      SettingsPlaceholderScreen(
+        themeMode: widget.themeMode,
+        onThemeModeChanged: widget.onThemeModeChanged,
+        bottomContentPadding: contentBottomPadding,
+      ),
+    ];
     return IstiqamNoticeScope(
       controller: _noticeController,
       child: Scaffold(
-        body: IndexedStack(index: _selectedIndex, children: _screens),
-        bottomNavigationBar: SafeArea(
-          top: false,
-          child: Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              border: Border(
-                top: BorderSide(color: theme.colorScheme.outlineVariant),
-              ),
-            ),
-            padding: const EdgeInsets.fromLTRB(10, 6, 10, 4),
-            child: Row(
-              children: [
-                for (var index = 0; index < _destinations.length; index++)
-                  Expanded(
-                    child: _NavigationItem(
-                      destination: _destinations[index],
-                      selected: _selectedIndex == index,
-                      onTap: () => _select(index),
+        extendBody: true,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            IndexedStack(index: _selectedIndex, children: screens),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    dockHorizontalMargin,
+                    0,
+                    dockHorizontalMargin,
+                    dockBottomGap,
+                  ),
+                  child: Container(
+                    height: dockHeight,
+                    decoration: BoxDecoration(
+                      color: theme.brightness == Brightness.dark
+                          ? extension.softSurface
+                          : theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(
+                        IstiqamRadius.xLarge + 4,
+                      ),
+                      border: Border.all(color: extension.border),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: theme.brightness == Brightness.dark
+                                ? 0.22
+                                : 0.075,
+                          ),
+                          blurRadius: 22,
+                          offset: const Offset(0, 7),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(IstiqamSpacing.xs),
+                    child: Row(
+                      children: [
+                        for (
+                          var index = 0;
+                          index < _destinations.length;
+                          index++
+                        )
+                          Expanded(
+                            child: _NavigationItem(
+                              key: ValueKey(
+                                'navigation-${_destinations[index].label.toLowerCase()}',
+                              ),
+                              destination: _destinations[index],
+                              selected: _selectedIndex == index,
+                              onTap: () => _select(index),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-              ],
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -100,6 +157,7 @@ class _Destination {
 
 class _NavigationItem extends StatelessWidget {
   const _NavigationItem({
+    super.key,
     required this.destination,
     required this.selected,
     required this.onTap,
@@ -123,41 +181,39 @@ class _NavigationItem extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(IstiqamRadius.large),
         child: SizedBox(
-          height: 56,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOutCubic,
-                width: 42,
-                height: 30,
-                decoration: BoxDecoration(
-                  color: selected
-                      ? theme.colorScheme.primaryContainer.withValues(
-                          alpha: 0.76,
-                        )
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(IstiqamRadius.medium),
-                ),
-                alignment: Alignment.center,
-                child: Icon(
+          height: 60,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            decoration: BoxDecoration(
+              color: selected
+                  ? theme.colorScheme.primaryContainer
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(IstiqamRadius.large),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
                   selected ? destination.selectedIcon : destination.icon,
                   color: color,
-                  size: 21,
+                  size: 20,
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                destination.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: color,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                const SizedBox(height: 3),
+                Text(
+                  destination.label,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: color,
+                    fontSize: 10.5,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
