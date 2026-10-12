@@ -1,1 +1,9 @@
-enum AppRoute { today, history, routines, settings, routineDetail }
+enum AppRoute {
+  today,
+  history,
+  routines,
+  settings,
+  routineDetail,
+  reader,
+  dhikrCounter,
+}

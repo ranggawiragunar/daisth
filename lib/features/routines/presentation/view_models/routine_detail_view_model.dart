@@ -50,6 +50,23 @@ class RoutineDetailViewModel extends ChangeNotifier {
         status == RoutineStatus.completed;
   }
 
+  bool completeOptionalStep(String id) {
+    final index = _steps.indexWhere(
+      (step) => step.id == id && !step.isRequired,
+    );
+    if (index == -1 || _steps[index].completed) return false;
+    _previousSteps = _steps;
+    _steps = [
+      for (var stepIndex = 0; stepIndex < _steps.length; stepIndex++)
+        if (stepIndex == index)
+          _steps[stepIndex].copyWith(completed: true)
+        else
+          _steps[stepIndex],
+    ];
+    notifyListeners();
+    return true;
+  }
+
   void undoStep() {
     final previous = _previousSteps;
     if (previous == null) return;

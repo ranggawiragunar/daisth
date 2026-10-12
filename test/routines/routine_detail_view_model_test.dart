@@ -46,8 +46,20 @@ void main() {
     expect(viewModel.markNotToday(), isFalse);
     viewModel.toggleStep('zuhur');
     expect(viewModel.status, RoutineStatus.completed);
-    viewModel.toggleStep('dhikr');
+    viewModel.toggleStep('post-prayer-dhikr');
     expect(viewModel.status, RoutineStatus.completed);
+  });
+
+  test('post-prayer dhikr is optional and completes by stable step id', () {
+    final viewModel = RoutineDetailViewModel(RoutineDemoData.zuhur);
+    addTearDown(viewModel.dispose);
+
+    viewModel.markRequiredStepsDone();
+    expect(viewModel.status, RoutineStatus.completed);
+    expect(viewModel.completeOptionalStep('post-prayer-dhikr'), isTrue);
+    expect(viewModel.status, RoutineStatus.completed);
+    expect(viewModel.steps.last.completed, isTrue);
+    expect(viewModel.completeOptionalStep('post-prayer-dhikr'), isFalse);
   });
 
   test('optional routine can be Not Today with or without a reason', () {

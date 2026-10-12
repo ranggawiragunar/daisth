@@ -3,11 +3,15 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/design_system/components/istiqam_notice_controller.dart';
 import '../../features/history/presentation/history_placeholder_screen.dart';
+import '../../features/dhikr/data/demo/dhikr_demo_data.dart';
+import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
 import '../../features/routines/data/demo/routine_demo_data.dart';
 import '../../features/routines/presentation/routine_detail_screen.dart';
 import '../../features/routines/presentation/routines_placeholder_screen.dart';
 import '../../features/settings/presentation/settings_placeholder_screen.dart';
 import '../../features/today/presentation/today_screen.dart';
+import '../../features/reader/data/demo/reader_demo_data.dart';
+import '../../features/reader/presentation/screens/reader_screen.dart';
 import '../app_preferences_scope.dart';
 import '../app_shell.dart';
 import 'app_routes.dart';
@@ -99,6 +103,44 @@ GoRouter createAppRouter({
           noticeController: noticeController,
         );
       },
+      routes: [
+        GoRoute(
+          path: RoutePaths.readerPathSegment,
+          name: AppRoute.reader.name,
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) {
+            final routineId = state.pathParameters['routineId']!;
+            final contentId = state.pathParameters['contentId']!;
+            final content = ReaderDemoData.byRoute(routineId, contentId);
+            if (content == null) {
+              return ReaderUnavailableScreen(routineId: routineId);
+            }
+            return ReaderScreen(
+              key: ValueKey('reader-$routineId-$contentId'),
+              routineId: routineId,
+              content: content,
+            );
+          },
+        ),
+        GoRoute(
+          path: RoutePaths.dhikrPathSegment,
+          name: AppRoute.dhikrCounter.name,
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) {
+            final routineId = state.pathParameters['routineId']!;
+            final dhikrId = state.pathParameters['dhikrId']!;
+            final sequence = DhikrDemoData.byRoute(routineId, dhikrId);
+            if (sequence == null) {
+              return DhikrUnavailableScreen(routineId: routineId);
+            }
+            return DhikrCounterScreen(
+              key: ValueKey('dhikr-$routineId-$dhikrId'),
+              routineId: routineId,
+              sequence: sequence,
+            );
+          },
+        ),
+      ],
     ),
   ],
 );

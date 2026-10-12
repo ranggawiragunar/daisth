@@ -89,7 +89,7 @@ abstract final class RoutineDemoData {
         rakaatCount: 4,
       ),
       RoutineStep(
-        id: 'dhikr',
+        id: 'post-prayer-dhikr',
         title: 'Dzikir setelah sholat',
         subtitle: 'Bisa dilanjutkan setelah sholat',
         requirement: RoutineRequirement.optional,

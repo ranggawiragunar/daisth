@@ -145,6 +145,8 @@ class _AppearanceOption extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: foreground,
+                      fontSize: 12,
+                      height: 16 / 12,
                       fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                     ),
                   ),

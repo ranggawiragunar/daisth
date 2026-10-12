@@ -78,6 +78,20 @@ void main() {
       Brightness.dark,
     );
     expect(find.byKey(const ValueKey('navigation-settings')), findsOneWidget);
+    final darkSettingsPill =
+        tester
+                .widget<AnimatedContainer>(
+                  find.byKey(const ValueKey('navigation-label-settings')),
+                )
+                .decoration!
+            as BoxDecoration;
+    expect(
+      darkSettingsPill.color,
+      Theme.of(
+        tester.element(find.text('Appearance')),
+      ).colorScheme.primaryContainer,
+    );
+    expect(tester.widget<Text>(find.text('System')).style?.fontSize, 12);
 
     await tester.tap(find.text('Light'));
     await tester.pumpAndSettle();
@@ -115,5 +129,63 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     }
+  });
+
+  testWidgets('selected navigation treatment is a label pill', (tester) async {
+    await tester.pumpWidget(const IstiqamApp());
+
+    final todayLabel = tester.widget<AnimatedContainer>(
+      find.byKey(const ValueKey('navigation-label-today')),
+    );
+    final todayDecoration = todayLabel.decoration! as BoxDecoration;
+    expect(
+      todayDecoration.color,
+      Theme.of(
+        tester.element(find.text('Assalamu\'alaikum')),
+      ).colorScheme.primaryContainer,
+    );
+    expect(todayDecoration.borderRadius, BorderRadius.circular(999));
+    expect(
+      tester
+          .widget<Icon>(find.byKey(const ValueKey('navigation-icon-today')))
+          .size,
+      20,
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.descendant(
+              of: find.byKey(const ValueKey('navigation-label-today')),
+              matching: find.text('Today'),
+            ),
+          )
+          .style
+          ?.fontSize,
+      10.5,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('navigation-history')));
+    await tester.pumpAndSettle();
+    final historyDecoration =
+        tester
+                .widget<AnimatedContainer>(
+                  find.byKey(const ValueKey('navigation-label-history')),
+                )
+                .decoration!
+            as BoxDecoration;
+    final inactiveTodayDecoration =
+        tester
+                .widget<AnimatedContainer>(
+                  find.byKey(const ValueKey('navigation-label-today')),
+                )
+                .decoration!
+            as BoxDecoration;
+    expect(
+      historyDecoration.color,
+      Theme.of(
+        tester.element(find.text('Belum ada history')),
+      ).colorScheme.primaryContainer,
+    );
+    expect(inactiveTodayDecoration.color, Colors.transparent);
   });
 }

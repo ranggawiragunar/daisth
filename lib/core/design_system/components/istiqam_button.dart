@@ -12,6 +12,7 @@ class IstiqamButton extends StatelessWidget {
     this.style = IstiqamButtonStyle.primary,
     this.compact = false,
     this.icon,
+    this.labelFontSize,
     super.key,
   });
 
@@ -20,6 +21,7 @@ class IstiqamButton extends StatelessWidget {
   final IstiqamButtonStyle style;
   final bool compact;
   final IconData? icon;
+  final double? labelFontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +47,9 @@ class IstiqamButton extends StatelessWidget {
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(IstiqamRadius.large),
     );
-    final textStyle = Theme.of(context).textTheme.labelLarge;
+    final textStyle = Theme.of(
+      context,
+    ).textTheme.labelLarge?.copyWith(fontSize: labelFontSize);
 
     return switch (style) {
       IstiqamButtonStyle.primary => SizedBox(

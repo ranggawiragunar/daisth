@@ -140,34 +140,46 @@ class _NavigationItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(IstiqamRadius.large),
         child: SizedBox(
           height: 60,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            margin: const EdgeInsets.symmetric(horizontal: 2),
-            decoration: BoxDecoration(
-              color: selected
-                  ? theme.colorScheme.primaryContainer
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(IstiqamRadius.large),
-            ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   selected ? destination.selectedIcon : destination.icon,
+                  key: ValueKey(
+                    'navigation-icon-${destination.label.toLowerCase()}',
+                  ),
                   color: color,
                   size: 20,
                 ),
                 const SizedBox(height: 3),
-                Text(
-                  destination.label,
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: color,
-                    fontSize: 10.5,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                AnimatedContainer(
+                  key: ValueKey(
+                    'navigation-label-${destination.label.toLowerCase()}',
+                  ),
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? theme.colorScheme.primaryContainer
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(IstiqamRadius.pill),
+                  ),
+                  child: Text(
+                    destination.label,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: color,
+                      fontSize: 10.5,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    ),
                   ),
                 ),
               ],

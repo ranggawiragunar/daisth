@@ -18,3 +18,8 @@ There is no Firebase integration, authentication, prayer-time calculation,
 notification scheduling, location support, network access, or persisted routine
 state in this scope. History, Routines, and Settings are presentation
 placeholders.
+
+The Zuhur Routine Detail includes an optional post-prayer dhikr session. It
+guides the user through 33 Subhanallah, 33 Alhamdulillah, 33 Allahu Akbar, and
+one closing tahlil, with automatic advancement between items. Completion is
+returned to Routine Detail; unfinished session progress remains temporary.

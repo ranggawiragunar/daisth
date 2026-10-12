@@ -11,13 +11,17 @@ class RoutineLinkItem {
     required this.title,
     required this.subtitle,
     this.meta,
+    this.readerContentId,
     this.icon = PhosphorIconsRegular.bookOpenText,
+    this.isActionAvailable = true,
   });
 
   final String title;
   final String subtitle;
   final String? meta;
+  final String? readerContentId;
   final IconData icon;
+  final bool isActionAvailable;
 }
 
 class RoutineGuidanceSection extends StatelessWidget {
@@ -39,23 +43,35 @@ class RoutineGuidanceSection extends StatelessWidget {
 }
 
 class RoutineHelpfulActions extends StatelessWidget {
-  const RoutineHelpfulActions({required this.onTap, super.key});
+  const RoutineHelpfulActions({
+    required this.onTap,
+    required this.prayerCompleted,
+    required this.dhikrCompleted,
+    super.key,
+  });
 
   final ValueChanged<RoutineLinkItem> onTap;
+  final bool prayerCompleted;
+  final bool dhikrCompleted;
 
   @override
   Widget build(BuildContext context) => _RoutineLinkSection(
     title: 'Helpful Actions',
-    items: const [
-      RoutineLinkItem(
+    items: [
+      const RoutineLinkItem(
         title: 'Nearby Mosque',
         subtitle: 'Find a place to pray nearby',
         icon: PhosphorIconsRegular.mapPin,
       ),
       RoutineLinkItem(
         title: 'Post-Prayer Dhikr',
-        subtitle: 'Available after prayer',
+        subtitle: dhikrCompleted
+            ? 'Dzikir sudah tercatat'
+            : prayerCompleted
+            ? 'Mulai dzikir setelah sholat'
+            : 'Available after prayer',
         icon: PhosphorIconsRegular.handsPraying,
+        isActionAvailable: prayerCompleted,
       ),
     ],
     onTap: onTap,
@@ -88,6 +104,7 @@ class _RoutineLinkSection extends StatelessWidget {
             children: [
               for (var index = 0; index < items.length; index++) ...[
                 _RoutineLinkTile(
+                  key: ValueKey('routine-link-${items[index].title}'),
                   item: items[index],
                   onTap: () => onTap(items[index]),
                 ),
@@ -108,7 +125,7 @@ class _RoutineLinkSection extends StatelessWidget {
 }
 
 class _RoutineLinkTile extends StatelessWidget {
-  const _RoutineLinkTile({required this.item, required this.onTap});
+  const _RoutineLinkTile({required this.item, required this.onTap, super.key});
 
   final RoutineLinkItem item;
   final VoidCallback onTap;
@@ -138,7 +155,9 @@ class _RoutineLinkTile extends StatelessWidget {
                   child: Icon(
                     item.icon,
                     size: 19,
-                    color: theme.colorScheme.primary,
+                    color: item.isActionAvailable
+                        ? theme.colorScheme.primary
+                        : secondary,
                   ),
                 ),
                 const SizedBox(width: IstiqamSpacing.sm),
@@ -146,7 +165,14 @@ class _RoutineLinkTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.title, style: theme.textTheme.bodyMedium),
+                      Text(
+                        item.title,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: item.isActionAvailable
+                              ? theme.colorScheme.onSurface
+                              : secondary,
+                        ),
+                      ),
                       const SizedBox(height: 2),
                       Text(
                         item.subtitle,

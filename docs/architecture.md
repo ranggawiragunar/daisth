@@ -60,3 +60,15 @@ Routine Detail currently uses demo fixtures from
 current in-memory session state. Step changes and Not Today reasons are
 temporary and can reset when the detail route is closed and reopened. This
 demo-state limitation is intentional until a real data source is introduced.
+
+Reader follows the same feature-first structure: `ReaderContent` and
+`ReaderSection` live in the domain, `ReaderDemoData` provides temporary local
+fixtures, and `ReaderViewModel` owns visibility and text-size preferences for
+the current screen session. Arabic remains visible for Arabic content; opening
+a reading never changes a routine's completion state.
+
+Dhikr follows the same local-session pattern: `DhikrSequence` and `DhikrItem`
+are immutable domain models, `DhikrDemoData` provides the post-prayer fixture,
+and `DhikrCounterViewModel` owns count, sequence progress, undo, and reset state.
+Finishing the sequence returns a result to Routine Detail, where the optional
+post-prayer step is marked complete. No counter progress is persisted.

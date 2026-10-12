@@ -262,13 +262,19 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                 const SizedBox(height: IstiqamSpacing.section),
                                 RoutineGuidanceSection(
                                   items: _guidanceItems,
-                                  onTap: (_) => _openReader(),
+                                  onTap: _onGuidanceTap,
                                 ),
                               ],
                               if (_routine.id == 'zuhur') ...[
                                 const SizedBox(height: IstiqamSpacing.section),
                                 RoutineHelpfulActions(
                                   onTap: _openHelpfulAction,
+                                  prayerCompleted: _allRequiredDone,
+                                  dhikrCompleted: _steps.any(
+                                    (step) =>
+                                        step.id == 'post-prayer-dhikr' &&
+                                        step.completed,
+                                  ),
                                 ),
                               ],
                             ],
@@ -290,6 +296,12 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   List<RoutineLinkItem> get _guidanceItems {
     if (_routine.id == 'sholat-malam') {
       return const [
+        RoutineLinkItem(
+          title: 'Doa Sebelum Tidur',
+          subtitle: 'Dibaca ketika hendak tidur · Reader preview',
+          meta: 'Reader',
+          readerContentId: 'doa-sebelum-tidur',
+        ),
         RoutineLinkItem(
           title: 'Doa setelah Tahajud',
           subtitle: 'A short reflection after prayer',
@@ -314,13 +326,42 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     return const [];
   }
 
-  void _openHelpfulAction(RoutineLinkItem item) {
-    _showNotice(
-      type: IstiqamNoticeType.info,
-      title: item.title == 'Nearby Mosque'
-          ? 'Mosque finder segera hadir'
-          : 'Dhikr counter segera hadir',
+  void _onGuidanceTap(RoutineLinkItem item) {
+    final contentId = item.readerContentId;
+    if (contentId == null) {
+      _openReader();
+      return;
+    }
+    final path = RoutePaths.reader(_routine.id, contentId);
+    context.go(path);
+  }
+
+  Future<void> _openHelpfulAction(RoutineLinkItem item) async {
+    if (item.title == 'Nearby Mosque') {
+      _showNotice(
+        type: IstiqamNoticeType.info,
+        title: 'Mosque finder segera hadir',
+      );
+      return;
+    }
+    if (!_allRequiredDone) {
+      _showNotice(
+        type: IstiqamNoticeType.info,
+        title: 'Selesaikan sholat terlebih dahulu',
+      );
+      return;
+    }
+    if (_steps.any(
+      (step) => step.id == 'post-prayer-dhikr' && step.completed,
+    )) {
+      _showNotice(type: IstiqamNoticeType.info, title: 'Dzikir sudah tercatat');
+      return;
+    }
+    final completed = await context.push<bool>(
+      RoutePaths.dhikr(_routine.id, 'post-prayer'),
     );
+    if (!mounted || completed != true) return;
+    _viewModel.completeOptionalStep('post-prayer-dhikr');
   }
 
   Widget _buildBottomActions(ThemeData theme, IstiqamThemeExtension extension) {

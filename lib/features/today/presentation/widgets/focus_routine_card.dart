@@ -109,11 +109,15 @@ class FocusRoutineCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: IstiqamSpacing.lg),
-                    Text('Sholat Zuhur', style: theme.textTheme.titleLarge),
+                    Text(
+                      'Sholat Zuhur',
+                      style: theme.textTheme.titleLarge?.copyWith(fontSize: 19),
+                    ),
                     const SizedBox(height: IstiqamSpacing.xs),
                     Text(
                       'Starts in 12 minutes',
                       style: theme.textTheme.bodyMedium?.copyWith(
+                        fontSize: 10,
                         color: colors.onSurfaceVariant,
                       ),
                     ),
@@ -129,6 +133,7 @@ class FocusRoutineCard extends StatelessWidget {
                         Text(
                           '11:47',
                           style: theme.textTheme.labelLarge?.copyWith(
+                            fontSize: 12,
                             color: colors.primary,
                             fontFeatures: const [FontFeature.tabularFigures()],
                           ),
@@ -141,6 +146,7 @@ class FocusRoutineCard extends StatelessWidget {
                       onPressed: onOpenRoutine,
                       compact: true,
                       icon: PhosphorIconsRegular.arrowRight,
+                      labelFontSize: 12,
                     ),
                   ],
                 ),
