@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../core/design_system/components/istiqam_notice_controller.dart';
 import '../core/design_system/theme/istiqam_theme.dart';
 import 'app_preferences_scope.dart';
+import 'dependencies/app_dependencies.dart';
 import 'router/app_router.dart';
 
 class IstiqamApp extends StatefulWidget {
@@ -17,12 +18,17 @@ class _IstiqamAppState extends State<IstiqamApp> {
   ThemeMode _themeMode = ThemeMode.system;
   late final IstiqamNoticeController _noticeController;
   late final GoRouter _router;
+  late final AppDependencies _dependencies;
 
   @override
   void initState() {
     super.initState();
     _noticeController = IstiqamNoticeController();
-    _router = createAppRouter(noticeController: _noticeController);
+    _dependencies = AppDependencies();
+    _router = createAppRouter(
+      noticeController: _noticeController,
+      dependencies: _dependencies,
+    );
   }
 
   void _setThemeMode(ThemeMode themeMode) {
@@ -33,6 +39,7 @@ class _IstiqamAppState extends State<IstiqamApp> {
   @override
   void dispose() {
     _router.dispose();
+    _dependencies.dispose();
     _noticeController.dispose();
     super.dispose();
   }

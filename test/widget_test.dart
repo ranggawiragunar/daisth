@@ -28,7 +28,8 @@ void main() {
     expect(find.byType(IstiqamNotice), findsOneWidget);
     expect(find.byType(SnackBar), findsNothing);
 
-    await tester.tap(find.byTooltip('Dismiss notification'));
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
     await tester.pumpAndSettle();
     expect(find.byType(IstiqamNotice), findsNothing);
     await tester.tap(find.byTooltip('Back'));

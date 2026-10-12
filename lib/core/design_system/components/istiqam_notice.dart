@@ -4,7 +4,6 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 import '../theme/istiqam_notice_palette.dart';
 import '../theme/istiqam_theme_extension.dart';
 import '../tokens/istiqam_radius.dart';
-import '../tokens/istiqam_spacing.dart';
 
 enum IstiqamNoticeType { success, info, warning, error, neutral }
 
@@ -75,83 +74,69 @@ class IstiqamNotice extends StatelessWidget {
             ),
           ],
         ),
-        padding: const EdgeInsets.all(IstiqamSpacing.md),
-        child: Column(
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+        child: Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: inkColor.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(IstiqamRadius.medium),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(_icon, color: inkColor, size: 21),
-                ),
-                const SizedBox(width: IstiqamSpacing.md),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 1),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(title, style: theme.textTheme.titleSmall),
-                        if (message != null) ...[
-                          const SizedBox(height: IstiqamSpacing.xxs),
-                          Text(
-                            message!,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: colors.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ],
+            Icon(_icon, color: inkColor, size: 19),
+            const SizedBox(width: 10),
+            Flexible(
+              fit: FlexFit.loose,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-                if (showCloseButton)
-                  IconButton(
-                    tooltip: 'Dismiss notification',
-                    onPressed: onClose,
-                    constraints: const BoxConstraints.tightFor(
-                      width: 44,
-                      height: 44,
+                  if (message != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      message!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontSize: 12,
+                        height: 1.25,
+                      ),
                     ),
-                    padding: EdgeInsets.zero,
-                    visualDensity: VisualDensity.standard,
-                    icon: Icon(
-                      PhosphorIconsRegular.x,
-                      size: 18,
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-              ],
+                  ],
+                ],
+              ),
             ),
             if (hasAction) ...[
-              const SizedBox(height: IstiqamSpacing.xs),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: onAction,
-                  style: TextButton.styleFrom(
-                    foregroundColor: inkColor,
-                    minimumSize: const Size(44, 44),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: IstiqamSpacing.md,
-                    ),
-                    textStyle: theme.textTheme.labelMedium,
-                    tapTargetSize: MaterialTapTargetSize.padded,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(IstiqamRadius.medium),
-                    ),
-                  ),
-                  icon: Icon(PhosphorIconsRegular.arrowRight, size: 16),
-                  label: Text(actionLabel!),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: onAction,
+                style: TextButton.styleFrom(
+                  foregroundColor: inkColor,
+                  minimumSize: const Size(44, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  textStyle: theme.textTheme.labelMedium,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(actionLabel!),
+              ),
+            ],
+            if (showCloseButton) ...[
+              const SizedBox(width: 4),
+              IconButton(
+                tooltip: 'Dismiss notification',
+                onPressed: onClose,
+                constraints: const BoxConstraints.tightFor(
+                  width: 36,
+                  height: 36,
+                ),
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                icon: Icon(
+                  PhosphorIconsRegular.x,
+                  size: 17,
+                  color: colors.onSurfaceVariant,
                 ),
               ),
             ],

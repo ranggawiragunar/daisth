@@ -15,9 +15,16 @@ screen. The Today sample displays routine progress, a next routine focus card,
 a timeline, a daily reflection, and a day closing entry.
 
 There is no Firebase integration, authentication, prayer-time calculation,
-notification scheduling, location support, network access, or persisted routine
-state in this scope. History, Routines, and Settings are presentation
-placeholders.
+notification scheduling, or persisted routine state in this scope. History,
+Routines, and Settings are presentation placeholders. Mosque Finder is the
+first network-backed feature: it uses OpenStreetMap data through the public
+Overpass API for MVP proximity discovery. Searches expand from 1.5 km to 3 km
+and then 5 km when fewer than six places are found, and the UI caps results at
+20. The public Overpass service is not assumed to be permanent production
+infrastructure; at significant scale, evaluate a replacement, proxy, or
+self-hosted service. Display visible OpenStreetMap attribution wherever its
+place data is shown. Location is foreground-only and session-only, with no
+location or search-history persistence.
 
 The Zuhur Routine Detail includes an optional post-prayer dhikr session. It
 guides the user through 33 Subhanallah, 33 Alhamdulillah, 33 Allahu Akbar, and

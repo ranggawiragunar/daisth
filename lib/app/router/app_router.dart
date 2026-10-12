@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/design_system/components/istiqam_notice_controller.dart';
+import '../../app/dependencies/app_dependencies.dart';
 import '../../features/history/presentation/history_placeholder_screen.dart';
 import '../../features/dhikr/data/demo/dhikr_demo_data.dart';
 import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
@@ -12,6 +13,8 @@ import '../../features/settings/presentation/settings_placeholder_screen.dart';
 import '../../features/today/presentation/today_screen.dart';
 import '../../features/reader/data/demo/reader_demo_data.dart';
 import '../../features/reader/presentation/screens/reader_screen.dart';
+import '../../features/mosque/presentation/screens/mosque_finder_screen.dart';
+import '../../features/mosque/presentation/view_models/mosque_finder_view_model.dart';
 import '../app_preferences_scope.dart';
 import '../app_shell.dart';
 import 'app_routes.dart';
@@ -21,6 +24,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'app-root');
 
 GoRouter createAppRouter({
   required IstiqamNoticeController noticeController,
+  required AppDependencies dependencies,
   String initialLocation = RoutePaths.today,
 }) => GoRouter(
   navigatorKey: _rootNavigatorKey,
@@ -137,6 +141,23 @@ GoRouter createAppRouter({
               key: ValueKey('dhikr-$routineId-$dhikrId'),
               routineId: routineId,
               sequence: sequence,
+            );
+          },
+        ),
+        GoRoute(
+          path: RoutePaths.mosquesPathSegment,
+          name: AppRoute.mosqueFinder.name,
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) {
+            final routineId = state.pathParameters['routineId']!;
+            return MosqueFinderScreen(
+              key: ValueKey('mosques-$routineId'),
+              routineId: routineId,
+              viewModel: MosqueFinderViewModel(
+                findNearbyMosques: dependencies.nearbyMosques,
+              ),
+              navigationService: dependencies.mapNavigationService,
+              noticeController: noticeController,
             );
           },
         ),

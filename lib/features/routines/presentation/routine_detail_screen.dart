@@ -337,11 +337,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   }
 
   Future<void> _openHelpfulAction(RoutineLinkItem item) async {
-    if (item.title == 'Nearby Mosque') {
-      _showNotice(
-        type: IstiqamNoticeType.info,
-        title: 'Mosque finder segera hadir',
-      );
+    if (item.actionId == 'nearby-mosque') {
+      context.go(RoutePaths.mosques(_routine.id));
       return;
     }
     if (!_allRequiredDone) {

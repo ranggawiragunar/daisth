@@ -7,6 +7,7 @@ abstract final class RoutePaths {
   static const routineDetailPattern = '/routines/:routineId';
   static const readerPathSegment = 'reader/:contentId';
   static const dhikrPathSegment = 'dhikr/:dhikrId';
+  static const mosquesPathSegment = 'mosques';
 
   static String routineDetail(String routineId) => '/routines/$routineId';
 
@@ -15,4 +16,6 @@ abstract final class RoutePaths {
 
   static String dhikr(String routineId, String dhikrId) =>
       '/routines/$routineId/dhikr/$dhikrId';
+
+  static String mosques(String routineId) => '/routines/$routineId/mosques';
 }

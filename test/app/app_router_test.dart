@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:istiqam/app/app_preferences_scope.dart';
+import 'package:istiqam/app/dependencies/app_dependencies.dart';
 import 'package:istiqam/app/router/app_router.dart';
 import 'package:istiqam/app/router/route_paths.dart';
+import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
+import 'package:istiqam/core/location/domain/models/location_access_status.dart';
+import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
 import 'package:istiqam/core/design_system/components/istiqam_notice_controller.dart';
 import 'package:istiqam/core/design_system/theme/istiqam_theme.dart';
 import 'package:istiqam/features/routines/presentation/routine_detail_screen.dart';
+import 'package:istiqam/features/mosque/presentation/screens/mosque_finder_screen.dart';
 
 void main() {
   testWidgets('root redirects to Today', (tester) async {
@@ -57,6 +62,33 @@ void main() {
     expect(find.text("Assalamu'alaikum"), findsOneWidget);
   });
 
+  testWidgets(
+    'Nearby Mosque opens the finder before completion outside shell',
+    (tester) async {
+      final harness = _RouterHarness(
+        initialLocation: '/routines/zuhur',
+        dependencies: AppDependencies(locationRepository: _DeniedLocation()),
+      );
+      addTearDown(harness.dispose);
+      await tester.pumpWidget(harness.app);
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Nearby Mosque'));
+      await tester.tap(
+        find.byKey(const ValueKey('routine-link-Nearby Mosque')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        harness.router.routeInformationProvider.value.uri.path,
+        '/routines/zuhur/mosques',
+      );
+      expect(find.byType(MosqueFinderScreen), findsOneWidget);
+      expect(find.text('Temukan tempat sholat di dekatmu'), findsOneWidget);
+      expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
+    },
+  );
+
   testWidgets('system back pops a Routine Detail route to Today', (
     tester,
   ) async {
@@ -98,14 +130,19 @@ void main() {
 }
 
 class _RouterHarness {
-  _RouterHarness({required String initialLocation}) {
+  _RouterHarness({
+    required String initialLocation,
+    AppDependencies? dependencies,
+  }) : dependencies = dependencies ?? AppDependencies() {
     router = createAppRouter(
       noticeController: noticeController,
+      dependencies: this.dependencies,
       initialLocation: initialLocation,
     );
   }
 
   final noticeController = IstiqamNoticeController();
+  final AppDependencies dependencies;
   late final GoRouter router;
 
   Widget get app => MaterialApp.router(
@@ -124,6 +161,25 @@ class _RouterHarness {
 
   void dispose() {
     router.dispose();
+    dependencies.dispose();
     noticeController.dispose();
   }
+}
+
+class _DeniedLocation implements LocationRepository {
+  @override
+  Future<LocationAccessStatus> checkAccess() async =>
+      LocationAccessStatus.denied;
+  @override
+  Future<GeoCoordinate> getCurrentLocation() async =>
+      throw StateError('permission denied');
+  @override
+  Future<GeoCoordinate?> getLastKnownLocation() async => null;
+  @override
+  Future<bool> openAppSettings() async => true;
+  @override
+  Future<bool> openLocationSettings() async => true;
+  @override
+  Future<LocationAccessStatus> requestAccess() async =>
+      LocationAccessStatus.denied;
 }

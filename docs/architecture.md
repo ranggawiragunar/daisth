@@ -72,3 +72,35 @@ are immutable domain models, `DhikrDemoData` provides the post-prayer fixture,
 and `DhikrCounterViewModel` owns count, sequence progress, undo, and reset state.
 Finishing the sequence returns a result to Routine Detail, where the optional
 post-prayer step is marked complete. No counter progress is persisted.
+
+## Real location and mosque data
+
+The first real data feature is Mosque Finder. Its domain contract remains
+provider-neutral (`MosqueRepository`), while `MosqueRepositoryData` coordinates
+the provider mapper and `MosqueOverpassService`:
+
+```text
+MosqueRepository
+↓
+MosqueRepositoryData
+↓
+MosqueOverpassService
+```
+
+Reusable foreground location follows the same separation:
+
+```text
+LocationRepository
+↓
+LocationRepositoryData
+↓
+LocationGeolocatorService
+```
+
+Repository names stay technology-neutral. Service names may expose the
+technology they directly call. `FindNearbyMosquesUseCase` coordinates the
+location repository and mosque repository, retries with broader nearby search
+radii, and returns session-only results. `AppDependencies` is the manual
+composition root and owns the shared HTTP client. Mosque search requests a
+foreground position only while the Finder is open; coordinates and search
+history are not persisted.

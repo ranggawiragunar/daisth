@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../tokens/istiqam_spacing.dart';
 import 'istiqam_notice.dart';
 
 class IstiqamNoticeController {
@@ -20,8 +20,12 @@ class IstiqamNoticeController {
     String? actionLabel,
     VoidCallback? onAction,
     Duration? duration = const Duration(seconds: 4),
-    bool showCloseButton = true,
+    bool? showCloseButton,
   }) {
+    final anchor = IstiqamNoticeAnchor.maybeOf(context);
+    final mediaQuery = MediaQuery.of(context);
+    final bottomInset =
+        anchor?.bottomInset ?? mediaQuery.viewPadding.bottom + 12;
     final overlay = Overlay.of(context, rootOverlay: true);
     final id = ++_activeId;
     _removeImmediately();
@@ -35,7 +39,9 @@ class IstiqamNoticeController {
         message: message,
         actionLabel: actionLabel,
         onAction: onAction,
-        showCloseButton: showCloseButton,
+        showCloseButton:
+            showCloseButton ?? (duration == null || onAction != null),
+        bottomInset: bottomInset,
         onDismiss: () => _dismiss(id),
         onDismissed: () => _removeIfCurrent(id),
       ),
@@ -112,6 +118,27 @@ class IstiqamNoticeScope extends InheritedWidget {
       controller != oldWidget.controller;
 }
 
+/// Provides the bottom clearance needed by an app-level floating notice.
+///
+/// Shells with a floating navigation surface can set a larger inset while
+/// standalone pages fall back to the device safe area in [show].
+class IstiqamNoticeAnchor extends InheritedWidget {
+  const IstiqamNoticeAnchor({
+    required this.bottomInset,
+    required super.child,
+    super.key,
+  });
+
+  final double bottomInset;
+
+  static IstiqamNoticeAnchor? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<IstiqamNoticeAnchor>();
+
+  @override
+  bool updateShouldNotify(IstiqamNoticeAnchor oldWidget) =>
+      bottomInset != oldWidget.bottomInset;
+}
+
 class _IstiqamNoticeLayer extends StatefulWidget {
   const _IstiqamNoticeLayer({
     required this.type,
@@ -122,6 +149,7 @@ class _IstiqamNoticeLayer extends StatefulWidget {
     this.actionLabel,
     this.onAction,
     this.showCloseButton = true,
+    required this.bottomInset,
     super.key,
   });
 
@@ -131,6 +159,7 @@ class _IstiqamNoticeLayer extends StatefulWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
   final bool showCloseButton;
+  final double bottomInset;
   final VoidCallback onDismiss;
   final VoidCallback onDismissed;
 
@@ -200,41 +229,35 @@ class _IstiqamNoticeLayerState extends State<_IstiqamNoticeLayer>
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: 0,
+      bottom: math.max(
+        widget.bottomInset,
+        MediaQuery.viewInsetsOf(context).bottom + 12,
+      ),
       left: 0,
       right: 0,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            IstiqamSpacing.xl,
-            IstiqamSpacing.md,
-            IstiqamSpacing.xl,
-            0,
-          ),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: AnimatedBuilder(
-                animation: _curvedAnimation,
-                child: IstiqamNotice(
-                  type: widget.type,
-                  title: widget.title,
-                  message: widget.message,
-                  actionLabel: widget.actionLabel,
-                  onAction:
-                      widget.actionLabel == null || widget.onAction == null
-                      ? null
-                      : _runAction,
-                  onClose: widget.onDismiss,
-                  showCloseButton: widget.showCloseButton,
-                ),
-                builder: (context, child) => Opacity(
-                  opacity: _curvedAnimation.value,
-                  child: Transform.translate(
-                    offset: Offset(0, -10 * (1 - _curvedAnimation.value)),
-                    child: child,
-                  ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: AnimatedBuilder(
+              animation: _curvedAnimation,
+              child: IstiqamNotice(
+                type: widget.type,
+                title: widget.title,
+                message: widget.message,
+                actionLabel: widget.actionLabel,
+                onAction: widget.actionLabel == null || widget.onAction == null
+                    ? null
+                    : _runAction,
+                onClose: widget.onDismiss,
+                showCloseButton: widget.showCloseButton,
+              ),
+              builder: (context, child) => Opacity(
+                opacity: _curvedAnimation.value,
+                child: Transform.translate(
+                  offset: Offset(0, 10 * (1 - _curvedAnimation.value)),
+                  child: child,
                 ),
               ),
             ),

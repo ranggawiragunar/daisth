@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
+import '../core/design_system/components/istiqam_notice_controller.dart';
 import '../core/design_system/tokens/istiqam_radius.dart';
 import '../core/design_system/tokens/istiqam_spacing.dart';
 import '../core/design_system/theme/istiqam_theme_extension.dart';
@@ -34,12 +35,17 @@ class AppShell extends StatelessWidget {
     const dockHeight = 68.0;
     const dockBottomGap = 8.0;
     const dockHorizontalMargin = 14.0;
+    final noticeBottomInset =
+        MediaQuery.paddingOf(context).bottom + dockBottomGap + dockHeight + 16;
     return Scaffold(
       extendBody: true,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          navigationShell,
+          IstiqamNoticeAnchor(
+            bottomInset: noticeBottomInset,
+            child: navigationShell,
+          ),
           Positioned(
             left: 0,
             right: 0,

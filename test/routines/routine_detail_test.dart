@@ -114,12 +114,6 @@ void main() {
     expect(find.text('Nearby Mosque'), findsOneWidget);
     expect(find.text('Post-Prayer Dhikr'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Nearby Mosque'));
-    await tester.tap(find.text('Nearby Mosque'));
-    await tester.pumpAndSettle();
-    expect(find.text('Mosque finder segera hadir'), findsOneWidget);
-    await _dismissNotice(tester, controller);
-
     await tester.tap(find.text('Mark Zuhur Done'));
     await tester.pumpAndSettle();
     expect(find.text('Recorded just now'), findsOneWidget);

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:istiqam/app/app_preferences_scope.dart';
+import 'package:istiqam/app/dependencies/app_dependencies.dart';
 import 'package:istiqam/app/router/app_router.dart';
 import 'package:istiqam/core/design_system/components/istiqam_notice_controller.dart';
 import 'package:istiqam/core/design_system/theme/istiqam_theme.dart';
@@ -208,12 +209,14 @@ class _DhikrRouterHarness {
   }) {
     router = createAppRouter(
       noticeController: noticeController,
+      dependencies: dependencies,
       initialLocation: initialLocation,
     );
   }
 
   final ThemeMode themeMode;
   final noticeController = IstiqamNoticeController();
+  final dependencies = AppDependencies();
   late final GoRouter router;
 
   Widget get app => MaterialApp.router(
@@ -233,6 +236,7 @@ class _DhikrRouterHarness {
 
   void dispose() {
     router.dispose();
+    dependencies.dispose();
     noticeController.dispose();
   }
 }

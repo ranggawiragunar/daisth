@@ -12,6 +12,7 @@ class RoutineLinkItem {
     required this.subtitle,
     this.meta,
     this.readerContentId,
+    this.actionId,
     this.icon = PhosphorIconsRegular.bookOpenText,
     this.isActionAvailable = true,
   });
@@ -20,6 +21,7 @@ class RoutineLinkItem {
   final String subtitle;
   final String? meta;
   final String? readerContentId;
+  final String? actionId;
   final IconData icon;
   final bool isActionAvailable;
 }
@@ -59,6 +61,7 @@ class RoutineHelpfulActions extends StatelessWidget {
     title: 'Helpful Actions',
     items: [
       const RoutineLinkItem(
+        actionId: 'nearby-mosque',
         title: 'Nearby Mosque',
         subtitle: 'Find a place to pray nearby',
         icon: PhosphorIconsRegular.mapPin,

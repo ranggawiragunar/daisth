@@ -6,4 +6,5 @@ enum AppRoute {
   routineDetail,
   reader,
   dhikrCounter,
+  mosqueFinder,
 }
