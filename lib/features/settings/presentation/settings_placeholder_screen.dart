@@ -1,36 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../core/design_system/components/istiqam_empty_state.dart';
 
 class SettingsPlaceholderScreen extends StatelessWidget {
   const SettingsPlaceholderScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return SafeArea(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(IstiqamSpacing.section),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.settings_outlined, color: colors.primary, size: 32),
-              const SizedBox(height: IstiqamSpacing.lg),
-              Text('Settings', style: textTheme.titleLarge),
-              const SizedBox(height: IstiqamSpacing.sm),
-              Text(
-                'Settings will be available in a later update.',
-                textAlign: TextAlign.center,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const IstiqamEmptyState(
+    imageAsset: 'assets/illustrations/empty_settings.png',
+    title: 'Pengaturan segera hadir',
+    description:
+        'Lokasi, reminder, tampilan, dan preferensi lainnya akan tersedia di sini.',
+  );
 }

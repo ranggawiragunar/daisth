@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  google_fonts: ^8.2.1
+  phosphor_icons: ^3.0.1
 
 dev_dependencies:
   flutter_test:
@@ -41,6 +43,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -53,10 +56,13 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/illustrations/
+    - assets/motifs/motif_line.png
+    - assets/motifs/motif_shape.png
+    - assets/motifs/motif_shadow.png
+    - assets/brand/istiqam_app_icon_master_1024.png
+    - assets/brand/istiqam_mark_foreground_1024.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -80,6 +86,14 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/brand/istiqam_app_icon_master_1024.png
+  remove_alpha_ios: true
+  adaptive_icon_background: '#1E3A34'
+  adaptive_icon_foreground: assets/brand/istiqam_mark_foreground_1024.png
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

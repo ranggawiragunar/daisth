@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/design_system/theme/istiqam_theme_extension.dart';
+import '../../../core/design_system/tokens/istiqam_colors.dart';
 import '../../../core/design_system/tokens/istiqam_spacing.dart';
 import 'widgets/daily_progress.dart';
 import 'widgets/focus_routine_card.dart';
@@ -13,76 +13,72 @@ class TodayScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    return SafeArea(
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: IstiqamSpacing.contentMaxWidth,
-          ),
-          child: CustomScrollView(
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
-                  IstiqamSpacing.screenHorizontal,
-                  IstiqamSpacing.xl,
-                  IstiqamSpacing.screenHorizontal,
-                  IstiqamSpacing.massive,
-                ),
-                sliver: SliverList.list(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Assalamu'alaikum",
-                                style: theme.textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: IstiqamSpacing.xxs),
-                              Text(
-                                'Monday, 12 October',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: colors.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
+    final ambience = theme.brightness == Brightness.dark
+        ? IstiqamColors.darkPrimary.withValues(alpha: 0.09)
+        : IstiqamColors.primary200.withValues(alpha: 0.28);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        gradient: RadialGradient(
+          center: const Alignment(0.9, -1.0),
+          radius: 1.15,
+          colors: [
+            ambience,
+            theme.scaffoldBackgroundColor.withValues(alpha: 0),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: IstiqamSpacing.contentMaxWidth,
+            ),
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    IstiqamSpacing.screenHorizontal,
+                    IstiqamSpacing.lg,
+                    IstiqamSpacing.screenHorizontal,
+                    IstiqamSpacing.massive,
+                  ),
+                  sliver: SliverList.list(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Assalamu'alaikum",
+                            style: theme.textTheme.titleSmall,
                           ),
-                        ),
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surface,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: theme
-                                  .extension<IstiqamThemeExtension>()!
-                                  .border,
+                          const SizedBox(height: IstiqamSpacing.xxs),
+                          Text(
+                            'Monday, 12 October',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.onSurfaceVariant,
                             ),
                           ),
-                          child: Icon(
-                            Icons.person_outline_rounded,
-                            color: colors.onSurfaceVariant,
-                            size: 21,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: IstiqamSpacing.section),
-                    const DailyProgress(),
-                    const SizedBox(height: IstiqamSpacing.xxl),
-                    const FocusRoutineCard(),
-                    const SizedBox(height: IstiqamSpacing.section),
-                    Text("Today's Routine", style: theme.textTheme.titleMedium),
-                    const SizedBox(height: IstiqamSpacing.xl),
-                    const RoutineTimeline(),
-                  ],
+                        ],
+                      ),
+                      const SizedBox(height: IstiqamSpacing.xl),
+                      const FocusRoutineCard(),
+                      const SizedBox(height: IstiqamSpacing.xxl),
+                      const DailyProgress(),
+                      const SizedBox(height: IstiqamSpacing.section),
+                      Text(
+                        "Today's Routine",
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: IstiqamSpacing.lg),
+                      const RoutineTimeline(),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -1,4 +1,4 @@
-package com.randevlab.istiqam
+package com.rendev.istiqam
 
 import io.flutter.embedding.android.FlutterActivity
 

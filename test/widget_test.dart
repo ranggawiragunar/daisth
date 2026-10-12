@@ -14,6 +14,6 @@ void main() {
     await tester.tap(find.text('History').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Your routine history will appear here.'), findsOneWidget);
+    expect(find.text('Belum ada history'), findsOneWidget);
   });
 }

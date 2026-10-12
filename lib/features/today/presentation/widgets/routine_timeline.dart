@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/design_system/components/istiqam_status_indicator.dart';
 import '../../../../core/design_system/theme/istiqam_theme_extension.dart';
+import '../../../../core/design_system/tokens/istiqam_radius.dart';
 import '../../../../core/design_system/tokens/istiqam_spacing.dart';
 
 class _RoutineEntry {
@@ -10,14 +11,16 @@ class _RoutineEntry {
     required this.title,
     required this.status,
     this.detail,
-    this.isNext = false,
+    this.isCurrent = false,
+    this.isEvening = false,
   });
 
   final String time;
   final String title;
   final RoutineStatus status;
   final String? detail;
-  final bool isNext;
+  final bool isCurrent;
+  final bool isEvening;
 }
 
 class RoutineTimeline extends StatelessWidget {
@@ -47,7 +50,7 @@ class RoutineTimeline extends StatelessWidget {
       title: 'Sholat Zuhur',
       status: RoutineStatus.upcoming,
       detail: 'Next routine',
-      isNext: true,
+      isCurrent: true,
     ),
     _RoutineEntry(
       time: '15:08',
@@ -68,6 +71,7 @@ class RoutineTimeline extends StatelessWidget {
       time: '20:30',
       title: 'Daily Reflection',
       status: RoutineStatus.upcoming,
+      isEvening: true,
     ),
     _RoutineEntry(
       time: '21:00',
@@ -85,7 +89,10 @@ class RoutineTimeline extends StatelessWidget {
           _TimelineRow(
             entry: _entries[index],
             isLast: index == _entries.length - 1,
-            connectorColor: extension.divider,
+            connectorColor: _entries[index].status == RoutineStatus.completed
+                ? extension.completed.withValues(alpha: 0.42)
+                : extension.divider,
+            currentFill: extension.softSurface,
           ),
       ],
     );
@@ -97,83 +104,111 @@ class _TimelineRow extends StatelessWidget {
     required this.entry,
     required this.isLast,
     required this.connectorColor,
+    required this.currentFill,
   });
 
   final _RoutineEntry entry;
   final bool isLast;
   final Color connectorColor;
+  final Color currentFill;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = entry.isNext
-        ? theme.colorScheme.primary
-        : theme.colorScheme.onSurfaceVariant;
-    final titleStyle = entry.isNext
+    final colors = theme.colorScheme;
+    final titleStyle = entry.isCurrent
         ? theme.textTheme.titleSmall
-        : theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500);
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            width: 52,
-            child: Padding(
-              padding: const EdgeInsets.only(top: IstiqamSpacing.xs),
-              child: Text(
-                entry.time,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: entry.isNext
-                      ? color
-                      : theme.colorScheme.onSurfaceVariant,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 24,
-            child: Column(
-              children: [
-                IstiqamStatusIndicator(
-                  status: entry.status,
-                  size: entry.isNext ? 20 : 18,
-                ),
-                if (!isLast)
-                  Expanded(
-                    child: Container(
-                      width: 1,
-                      margin: const EdgeInsets.symmetric(vertical: 3),
-                      color: connectorColor,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(width: IstiqamSpacing.md),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: IstiqamSpacing.xl),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(entry.title, style: titleStyle),
-                  if (entry.detail != null) ...[
-                    const SizedBox(height: IstiqamSpacing.xxs),
-                    Text(
-                      entry.detail!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: entry.status == RoutineStatus.completed
-                            ? theme.colorScheme.onSurfaceVariant
-                            : color,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+        : theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500);
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(entry.title, style: titleStyle),
+        if (entry.detail != null) ...[
+          const SizedBox(height: IstiqamSpacing.xxs),
+          Text(
+            entry.detail!,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: entry.isCurrent ? colors.primary : colors.onSurfaceVariant,
             ),
           ),
         ],
+      ],
+    );
+
+    return Padding(
+      padding: EdgeInsets.only(top: entry.isEvening ? IstiqamSpacing.md : 0),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: entry.isCurrent ? currentFill : Colors.transparent,
+          borderRadius: BorderRadius.circular(IstiqamRadius.medium),
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: IstiqamSpacing.xs,
+          vertical: entry.isCurrent ? IstiqamSpacing.xs : 0,
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                width: 52,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 11),
+                  child: Text(
+                    entry.time,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: entry.isCurrent
+                          ? colors.primary
+                          : colors.onSurfaceVariant,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 26,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 8),
+                    IstiqamStatusIndicator(
+                      status: entry.status,
+                      size: entry.isCurrent ? 22 : 18,
+                      isCurrent: entry.isCurrent,
+                    ),
+                    if (!isLast)
+                      Expanded(
+                        child: Container(
+                          width: 1,
+                          margin: const EdgeInsets.symmetric(vertical: 2),
+                          color: connectorColor,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: IstiqamSpacing.sm),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: entry.isCurrent ? 0 : 13),
+                  child: entry.isCurrent
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: IstiqamSpacing.md,
+                            vertical: IstiqamSpacing.sm,
+                          ),
+                          child: content,
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.only(top: 9),
+                          child: content,
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

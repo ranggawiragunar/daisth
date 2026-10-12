@@ -11,6 +11,7 @@ class IstiqamThemeExtension extends ThemeExtension<IstiqamThemeExtension> {
     required this.divider,
     required this.softSurface,
     required this.warmSurface,
+    required this.artMatte,
     required this.completed,
     required this.partial,
     required this.due,
@@ -23,6 +24,7 @@ class IstiqamThemeExtension extends ThemeExtension<IstiqamThemeExtension> {
   final Color divider;
   final Color softSurface;
   final Color warmSurface;
+  final Color artMatte;
   final Color completed;
   final Color partial;
   final Color due;
@@ -44,6 +46,7 @@ class IstiqamThemeExtension extends ThemeExtension<IstiqamThemeExtension> {
     divider: IstiqamColors.divider,
     softSurface: IstiqamColors.primary50,
     warmSurface: IstiqamColors.accent100,
+    artMatte: Color(0xFFFAF6EE),
     completed: IstiqamColors.primary700,
     partial: IstiqamColors.accent700,
     due: IstiqamColors.primary800,
@@ -57,6 +60,7 @@ class IstiqamThemeExtension extends ThemeExtension<IstiqamThemeExtension> {
     divider: IstiqamColors.darkDivider,
     softSurface: Color(0xFF24342D),
     warmSurface: Color(0xFF342B25),
+    artMatte: Color(0xFF342F28),
     completed: IstiqamColors.darkPrimary,
     partial: IstiqamColors.darkAccent,
     due: Color(0xFFA4C4B7),
@@ -71,6 +75,7 @@ class IstiqamThemeExtension extends ThemeExtension<IstiqamThemeExtension> {
     Color? divider,
     Color? softSurface,
     Color? warmSurface,
+    Color? artMatte,
     Color? completed,
     Color? partial,
     Color? due,
@@ -82,6 +87,7 @@ class IstiqamThemeExtension extends ThemeExtension<IstiqamThemeExtension> {
     divider: divider ?? this.divider,
     softSurface: softSurface ?? this.softSurface,
     warmSurface: warmSurface ?? this.warmSurface,
+    artMatte: artMatte ?? this.artMatte,
     completed: completed ?? this.completed,
     partial: partial ?? this.partial,
     due: due ?? this.due,
@@ -101,6 +107,7 @@ class IstiqamThemeExtension extends ThemeExtension<IstiqamThemeExtension> {
       divider: Color.lerp(divider, other.divider, t)!,
       softSurface: Color.lerp(softSurface, other.softSurface, t)!,
       warmSurface: Color.lerp(warmSurface, other.warmSurface, t)!,
+      artMatte: Color.lerp(artMatte, other.artMatte, t)!,
       completed: Color.lerp(completed, other.completed, t)!,
       partial: Color.lerp(partial, other.partial, t)!,
       due: Color.lerp(due, other.due, t)!,
