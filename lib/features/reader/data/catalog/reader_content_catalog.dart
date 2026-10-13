@@ -2,8 +2,8 @@ import '../../domain/models/reader_content.dart';
 import '../../domain/models/reader_section.dart';
 
 /// Verified local Reader text used by the built-in bedtime routine.
-/// Qur'an transliteration and Indonesian translation follow Qur'an Kemenag
-/// (Mushaf Standar Indonesia, translation edition 2019).
+/// Qur'an Latin transliterations follow the per-verse Qur'an Kemenag pages;
+/// Indonesian translations use the 2019 translation edition.
 abstract final class ReaderContentCatalog {
   static final bedtimeDua = ReaderContent(
     id: 'doa-sebelum-tidur',

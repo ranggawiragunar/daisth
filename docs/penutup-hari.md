@@ -49,14 +49,34 @@ complete. Only the separate checklist control writes completion. Historical
 Reader navigation preserves the selected History date and likewise makes no
 record write.
 
-Qur'an content is local, split at verse boundaries, and uses Qur'an Kemenag
-transliteration and Indonesian translation (2019 edition). Source references:
+Qur'an content is local and split at verse boundaries. Latin transliteration
+was cross-checked against the per-verse transliteration published by Qur'an
+Kemenag. Indonesian translation follows Qur'an Kemenag's 2019 translation
+edition. The Latin text keeps Kemenag's diacritics and pronunciation forms;
+local curly apostrophes and a few joined-word hyphens are typography
+normalizations. No transliteration wording needed correction in this audit.
 
-- Ayat Kursi: Al-Baqarah 2:255
-- Al-Ikhlas: Qur'an 112
-- Al-Falaq: Qur'an 113
-- An-Nas: Qur'an 114
-- Last two verses of Al-Baqarah: 2:285–286
+Verified transliteration sources:
+
+- Ayat Kursi (`ayat-kursi`), Al-Baqarah 2:255:
+  [Qur'an Kemenag, 2:255](https://quran.kemenag.go.id/quran/per-ayat/surah/2?from=255&to=255)
+- Al-Ikhlas (`al-ikhlas`), Qur'an 112:1–4:
+  [Qur'an Kemenag, Surah 112](https://quran.kemenag.go.id/quran/per-ayat/surah/112?from=1&to=4)
+- Al-Falaq (`al-falaq`), Qur'an 113:1–5:
+  [Qur'an Kemenag, Surah 113](https://quran.kemenag.go.id/quran/per-ayat/surah/113?from=1&to=5)
+- An-Nas (`an-nas`), Qur'an 114:1–6:
+  [Qur'an Kemenag, Surah 114](https://quran.kemenag.go.id/quran/per-ayat/surah/114?from=1&to=6)
+- Al-Baqarah (`al-baqarah-285-286`), 2:285–286:
+  [Qur'an Kemenag, 2:285–286](https://quran.kemenag.go.id/quran/per-ayat/surah/2?from=285&to=286)
+- The shared basmala for the three short surahs:
+  [Qur'an Kemenag, Surah 1:1](https://quran.kemenag.go.id/quran/per-ayat/surah/1?from=1&to=1)
+
+The Qur'an Kemenag pages show the Arabic text, Latin transliteration, and
+Indonesian translation together. The app's `sourceLabel` names the 2019
+translation edition; this section records the distinct transliteration source.
+
+Other source references:
+
 - Bedtime dua: Sahih al-Bukhari 6314
 - Short three-surah bedtime guidance reference, if shown: Sahih al-Bukhari 5017
 
