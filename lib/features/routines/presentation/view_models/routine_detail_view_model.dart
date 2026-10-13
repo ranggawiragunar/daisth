@@ -157,6 +157,25 @@ class RoutineDetailViewModel extends ChangeNotifier {
     });
   }
 
+  Future<bool> markSimpleRoutineDone() async {
+    if (routine.steps.isNotEmpty ||
+        status == RoutineStatus.completed ||
+        isSaving ||
+        isLoading) {
+      return false;
+    }
+    return _mutate(() async {
+      await repository.markCompleted(
+        routine: routine,
+        day: calendarDay,
+        now: _now(),
+      );
+      await _loadFromRepository();
+      justCompleted = true;
+      return true;
+    });
+  }
+
   Future<bool> markNotToday({String? reason}) async {
     if (!isOptional ||
         status == RoutineStatus.notToday ||

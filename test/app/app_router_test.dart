@@ -12,7 +12,13 @@ import 'package:daisth/core/design_system/components/daisth_notice_controller.da
 import 'package:daisth/core/design_system/theme/daisth_theme.dart';
 import 'package:daisth/features/routines/presentation/routine_detail_screen.dart';
 import 'package:daisth/features/mosque/presentation/screens/mosque_finder_screen.dart';
+import 'package:daisth/features/routines/domain/models/routine_definition.dart';
+import 'package:daisth/features/routines/domain/models/routine_origin.dart';
+import 'package:daisth/features/routines/domain/models/routine_priority.dart';
+import 'package:daisth/features/routines/domain/models/routine_schedule.dart';
 
+import '../support/fake_routine_repository.dart';
+import '../support/fake_routine_record_repository.dart';
 import '../support/test_persistence.dart';
 
 void main() {
@@ -64,6 +70,47 @@ void main() {
     expect(find.text("Assalamu'alaikum"), findsOneWidget);
   });
 
+  testWidgets('stable custom routine IDs resolve through Routine Detail', (
+    tester,
+  ) async {
+    final created = DateTime.utc(2026, 10, 13);
+    final custom = RoutineDefinition(
+      id: 'custom-stable-route',
+      origin: RoutineOrigin.custom,
+      title: 'Morning Reading',
+      description: null,
+      isEnabled: true,
+      isArchived: false,
+      schedule: RoutineSchedule.fixed(6 * 60 + 30),
+      reminderEnabled: true,
+      priority: RoutinePriority.medium,
+      sortOrder: 100,
+      createdAt: created,
+      updatedAt: created,
+    );
+    final harness = _RouterHarness(
+      initialLocation: '/routines/${custom.id}',
+      dependencies: AppDependencies(
+        locationRepository: _DeniedLocation(),
+        databaseService: TestPersistence.createDatabaseService(),
+        routineRepository: FakeRoutineRepository(definitions: [custom]),
+        routineRecordRepository: FakeRoutineRecordRepository(),
+        startTodayClock: false,
+      ),
+    );
+    addTearDown(harness.dispose);
+    await tester.pumpWidget(harness.app);
+    await tester.pumpAndSettle();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 30)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RoutineDetailScreen), findsOneWidget);
+    expect(find.text('Morning Reading'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'Nearby Mosque opens the finder before completion outside shell',
     (tester) async {
@@ -72,6 +119,7 @@ void main() {
         dependencies: AppDependencies(
           locationRepository: _DeniedLocation(),
           databaseService: TestPersistence.createDatabaseService(),
+          routineRepository: FakeRoutineRepository(),
           startTodayClock: false,
         ),
       );
@@ -148,6 +196,7 @@ class _RouterHarness {
            AppDependencies(
              locationRepository: _DeniedLocation(),
              databaseService: TestPersistence.createDatabaseService(),
+             routineRepository: FakeRoutineRepository(),
              startTodayClock: false,
            ) {
     router = createAppRouter(

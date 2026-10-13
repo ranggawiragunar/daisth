@@ -10,6 +10,9 @@ import '../../../prayer_times/domain/models/prayer_name.dart';
 import '../../../prayer_times/domain/models/prayer_period_state.dart';
 import '../../../prayer_times/presentation/prayer_time_presentation.dart';
 import '../../../routines/domain/models/routine_status.dart' as routine_domain;
+import '../../../routines/domain/models/prayer_key.dart';
+import '../../../routines/domain/models/routine_definition.dart';
+import '../../../routines/domain/models/routine_schedule.dart';
 
 class _RoutineEntry {
   const _RoutineEntry({
@@ -39,6 +42,7 @@ class RoutineTimeline extends StatelessWidget {
     required this.period,
     this.onRoutineTap,
     this.recordedStatuses = const {},
+    this.definitions,
     super.key,
   });
 
@@ -46,6 +50,7 @@ class RoutineTimeline extends StatelessWidget {
   final PrayerPeriodState? period;
   final ValueChanged<String>? onRoutineTap;
   final Map<String, routine_domain.RoutineStatus> recordedStatuses;
+  final List<RoutineDefinition>? definitions;
 
   design.RoutineStatus _statusFor(
     String routineId,
@@ -58,6 +63,7 @@ class RoutineTimeline extends StatelessWidget {
   };
 
   List<_RoutineEntry> _entries() {
+    if (definitions != null) return _managedEntries();
     _RoutineEntry prayerEntry(PrayerName prayer) {
       final isFocused = period?.focusPrayer == prayer;
       return _RoutineEntry(
@@ -108,6 +114,79 @@ class RoutineTimeline extends StatelessWidget {
         status: design.RoutineStatus.upcoming,
       ),
     ];
+  }
+
+  List<_RoutineEntry> _managedEntries() {
+    int prayerMinutes(PrayerKey key) {
+      final prayer = switch (key) {
+        PrayerKey.subuh => PrayerName.fajr,
+        PrayerKey.zuhur => PrayerName.dhuhr,
+        PrayerKey.asar => PrayerName.asr,
+        PrayerKey.maghrib => PrayerName.maghrib,
+        PrayerKey.isya => PrayerName.isha,
+      };
+      final time = schedule?.timeFor(prayer);
+      return time == null ? 24 * 60 : time.hour * 60 + time.minute;
+    }
+
+    final entries = <({int minute, _RoutineEntry entry})>[];
+    for (final definition in definitions!) {
+      final schedule = definition.schedule;
+      final minute = switch (schedule) {
+        FixedRoutineSchedule(:final value) => value,
+        PrayerRoutineSchedule(:final value) => prayerMinutes(value),
+      };
+      final prayerKey = schedule is PrayerRoutineSchedule
+          ? schedule.value
+          : null;
+      final prayer = switch (prayerKey) {
+        PrayerKey.subuh => PrayerName.fajr,
+        PrayerKey.zuhur => PrayerName.dhuhr,
+        PrayerKey.asar => PrayerName.asr,
+        PrayerKey.maghrib => PrayerName.maghrib,
+        PrayerKey.isya => PrayerName.isha,
+        null => null,
+      };
+      final isFocused = prayer != null && period?.focusPrayer == prayer;
+      final fallbackStatus = isFocused && period?.currentPrayer == prayer
+          ? design.RoutineStatus.due
+          : design.RoutineStatus.upcoming;
+      final title = switch (definition.id) {
+        'dhuha' => 'Sholat Dhuha',
+        'sholat-malam' => 'Sholat Malam',
+        'subuh' ||
+        'zuhur' ||
+        'asar' ||
+        'maghrib' ||
+        'isya' => 'Sholat ${definition.title}',
+        _ => definition.title,
+      };
+      final entry = _RoutineEntry(
+        time: prayer == null
+            ? '${(minute ~/ 60).toString().padLeft(2, '0')}:${(minute % 60).toString().padLeft(2, '0')}'
+            : this.schedule == null
+            ? '--:--'
+            : PrayerTimePresentation.time(this.schedule!.timeFor(prayer)),
+        title: title,
+        routineId: definition.id == 'penutup-hari' ? null : definition.id,
+        prayer: prayer,
+        status: _statusFor(definition.id, fallbackStatus),
+        detail: isFocused ? period?.focusLabel : null,
+        isCurrent: isFocused,
+      );
+      entries.add((minute: minute, entry: entry));
+    }
+    entries.add((
+      minute: 20 * 60 + 30,
+      entry: const _RoutineEntry(
+        time: '20:30',
+        title: 'Daily Reflection',
+        status: design.RoutineStatus.upcoming,
+        isEvening: true,
+      ),
+    ));
+    entries.sort((first, second) => first.minute.compareTo(second.minute));
+    return entries.map((item) => item.entry).toList(growable: false);
   }
 
   @override

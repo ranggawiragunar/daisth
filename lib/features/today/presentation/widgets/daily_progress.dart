@@ -4,10 +4,15 @@ import '../../../../core/design_system/components/daisth_segmented_progress.dart
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
 
 class DailyProgress extends StatelessWidget {
-  const DailyProgress({required this.recordedCount, super.key});
+  const DailyProgress({
+    required this.recordedCount,
+    this.total = defaultTotal,
+    super.key,
+  });
 
   final int recordedCount;
-  static const total = 7;
+  final int total;
+  static const defaultTotal = 7;
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +27,13 @@ class DailyProgress extends StatelessWidget {
           '$recordedCount of $total routines recorded',
           style: theme.textTheme.bodySmall?.copyWith(color: secondary),
         ),
-        const SizedBox(height: DaisthSpacing.md),
-        DaisthSegmentedProgress(completed: recordedCount, total: total),
+        if (total > 0) ...[
+          const SizedBox(height: DaisthSpacing.md),
+          DaisthSegmentedProgress(
+            completed: recordedCount.clamp(0, total),
+            total: total,
+          ),
+        ],
       ],
     );
   }

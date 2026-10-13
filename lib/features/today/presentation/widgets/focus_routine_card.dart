@@ -13,6 +13,7 @@ class FocusRoutineCard extends StatelessWidget {
     required this.status,
     required this.time,
     required this.onOpenRoutine,
+    this.eyebrow = 'PRAYER FOCUS',
     super.key,
   });
 
@@ -20,6 +21,7 @@ class FocusRoutineCard extends StatelessWidget {
   final String status;
   final String time;
   final VoidCallback onOpenRoutine;
+  final String eyebrow;
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +110,7 @@ class FocusRoutineCard extends StatelessWidget {
                         ),
                         const SizedBox(width: DaisthSpacing.sm),
                         Text(
-                          'PRAYER FOCUS',
+                          eyebrow,
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: colors.primary,
                             letterSpacing: 1.15,

@@ -1,11 +1,13 @@
 import 'package:sqflite/sqflite.dart';
 
 abstract final class DatabaseSchema {
-  static const version = 2;
+  static const version = 3;
   static const routineRecords = 'routine_records';
   static const routineStepRecords = 'routine_step_records';
   static const appSettings = 'app_settings';
   static const routineReminderStates = 'routine_reminder_states';
+  static const routineDefinitions = 'routine_definitions';
+  static const routineStepDefinitions = 'routine_step_definitions';
 
   static Future<void> create(DatabaseExecutor db) async {
     await db.execute('''
@@ -47,6 +49,7 @@ abstract final class DatabaseSchema {
       'updated_at_utc': DateTime.now().toUtc().toIso8601String(),
     });
     await createReminderStates(db);
+    await createRoutineDefinitions(db);
   }
 
   static Future<void> upgrade(
@@ -60,6 +63,9 @@ abstract final class DatabaseSchema {
     }
     if (oldVersion < 2 && newVersion >= 2) {
       await createReminderStates(db);
+    }
+    if (oldVersion < 3 && newVersion >= 3) {
+      await createRoutineDefinitions(db);
     }
   }
 
@@ -78,5 +84,59 @@ abstract final class DatabaseSchema {
           PRIMARY KEY (date_key, routine_id)
         )
       ''');
+  }
+
+  static Future<void> createRoutineDefinitions(DatabaseExecutor db) async {
+    await db.execute('''
+      CREATE TABLE $routineDefinitions (
+        id TEXT PRIMARY KEY,
+        origin TEXT NOT NULL CHECK (origin IN ('default', 'custom')),
+        template_key TEXT,
+        title TEXT NOT NULL,
+        description TEXT,
+        is_enabled INTEGER NOT NULL CHECK (is_enabled IN (0, 1)),
+        is_archived INTEGER NOT NULL DEFAULT 0 CHECK (is_archived IN (0, 1)),
+        schedule_kind TEXT NOT NULL CHECK (schedule_kind IN ('fixed', 'prayer')),
+        fixed_time_minutes INTEGER,
+        prayer_key TEXT,
+        reminder_enabled INTEGER NOT NULL CHECK (reminder_enabled IN (0, 1)),
+        priority TEXT NOT NULL CHECK (priority IN ('high', 'medium', 'low')),
+        sort_order INTEGER NOT NULL,
+        created_at_utc TEXT NOT NULL,
+        updated_at_utc TEXT NOT NULL,
+        CHECK (
+          (schedule_kind = 'fixed' AND fixed_time_minutes BETWEEN 0 AND 1439 AND prayer_key IS NULL)
+          OR
+          (schedule_kind = 'prayer' AND fixed_time_minutes IS NULL AND prayer_key IN ('subuh', 'zuhur', 'asar', 'maghrib', 'isya'))
+        ),
+        CHECK (
+          (origin = 'default' AND template_key IS NOT NULL)
+          OR
+          (origin = 'custom' AND template_key IS NULL)
+        )
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE $routineStepDefinitions (
+        routine_id TEXT NOT NULL,
+        step_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        is_required INTEGER NOT NULL CHECK (is_required IN (0, 1)),
+        is_archived INTEGER NOT NULL DEFAULT 0 CHECK (is_archived IN (0, 1)),
+        sort_order INTEGER NOT NULL,
+        created_at_utc TEXT NOT NULL,
+        updated_at_utc TEXT NOT NULL,
+        PRIMARY KEY (routine_id, step_id),
+        FOREIGN KEY (routine_id) REFERENCES $routineDefinitions(id)
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX routine_definitions_active_order ON '
+      '$routineDefinitions(is_archived, is_enabled, sort_order)',
+    );
+    await db.execute(
+      'CREATE INDEX routine_step_definitions_active_order ON '
+      '$routineStepDefinitions(routine_id, is_archived, sort_order)',
+    );
   }
 }

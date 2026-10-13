@@ -6,9 +6,8 @@ import '../../app/dependencies/app_dependencies.dart';
 import '../../features/history/presentation/history_placeholder_screen.dart';
 import '../../features/dhikr/data/demo/dhikr_demo_data.dart';
 import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
-import '../../features/routines/data/demo/routine_demo_data.dart';
-import '../../features/routines/presentation/routine_detail_screen.dart';
-import '../../features/routines/presentation/routines_placeholder_screen.dart';
+import '../../features/routines/presentation/routine_detail_route_screen.dart';
+import '../../features/routines/presentation/routines_screen.dart';
 import '../../features/settings/presentation/settings_placeholder_screen.dart';
 import '../../features/today/presentation/today_screen.dart';
 import '../../features/reader/data/demo/reader_demo_data.dart';
@@ -46,6 +45,8 @@ GoRouter createAppRouter({
               builder: (context, state) => TodayScreen(
                 prayerScheduleSession: dependencies.prayerScheduleSession,
                 routineRecordRepository: dependencies.routineRecordRepository,
+                routineRepository: dependencies.routineRepository,
+                ensureRoutinesReady: dependencies.ensureRoutineDefinitionsReady,
                 startClock: dependencies.startTodayClock,
                 bottomContentPadding: AppShell.contentBottomPadding,
                 onRoutineTap: (routineId) =>
@@ -70,7 +71,10 @@ GoRouter createAppRouter({
             GoRoute(
               path: RoutePaths.routines,
               name: AppRoute.routines.name,
-              builder: (context, state) => const RoutinesPlaceholderScreen(
+              builder: (context, state) => RoutinesScreen(
+                routineRepository: dependencies.routineRepository,
+                routineRecordRepository: dependencies.routineRecordRepository,
+                noticeController: noticeController,
                 bottomContentPadding: AppShell.contentBottomPadding,
               ),
             ),
@@ -103,19 +107,11 @@ GoRouter createAppRouter({
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final routineId = state.pathParameters['routineId']!;
-        final routine = RoutineDemoData.byId(routineId);
-        if (routine == null) {
-          return RoutineUnavailableScreen(routineId: routineId);
-        }
-        return RoutineDetailScreen(
-          key: ValueKey('routine-detail-$routineId'),
-          routine: routine,
+        return RoutineDetailRouteScreen(
+          key: ValueKey('routine-detail-route-$routineId'),
+          routineId: routineId,
+          dependencies: dependencies,
           noticeController: noticeController,
-          routineRecordRepository: dependencies.routineRecordRepository,
-          setRoutineStepCompletion: dependencies.setRoutineStepCompletion,
-          markRoutineComplete: dependencies.markRoutineComplete,
-          markRoutineNotToday: dependencies.markRoutineNotToday,
-          prayerScheduleSession: dependencies.prayerScheduleSession,
         );
       },
       routes: [

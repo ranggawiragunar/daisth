@@ -18,7 +18,10 @@ class ReminderFollowUpPolicy {
     required PrayerDaySchedule prayerSchedule,
     required DateTime now,
   }) {
-    if (!supportedRoutineIds.contains(routineId)) return null;
+    if (!supportedRoutineIds.contains(routineId) &&
+        !routineId.startsWith('custom-')) {
+      return null;
+    }
     final DateTime? windowEnd = switch (routineId) {
       'zuhur' => prayerSchedule.asr,
       'asar' => prayerSchedule.maghrib,

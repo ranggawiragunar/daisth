@@ -6,6 +6,11 @@ import 'package:daisth/features/prayer_times/domain/models/prayer_day_schedule.d
 import 'package:daisth/features/reminders/domain/models/reminder_priority.dart';
 import 'package:daisth/features/reminders/domain/models/reminder_plan.dart';
 import 'package:daisth/features/reminders/domain/use_cases/build_today_reminder_plan_use_case.dart';
+import 'package:daisth/features/routines/data/catalog/default_routine_template_catalog.dart';
+import 'package:daisth/features/routines/domain/models/routine_definition.dart';
+import 'package:daisth/features/routines/domain/models/routine_origin.dart';
+import 'package:daisth/features/routines/domain/models/routine_priority.dart';
+import 'package:daisth/features/routines/domain/models/routine_schedule.dart';
 
 void main() {
   final builder = BuildTodayReminderPlanUseCase();
@@ -97,6 +102,65 @@ void main() {
       expect(_time(plan, 'zuhur'), '11:50');
     }
   });
+
+  test(
+    'uses active custom definitions and respects reminder configuration',
+    () {
+      final createdAt = DateTime.utc(2026, 10, 1);
+      final custom = RoutineDefinition(
+        id: 'custom-reading',
+        origin: RoutineOrigin.custom,
+        title: 'Morning Reading',
+        description: null,
+        isEnabled: true,
+        isArchived: false,
+        schedule: RoutineSchedule.fixed(6 * 60 + 30),
+        reminderEnabled: true,
+        priority: RoutinePriority.medium,
+        sortOrder: 20,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+      );
+      RoutineDefinition variant(
+        String id,
+        String title, {
+        bool enabled = true,
+        bool reminder = true,
+      }) => RoutineDefinition(
+        id: id,
+        origin: RoutineOrigin.custom,
+        title: title,
+        description: null,
+        isEnabled: enabled,
+        isArchived: false,
+        schedule: RoutineSchedule.fixed(6 * 60 + 30),
+        reminderEnabled: reminder,
+        priority: RoutinePriority.medium,
+        sortOrder: 21,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+      );
+
+      final disabled = variant('custom-disabled', 'Disabled', enabled: false);
+      final muted = variant('custom-muted', 'Muted', reminder: false);
+      final dhuha = DefaultRoutineTemplateCatalog.definitions(createdAt)
+          .singleWhere((routine) => routine.id == 'dhuha')
+          .copyWith(isEnabled: false);
+
+      final plan = builder(
+        schedule: schedule,
+        timezone: const DeviceTimezone(ianaName: 'Asia/Jakarta'),
+        now: now,
+        definitions: [custom, disabled, muted, dhuha],
+      );
+
+      expect(_time(plan, 'custom-reading'), '06:30');
+      expect(plan.reminders.map((reminder) => reminder.routineId), [
+        'custom-reading',
+        'reflection',
+      ]);
+    },
+  );
 }
 
 String _time(ReminderPlan plan, String routineId) {

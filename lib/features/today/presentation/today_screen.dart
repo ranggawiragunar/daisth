@@ -9,6 +9,11 @@ import '../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../prayer_times/presentation/prayer_schedule_session.dart';
 import '../../prayer_times/presentation/prayer_time_presentation.dart';
 import '../../routines/domain/repositories/routine_record_repository.dart';
+import '../../routines/domain/repositories/routine_repository.dart';
+import '../../routines/domain/models/routine_origin.dart';
+import '../../routines/domain/models/routine_schedule.dart';
+import '../../routines/domain/models/routine_definition.dart';
+import '../../routines/domain/models/routine_status.dart' as routine_domain;
 import '../presentation/view_models/today_view_model.dart';
 import 'widgets/daily_progress.dart';
 import 'widgets/focus_routine_card.dart';
@@ -18,6 +23,8 @@ class TodayScreen extends StatefulWidget {
   const TodayScreen({
     required this.prayerScheduleSession,
     required this.routineRecordRepository,
+    this.routineRepository,
+    this.ensureRoutinesReady,
     this.startClock = true,
     this.bottomContentPadding = 0,
     this.onRoutineTap,
@@ -26,6 +33,8 @@ class TodayScreen extends StatefulWidget {
 
   final PrayerScheduleSession prayerScheduleSession;
   final RoutineRecordRepository routineRecordRepository;
+  final RoutineRepository? routineRepository;
+  final Future<void> Function()? ensureRoutinesReady;
   final bool startClock;
   final double bottomContentPadding;
   final ValueChanged<String>? onRoutineTap;
@@ -43,6 +52,8 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     _viewModel = TodayViewModel(
       prayerScheduleSession: widget.prayerScheduleSession,
       routineRecordRepository: widget.routineRecordRepository,
+      routineRepository: widget.routineRepository,
+      ensureRoutinesReady: widget.ensureRoutinesReady,
       startClock: widget.startClock,
     )..addListener(_onChanged);
     WidgetsBinding.instance.addObserver(this);
@@ -139,7 +150,16 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                       ],
                       const SizedBox(height: DaisthSpacing.xxl),
                       DailyProgress(
-                        recordedCount: _viewModel.recordedStatuses.length,
+                        recordedCount: _viewModel.recordedStatuses.entries
+                            .where((entry) => entry.key != 'penutup-hari')
+                            .length,
+                        total: _viewModel.routines.isEmpty
+                            ? DailyProgress.defaultTotal
+                            : _viewModel.routines
+                                  .where(
+                                    (routine) => routine.id != 'penutup-hari',
+                                  )
+                                  .length,
                       ),
                       const SizedBox(height: DaisthSpacing.section),
                       Text(
@@ -151,6 +171,9 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                         schedule: widget.prayerScheduleSession.schedule,
                         period: _viewModel.currentPeriod,
                         recordedStatuses: _viewModel.recordedStatuses,
+                        definitions: widget.routineRepository == null
+                            ? null
+                            : _viewModel.routines,
                         onRoutineTap: widget.onRoutineTap,
                       ),
                     ],
@@ -168,6 +191,19 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     final schedule = widget.prayerScheduleSession.schedule;
     final period = _viewModel.currentPeriod;
     if (schedule != null && period != null) {
+      final customFocus = _nearbyCustomRoutine();
+      if (customFocus != null) {
+        final minutes = customFocus.schedule.minutesAfterMidnight!;
+        final time =
+            '${(minutes ~/ 60).toString().padLeft(2, '0')}:${(minutes % 60).toString().padLeft(2, '0')}';
+        return FocusRoutineCard(
+          eyebrow: 'ROUTINE FOCUS',
+          title: customFocus.title,
+          status: 'Scheduled for $time',
+          time: time,
+          onOpenRoutine: () => widget.onRoutineTap?.call(customFocus.id),
+        );
+      }
       final prayer = period.focusPrayer;
       final routineId = PrayerTimePresentation.routineId(prayer);
       return FocusRoutineCard(
@@ -187,6 +223,34 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
       onOpenLocationSettings: _viewModel.openLocationSettings,
       onRefresh: _viewModel.refresh,
     );
+  }
+
+  RoutineDefinition? _nearbyCustomRoutine() {
+    final currentMinute = _viewModel.now.hour * 60 + _viewModel.now.minute;
+    RoutineDefinition? closest;
+    var closestDistance = 31;
+    for (final routine in _viewModel.routines) {
+      if (routine.origin != RoutineOrigin.custom ||
+          _viewModel.recordedStatuses[routine.id] ==
+              routine_domain.RoutineStatus.completed ||
+          _viewModel.recordedStatuses[routine.id] ==
+              routine_domain.RoutineStatus.notToday ||
+          routine.schedule is! FixedRoutineSchedule) {
+        continue;
+      }
+      final scheduledMinute = routine.schedule.minutesAfterMidnight!;
+      final rawDistance = scheduledMinute - currentMinute;
+      final distance = [
+        rawDistance,
+        rawDistance + 1440,
+        rawDistance - 1440,
+      ].reduce((a, b) => a.abs() <= b.abs() ? a : b).abs();
+      if (distance <= 30 && distance < closestDistance) {
+        closest = routine;
+        closestDistance = distance;
+      }
+    }
+    return closest;
   }
 }
 

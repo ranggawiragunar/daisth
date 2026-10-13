@@ -427,13 +427,17 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
         _completionState != routine_domain.RoutineStatus.notToday &&
         (isSimplePrayer
             ? !_allRequiredDone
+            : _routine.steps.isEmpty
+            ? _completionState != routine_domain.RoutineStatus.completed
             : _hasRemainingSteps && _routine.isComposite);
     final showNotToday =
         _viewModel.isOptional &&
         _completionState != routine_domain.RoutineStatus.notToday;
     if (!showPrimary && !showNotToday) return const SizedBox.shrink();
 
-    final label = isSimplePrayer
+    final label = _routine.steps.isEmpty
+        ? 'Mark Done'
+        : isSimplePrayer
         ? 'Mark ${_routine.title.replaceFirst('Sholat ', '')} Done'
         : _steps.any((step) => step.completed)
         ? 'Mark Remaining Done'
@@ -466,6 +470,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                           ? null
                           : isSimplePrayer
                           ? _markSimplePrayerDone
+                          : _routine.steps.isEmpty
+                          ? _markSimpleRoutineDone
                           : _markAllRemaining,
                     ),
                   ),
@@ -486,6 +492,12 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _markSimpleRoutineDone() async {
+    if (!await _viewModel.markSimpleRoutineDone()) return;
+    HapticFeedback.mediumImpact();
+    _announceCompletion();
   }
 }
 

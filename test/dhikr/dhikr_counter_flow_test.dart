@@ -10,6 +10,7 @@ import 'package:daisth/app/router/app_router.dart';
 import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
 import 'package:daisth/core/design_system/theme/daisth_theme.dart';
 import 'package:daisth/features/dhikr/presentation/screens/dhikr_counter_screen.dart';
+import '../support/fake_routine_repository.dart';
 
 void main() {
   testWidgets('Zuhur gates dhikr until the required prayer is complete', (
@@ -226,6 +227,7 @@ class _DhikrRouterHarness {
   final ThemeMode themeMode;
   final noticeController = DaisthNoticeController();
   final dependencies = AppDependencies(
+    routineRepository: FakeRoutineRepository(),
     routineRecordRepository: FakeRoutineRecordRepository(),
     startTodayClock: false,
   );

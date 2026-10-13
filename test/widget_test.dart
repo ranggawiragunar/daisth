@@ -10,12 +10,14 @@ import 'package:daisth/core/location/domain/repositories/location_repository.dar
 
 import 'support/test_persistence.dart';
 import 'support/fake_routine_record_repository.dart';
+import 'support/fake_routine_repository.dart';
 
 void main() {
   testWidgets('Today is the initial destination and navigation works', (
     tester,
   ) async {
     await tester.pumpWidget(_testApp());
+    await tester.pumpAndSettle();
 
     expect(find.text("Assalamu'alaikum"), findsOneWidget);
     expect(find.text('0 of 7 routines recorded'), findsOneWidget);
@@ -24,6 +26,7 @@ void main() {
     await tester.ensureVisible(
       find.byKey(const ValueKey('today-routine-zuhur')),
     );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('today-routine-zuhur')));
     await tester.pumpAndSettle();
     await tester.runAsync(
@@ -66,7 +69,11 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('navigation-routines')));
     await tester.pumpAndSettle();
-    expect(find.text('Routine-mu akan ada di sini'), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, -700));
+    await tester.pumpAndSettle();
+    expect(find.text('Routines'), findsWidgets);
+    expect(find.text('My Routines'), findsOneWidget);
+    expect(find.text('No custom routines yet.'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('navigation-settings')));
     await tester.pumpAndSettle();
@@ -218,6 +225,7 @@ Widget _testApp() => DaisthApp(
     startTodayClock: false,
     locationRepository: _DeniedLocation(),
     routineRecordRepository: FakeRoutineRecordRepository(),
+    routineRepository: FakeRoutineRepository(),
     databaseService: TestPersistence.createDatabaseService(),
   ),
 );

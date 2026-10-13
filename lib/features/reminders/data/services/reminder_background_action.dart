@@ -9,10 +9,16 @@ import '../../../../core/persistence/data/services/daisth_database_service.dart'
 import '../../../../core/timezone/data/repositories/timezone_repository_data.dart';
 import '../../../../core/timezone/data/services/timezone_flutter_service.dart';
 import '../../../routines/data/mappers/routine_record_mapper.dart';
+import '../../../routines/data/catalog/default_routine_template_catalog.dart';
+import '../../../routines/data/mappers/routine_definition_mapper.dart';
 import '../../../routines/data/repositories/routine_record_repository_data.dart';
+import '../../../routines/data/repositories/routine_repository_data.dart';
+import '../../../routines/data/resolvers/routine_resolver.dart';
 import '../../../routines/data/services/routine_record_sqlite_service.dart';
+import '../../../routines/data/services/routine_sqlite_service.dart';
 import '../../../routines/domain/use_cases/mark_routine_complete_use_case.dart';
 import '../../../routines/domain/use_cases/resolve_routine_status_use_case.dart';
+import '../../../routines/domain/use_cases/ensure_default_routines_use_case.dart';
 import '../mappers/reminder_mapper.dart';
 import '../repositories/reminder_repository_data.dart';
 import '../repositories/routine_reminder_state_repository_data.dart';
@@ -40,6 +46,15 @@ void daisthBackgroundNotificationResponse(NotificationResponse response) async {
       service: RoutineRecordSqliteService(db),
       mapper: RoutineRecordMapper(),
     );
+    final definitions = RoutineRepositoryData(
+      service: RoutineSqliteService(db),
+      mapper: RoutineDefinitionMapper(),
+    );
+    await EnsureDefaultRoutinesUseCase(
+      repository: definitions,
+      templates: DefaultRoutineTemplateCatalog.definitions,
+    )();
+    final resolver = RoutineResolver(definitions);
     final stateRepo = RoutineReminderStateRepositoryData(
       service: RoutineReminderStateSqliteService(db),
       mapper: RoutineReminderStateMapper(),
@@ -61,10 +76,12 @@ void daisthBackgroundNotificationResponse(NotificationResponse response) async {
         repository: routineRepo,
         resolveStatus: const ResolveRoutineStatusUseCase(),
       ),
+      resolveRoutine: (id) async => (await resolver.resolve(id))?.routine,
     );
     await useCase(action: action, payload: payload);
     await db.close();
     await routineRepo.closeChanges();
+    await definitions.closeChanges();
   } catch (error, stackTrace) {
     debugPrint('Daisth reminder action failed: $error\n$stackTrace');
   }

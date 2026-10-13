@@ -35,6 +35,7 @@ import '../../features/reminders/data/services/routine_reminder_state_sqlite_ser
 import '../../features/reminders/domain/repositories/reminder_repository.dart';
 import '../../features/reminders/domain/models/reminder_priority.dart';
 import '../../features/reminders/domain/models/reminder.dart';
+import '../../features/reminders/domain/models/reminder_permission_status.dart';
 import '../../features/reminders/domain/use_cases/build_today_reminder_plan_use_case.dart';
 import '../../features/reminders/domain/use_cases/schedule_today_reminders_use_case.dart';
 import '../../features/reminders/domain/use_cases/handle_reminder_action_use_case.dart';
@@ -42,9 +43,16 @@ import '../../features/reminders/domain/repositories/routine_reminder_state_repo
 import '../../features/reminders/presentation/view_models/reminder_settings_view_model.dart';
 import '../../features/routines/data/mappers/routine_record_mapper.dart';
 import '../../features/routines/data/demo/routine_demo_data.dart';
+import '../../features/routines/data/catalog/default_routine_template_catalog.dart';
+import '../../features/routines/data/mappers/routine_definition_mapper.dart';
 import '../../features/routines/data/repositories/routine_record_repository_data.dart';
+import '../../features/routines/data/repositories/routine_repository_data.dart';
+import '../../features/routines/data/resolvers/routine_resolver.dart';
 import '../../features/routines/data/services/routine_record_sqlite_service.dart';
+import '../../features/routines/data/services/routine_sqlite_service.dart';
 import '../../features/routines/domain/repositories/routine_record_repository.dart';
+import '../../features/routines/domain/repositories/routine_repository.dart';
+import '../../features/routines/domain/use_cases/ensure_default_routines_use_case.dart';
 import '../../features/routines/domain/models/routine_status.dart';
 import '../../features/routines/domain/use_cases/mark_routine_complete_use_case.dart';
 import '../../features/routines/domain/use_cases/mark_routine_not_today_use_case.dart';
@@ -64,6 +72,7 @@ class AppDependencies {
     DaisthDatabaseService? databaseService,
     AppSettingsRepository? appSettingsRepository,
     RoutineRecordRepository? routineRecordRepository,
+    RoutineRepository? routineRepository,
     this.startTodayClock = true,
   }) : httpClient = httpClient ?? http.Client(),
        _ownsHttpClient = httpClient == null {
@@ -79,6 +88,17 @@ class AppDependencies {
           service: RoutineRecordSqliteService(this.databaseService),
           mapper: RoutineRecordMapper(),
         );
+    this.routineRepository =
+        routineRepository ??
+        RoutineRepositoryData(
+          service: RoutineSqliteService(this.databaseService),
+          mapper: RoutineDefinitionMapper(),
+        );
+    ensureDefaultRoutines = EnsureDefaultRoutinesUseCase(
+      repository: this.routineRepository,
+      templates: DefaultRoutineTemplateCatalog.definitions,
+    );
+    routineResolver = RoutineResolver(this.routineRepository);
     routineReminderStateRepository = RoutineReminderStateRepositoryData(
       service: RoutineReminderStateSqliteService(this.databaseService),
       mapper: RoutineReminderStateMapper(),
@@ -139,6 +159,7 @@ class AppDependencies {
       loadTodayPrayerSchedule: loadTodayPrayerSchedule,
       buildTodayReminderPlan: buildTodayReminderPlan,
       routineRecordRepository: this.routineRecordRepository,
+      routineRepository: this.routineRepository,
       reminderStateRepository: routineReminderStateRepository,
     );
     handleReminderAction = HandleReminderActionUseCase(
@@ -146,6 +167,8 @@ class AppDependencies {
       reminderStateRepository: routineReminderStateRepository,
       reminderRepository: this.reminderRepository,
       markRoutineComplete: markRoutineComplete,
+      resolveRoutine: (id) async =>
+          (await routineResolver.resolve(id))?.routine,
     );
     reminderSettings = ReminderSettingsViewModel(
       reminderRepository: this.reminderRepository,
@@ -163,6 +186,9 @@ class AppDependencies {
   late final DaisthDatabaseService databaseService;
   late final AppSettingsRepository appSettingsRepository;
   late final RoutineRecordRepository routineRecordRepository;
+  late final RoutineRepository routineRepository;
+  late final EnsureDefaultRoutinesUseCase ensureDefaultRoutines;
+  late final RoutineResolver routineResolver;
   late final RoutineReminderStateRepository routineReminderStateRepository;
   late final ResolveRoutineStatusUseCase resolveRoutineStatus;
   late final SetRoutineStepCompletionUseCase setRoutineStepCompletion;
@@ -186,7 +212,9 @@ class AppDependencies {
   AppSettings appSettings = const AppSettings();
   Object? initializationError;
   Future<void>? _initialization;
+  Future<void>? _routineDefinitionsInitialization;
   StreamSubscription<RoutineRecordChange>? _routineReminderChangeSubscription;
+  StreamSubscription<void>? _routineDefinitionChangeSubscription;
 
   Future<void> initialize({void Function(String? payload)? onNotificationTap}) {
     return _initialization ??= _initialize(onNotificationTap);
@@ -196,10 +224,13 @@ class AppDependencies {
     void Function(String? payload)? onNotificationTap,
   ) async {
     try {
-      await databaseService.open();
+      await ensureRoutineDefinitionsReady();
       appSettings = await appSettingsRepository.getSettings();
       _routineReminderChangeSubscription ??= routineRecordRepository.changes
           .listen((change) => unawaited(_reconcileRoutineChange(change)));
+      _routineDefinitionChangeSubscription ??= routineRepository.changes.listen(
+        (_) => unawaited(_reconcileRoutineDefinitionChange()),
+      );
     } catch (error) {
       initializationError = error;
     }
@@ -209,6 +240,29 @@ class AppDependencies {
       final launchPayload = await reminderRepository.getLaunchPayload();
       if (launchPayload != null) onNotificationTap?.call(launchPayload);
       await reminderSettings.initialize();
+    } catch (error) {
+      initializationError ??= error;
+    }
+  }
+
+  Future<void> ensureRoutineDefinitionsReady() =>
+      _routineDefinitionsInitialization ??= _ensureRoutineDefinitionsReady();
+
+  Future<void> _ensureRoutineDefinitionsReady() async {
+    await ensureDefaultRoutines();
+  }
+
+  Future<void> _reconcileRoutineDefinitionChange() async {
+    if (!reminderSettings.remindersEnabled ||
+        reminderSettings.permissionStatus != ReminderPermissionStatus.granted) {
+      return;
+    }
+    try {
+      await scheduleTodayReminders(
+        schedule: prayerScheduleSession.schedule,
+        now: DateTime.now(),
+      );
+      await reminderSettings.refreshPermissionStatus();
     } catch (error) {
       initializationError ??= error;
     }
@@ -269,8 +323,12 @@ class AppDependencies {
 
   void dispose() {
     unawaited(_routineReminderChangeSubscription?.cancel());
+    unawaited(_routineDefinitionChangeSubscription?.cancel());
     reminderSettings.dispose();
     if (routineRecordRepository case final RoutineRecordRepositoryData data) {
+      unawaited(data.closeChanges());
+    }
+    if (routineRepository case final RoutineRepositoryData data) {
       unawaited(data.closeChanges());
     }
     unawaited(databaseService.close());

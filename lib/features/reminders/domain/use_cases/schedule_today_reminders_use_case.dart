@@ -13,6 +13,8 @@ import '../repositories/reminder_repository.dart';
 import '../repositories/routine_reminder_state_repository.dart';
 import '../../../routines/domain/models/routine_status.dart';
 import '../../../routines/domain/repositories/routine_record_repository.dart';
+import '../../../routines/domain/repositories/routine_repository.dart';
+import '../../../routines/domain/models/routine_origin.dart';
 import 'build_today_reminder_plan_use_case.dart';
 import 'reminder_follow_up_policy.dart';
 
@@ -23,6 +25,7 @@ class ScheduleTodayRemindersUseCase {
     required this.loadTodayPrayerSchedule,
     required this.buildTodayReminderPlan,
     this.routineRecordRepository,
+    this.routineRepository,
     this.reminderStateRepository,
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now;
@@ -32,6 +35,7 @@ class ScheduleTodayRemindersUseCase {
   final LoadTodayPrayerScheduleUseCase loadTodayPrayerSchedule;
   final BuildTodayReminderPlanUseCase buildTodayReminderPlan;
   final RoutineRecordRepository? routineRecordRepository;
+  final RoutineRepository? routineRepository;
   final RoutineReminderStateRepository? reminderStateRepository;
   final DateTime Function() _clock;
   static const _followUpPolicy = ReminderFollowUpPolicy();
@@ -46,11 +50,13 @@ class ScheduleTodayRemindersUseCase {
       todaySchedule = (await loadTodayPrayerSchedule(date: current)).schedule;
     }
     final deviceTimezone = await timezoneRepository.getDeviceTimezone();
+    final activeDefinitions = await routineRepository?.getActiveRoutines();
     final completePlan = buildTodayReminderPlan(
       schedule: todaySchedule,
       timezone: deviceTimezone,
       now: current,
       includePast: true,
+      definitions: activeDefinitions,
     );
     final plan = ReminderPlan(
       date: completePlan.date,
@@ -102,7 +108,20 @@ class ScheduleTodayRemindersUseCase {
       final stateByRoutine = {
         for (final state in states) state.routineId: state,
       };
-      for (final routineId in _actionableRoutineIds) {
+      final followUpIds = activeDefinitions == null
+          ? _actionableRoutineIds
+          : activeDefinitions
+                .where(
+                  (definition) =>
+                      definition.reminderEnabled &&
+                      (ReminderFollowUpPolicy.supportedRoutineIds.contains(
+                            definition.id,
+                          ) ||
+                          definition.origin == RoutineOrigin.custom),
+                )
+                .map((definition) => definition.id)
+                .toList(growable: false);
+      for (final routineId in followUpIds) {
         final record = await routineRecordRepository!.getRoutineRecord(
           day,
           routineId,

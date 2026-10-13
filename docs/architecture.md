@@ -75,6 +75,30 @@ routine records when the route opens. Status is resolved from required steps;
 optional progress is stored separately. Dhikr counter state remains session
 only, while finishing its optional post-prayer action records that routine step.
 
+Routine configuration is persisted separately from daily progress. The
+`DefaultRoutineTemplateCatalog` contains factory values used only to seed
+missing defaults and for an explicit per-routine reset. Existing definitions
+are user-owned copies and are not refreshed from the catalog at startup.
+`RoutineResolver` combines persisted configuration with built-in capability
+fixtures for default routines, or persisted checklist definitions for custom
+routines. The configuration repository follows this path:
+
+```text
+RoutineRepository
+↑
+RoutineRepositoryData
+↓
+RoutineSqliteService
+↓
+DaisthDatabaseService → SQLite
+```
+
+Default and custom definitions use fixed local wall-clock minutes or a stable
+prayer key. Prayer schedules still resolve their clock time from the current
+Prayer Time schedule. Custom routines are daily optional routines; archiving a
+routine or removing a step keeps its definition row so historical progress can
+still be interpreted.
+
 Reader follows the same feature-first structure: `ReaderContent` and
 `ReaderSection` live in the domain, `ReaderDemoData` provides temporary local
 fixtures, and `ReaderViewModel` owns visibility and text-size preferences for

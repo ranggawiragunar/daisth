@@ -6,6 +6,8 @@ import '../../../../core/location/domain/models/location_access_status.dart';
 import '../../../../core/time/domain/models/calendar_day.dart';
 import '../../../routines/domain/models/routine_status.dart' as routine_domain;
 import '../../../routines/domain/repositories/routine_record_repository.dart';
+import '../../../routines/domain/models/routine_definition.dart';
+import '../../../routines/domain/repositories/routine_repository.dart';
 import '../../../prayer_times/domain/models/prayer_period_state.dart';
 import '../../../prayer_times/domain/use_cases/resolve_current_prayer_period_use_case.dart';
 import '../../../prayer_times/presentation/prayer_schedule_session.dart';
@@ -14,6 +16,8 @@ class TodayViewModel extends ChangeNotifier {
   TodayViewModel({
     required this.prayerScheduleSession,
     required this.routineRecordRepository,
+    this.routineRepository,
+    this.ensureRoutinesReady,
     DateTime Function()? clock,
     bool startClock = true,
   }) : _clock = clock ?? DateTime.now,
@@ -24,6 +28,9 @@ class TodayViewModel extends ChangeNotifier {
         unawaited(refreshRoutineRecords());
       }
     });
+    _definitionSubscription = routineRepository?.changes.listen((_) {
+      unawaited(refreshRoutinesAndRecords());
+    });
     if (startClock) {
       _clockTimer = Timer.periodic(const Duration(minutes: 1), (_) => _tick());
     }
@@ -31,19 +38,29 @@ class TodayViewModel extends ChangeNotifier {
 
   final PrayerScheduleSession prayerScheduleSession;
   final RoutineRecordRepository routineRecordRepository;
+  final RoutineRepository? routineRepository;
+  final Future<void> Function()? ensureRoutinesReady;
   final DateTime Function() _clock;
   final ResolveCurrentPrayerPeriodUseCase _resolveCurrentPeriod =
       const ResolveCurrentPrayerPeriodUseCase();
   Timer? _clockTimer;
   late final StreamSubscription<RoutineRecordChange> _recordSubscription;
+  StreamSubscription<void>? _definitionSubscription;
+  List<RoutineDefinition> routines = const [];
   Map<String, routine_domain.RoutineStatus> recordedStatuses = const {};
   DateTime now;
 
   Future<void> initialize() async {
+    await ensureRoutinesReady?.call();
     await Future.wait([
       prayerScheduleSession.initialize(now: now),
-      refreshRoutineRecords(),
+      refreshRoutinesAndRecords(),
     ]);
+  }
+
+  Future<void> refreshRoutinesAndRecords() async {
+    routines = await routineRepository?.getActiveRoutines() ?? const [];
+    await refreshRoutineRecords();
   }
 
   Future<void> refreshRoutineRecords() async {
@@ -51,7 +68,10 @@ class TodayViewModel extends ChangeNotifier {
       CalendarDay.fromDateTime(now),
     );
     recordedStatuses = {
-      for (final record in records) record.routineId: record.status,
+      for (final record in records)
+        if (routineRepository == null ||
+            routines.any((item) => item.id == record.routineId))
+          record.routineId: record.status,
     };
     notifyListeners();
   }
@@ -108,6 +128,7 @@ class TodayViewModel extends ChangeNotifier {
   void dispose() {
     _clockTimer?.cancel();
     _recordSubscription.cancel();
+    _definitionSubscription?.cancel();
     prayerScheduleSession.removeListener(_onSessionChanged);
     super.dispose();
   }

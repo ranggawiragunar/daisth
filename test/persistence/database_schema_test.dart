@@ -7,14 +7,14 @@ import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
 import '../support/test_persistence.dart';
 
 void main() {
-  test('creates schema v2 tables and system defaults', () async {
+  test('creates schema v3 tables and system defaults', () async {
     final persistence = await TestPersistence.create();
     addTearDown(persistence.dispose);
 
     final db = await persistence.database.open();
     expect(
       (await db.rawQuery('PRAGMA user_version')).single['user_version'],
-      2,
+      3,
     );
     final tables = await db.rawQuery(
       "SELECT name FROM sqlite_master WHERE type = 'table'",
@@ -26,6 +26,8 @@ void main() {
         DatabaseSchema.routineStepRecords,
         DatabaseSchema.appSettings,
         DatabaseSchema.routineReminderStates,
+        DatabaseSchema.routineDefinitions,
+        DatabaseSchema.routineStepDefinitions,
       ]),
     );
     expect(await persistence.appSettings.getSettings(), isNotNull);

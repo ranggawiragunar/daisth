@@ -87,7 +87,9 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
         routine: routine,
         day: day,
         completedSteps: completed,
-        status: _resolveStatus(routine, completed),
+        status: routine.steps.isEmpty
+            ? RoutineStatus.completed
+            : _resolveStatus(routine, completed),
         notTodayReason: null,
         now: now,
       );
@@ -166,7 +168,9 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
         routine: routine,
         day: day,
         completedSteps: completed,
-        status: _resolveStatus(routine, completed),
+        status: routine.steps.isEmpty
+            ? RoutineStatus.completed
+            : _resolveStatus(routine, completed),
         notTodayReason: null,
         now: now,
       );

@@ -1,7 +1,7 @@
 # Local persistence
 
 Daisth stores local app state in `daisth.db`, managed by
-`DaisthDatabaseService`. The database currently uses schema version 2 and
+`DaisthDatabaseService`. The database currently uses schema version 3 and
 SQLite migrations through `onCreate` and `onUpgrade`.
 
 ## Stored data
@@ -12,6 +12,16 @@ SQLite migrations through `onCreate` and `onUpgrade`.
 - `app_settings` stores the theme preference and reminder enabled preference.
 - `routine_reminder_states` stores one row per routine and calendar day,
   including snooze time, follow-up schedule/suppression, and the last action.
+- `routine_definitions` stores user-owned default and custom routine
+  configuration.
+- `routine_step_definitions` stores custom checklist definitions. Removed
+  steps are archived so historical records can still be interpreted.
+
+Definitions/configuration are separate from daily progress:
+`routine_definitions` and `routine_step_definitions` describe the user's plan;
+`routine_records`, `routine_step_records`, and `routine_reminder_states` retain
+day-specific progress and reminder actions. Disabling or archiving a routine
+does not delete historical rows.
 
 Routine keys use the device's local calendar date in `YYYY-MM-DD` form. Event
 timestamps are stored as UTC ISO 8601 instants. This keeps records associated
@@ -35,10 +45,17 @@ The version 1 to 2 migration creates `routine_reminder_states` additively and
 leaves routine records, step records, and app settings intact. Its composite
 key is `(date_key, routine_id)`; instants are stored as UTC ISO 8601 values.
 
+The version 2 to 3 migration additively creates `routine_definitions` and
+`routine_step_definitions`. It leaves existing routine records, reminder
+states, and settings intact and does not seed product values. Startup bootstrap
+inserts missing factory defaults into user-owned definitions without
+overwriting existing configuration. An explicit per-routine reset copies that
+routine's factory values again.
+
 The development rebrand changed the database filename and application
 identifier before release. No copy or migration from the previous development
 database is included; a rebranded development install starts with a fresh local
-database; existing Daisth installs upgrade in place to schema version 2.
+database; existing Daisth installs upgrade in place to schema version 3.
 
 This phase does not persist Dhikr counter position, location coordinates,
 mosque results or cache entries, Reader presentation state, or remote account

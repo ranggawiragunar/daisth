@@ -1,5 +1,6 @@
 import '../../../../core/time/domain/models/calendar_day.dart';
 import '../../../routines/data/demo/routine_demo_data.dart';
+import '../../../routines/domain/models/routine.dart';
 import '../../../routines/domain/models/routine_status.dart';
 import '../../../routines/domain/repositories/routine_record_repository.dart';
 import '../../../routines/domain/use_cases/mark_routine_complete_use_case.dart';
@@ -18,12 +19,14 @@ class HandleReminderActionUseCase {
     required this.reminderStateRepository,
     required this.reminderRepository,
     required this.markRoutineComplete,
+    this.resolveRoutine,
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now;
   final RoutineRecordRepository routineRepository;
   final RoutineReminderStateRepository reminderStateRepository;
   final ReminderRepository reminderRepository;
   final MarkRoutineCompleteUseCase markRoutineComplete;
+  final Future<Routine?> Function(String routineId)? resolveRoutine;
   final DateTime Function() _clock;
 
   Future<void> call({
@@ -31,7 +34,11 @@ class HandleReminderActionUseCase {
     required ReminderPayload payload,
     DateTime? actionAt,
   }) async {
-    final routine = RoutineDemoData.byId(payload.routineId);
+    final routine =
+        await resolveRoutine?.call(payload.routineId) ??
+        (payload.routineId.startsWith('custom-')
+            ? null
+            : RoutineDemoData.byId(payload.routineId));
     if (routine == null) return;
     final parts = payload.dateKey.split('-').map(int.parse).toList();
     final day = CalendarDay(year: parts[0], month: parts[1], day: parts[2]);

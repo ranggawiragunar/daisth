@@ -8,6 +8,7 @@ import 'package:daisth/app/router/app_router.dart';
 import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
 import 'package:daisth/core/design_system/theme/daisth_theme.dart';
 import 'package:daisth/features/reader/presentation/screens/reader_screen.dart';
+import '../support/fake_routine_repository.dart';
 
 void main() {
   testWidgets('Reader opens from Routine Detail and back preserves it', (
@@ -18,6 +19,9 @@ void main() {
     );
     addTearDown(harness.dispose);
     await tester.pumpWidget(harness.app);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Belum dimulai'), findsOneWidget);
@@ -159,6 +163,7 @@ class _ReaderRouterHarness {
   final ThemeMode themeMode;
   final noticeController = DaisthNoticeController();
   final dependencies = AppDependencies(
+    routineRepository: FakeRoutineRepository(),
     routineRecordRepository: FakeRoutineRecordRepository(),
     startTodayClock: false,
   );
