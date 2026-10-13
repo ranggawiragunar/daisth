@@ -23,6 +23,20 @@ abstract interface class RoutineRecordRepository {
 
   Future<List<RoutineRecord>> getRecordsForDay(CalendarDay day);
 
+  Future<List<RoutineRecord>> getRecordsBetween(
+    CalendarDay startDay,
+    CalendarDay endDay,
+  );
+
+  Future<List<RoutineStepRecord>> getStepRecordsForDay(CalendarDay day);
+
+  Future<List<RoutineStepRecord>> getStepRecordsBetween(
+    CalendarDay startDay,
+    CalendarDay endDay,
+  );
+
+  Future<CalendarDay?> getEarliestRecordDay();
+
   Future<void> setStepCompletion({
     required Routine routine,
     required CalendarDay day,

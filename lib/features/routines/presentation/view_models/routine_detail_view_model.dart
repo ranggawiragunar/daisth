@@ -18,9 +18,11 @@ class RoutineDetailViewModel extends ChangeNotifier {
     required this.setStepCompletion,
     required this.markRoutineComplete,
     required this.markRoutineNotToday,
+    CalendarDay? calendarDay,
     DateTime Function()? clock,
   }) : _now = clock ?? DateTime.now,
-       calendarDay = CalendarDay.fromDateTime((clock ?? DateTime.now)());
+       calendarDay =
+           calendarDay ?? CalendarDay.fromDateTime((clock ?? DateTime.now)());
 
   final Routine routine;
   final RoutineRecordRepository repository;
@@ -29,6 +31,9 @@ class RoutineDetailViewModel extends ChangeNotifier {
   final MarkRoutineNotTodayUseCase markRoutineNotToday;
   final DateTime Function() _now;
   final CalendarDay calendarDay;
+  bool get isHistorical =>
+      calendarDay.compareTo(CalendarDay.fromDateTime(_now())) < 0;
+  bool get hasRecord => _record != null;
   final ResolveRoutineStatusUseCase _resolveStatus =
       const ResolveRoutineStatusUseCase();
 
@@ -64,13 +69,15 @@ class RoutineDetailViewModel extends ChangeNotifier {
 
   RoutineStatus get status =>
       _record?.status ??
-      _resolveStatus(
-        routine: routine,
-        completedStepIds: {
-          for (final entry in _completed.entries)
-            if (entry.value) entry.key,
-        },
-      );
+      (isHistorical
+          ? RoutineStatus.pending
+          : _resolveStatus(
+              routine: routine,
+              completedStepIds: {
+                for (final entry in _completed.entries)
+                  if (entry.value) entry.key,
+              },
+            ));
 
   Future<void> initialize() async {
     isLoading = true;
@@ -191,6 +198,16 @@ class RoutineDetailViewModel extends ChangeNotifier {
         now: _now(),
       );
       await _loadFromRepository();
+      return true;
+    });
+  }
+
+  Future<bool> clearRecord() async {
+    if (!hasRecord || isSaving || isLoading) return false;
+    return _mutate(() async {
+      await repository.clearRoutineRecord(calendarDay, routine.id);
+      await _loadFromRepository();
+      justCompleted = false;
       return true;
     });
   }

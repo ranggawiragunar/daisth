@@ -36,7 +36,7 @@ void main() {
     );
   });
 
-  test('reflection and closing reminders route to Today', () {
+  test('reflection routes to Today and Penutup Hari opens its routine', () {
     expect(
       mapper.routeForPayload(
         mapper.toScheduleData(_routine('reflection')).payload,
@@ -47,8 +47,9 @@ void main() {
       mapper.routeForPayload(
         mapper.toScheduleData(_routine('penutup-hari')).payload,
       ),
-      '/today',
+      '/routines/penutup-hari',
     );
+    expect(mapper.toScheduleData(_routine('penutup-hari')).actionable, isTrue);
   });
 
   test('malformed and unknown payloads safely fall back to Today', () {

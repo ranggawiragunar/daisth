@@ -7,10 +7,53 @@ import '../support/fake_routine_record_repository.dart';
 import 'package:daisth/app/router/app_router.dart';
 import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
 import 'package:daisth/core/design_system/theme/daisth_theme.dart';
+import 'package:daisth/core/time/domain/models/calendar_day.dart';
 import 'package:daisth/features/reader/presentation/screens/reader_screen.dart';
 import '../support/fake_routine_repository.dart';
 
 void main() {
+  testWidgets('opening a bedtime reading does not complete its step', (
+    tester,
+  ) async {
+    final harness = _ReaderRouterHarness(
+      initialLocation: '/routines/penutup-hari',
+    );
+    addTearDown(harness.dispose);
+    await tester.pumpWidget(harness.app);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Ayat Kursi'));
+    await tester.tap(find.text('Ayat Kursi').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      harness.router.routeInformationProvider.value.uri.path,
+      '/routines/penutup-hari/reader/ayat-kursi',
+    );
+    expect(find.text('Ayat Kursi'), findsOneWidget);
+    expect(
+      await harness.dependencies.routineRecordRepository.getStepRecords(
+        CalendarDay.fromDateTime(DateTime.now()),
+        'penutup-hari',
+      ),
+      isEmpty,
+    );
+
+    expect(await tester.binding.handlePopRoute(), isTrue);
+    await tester.pumpAndSettle();
+    expect(find.byType(ReaderScreen), findsNothing);
+    expect(
+      await harness.dependencies.routineRecordRepository.getStepRecords(
+        CalendarDay.fromDateTime(DateTime.now()),
+        'penutup-hari',
+      ),
+      isEmpty,
+    );
+  });
+
   testWidgets('Reader opens from Routine Detail and back preserves it', (
     tester,
   ) async {

@@ -263,4 +263,84 @@ void main() {
       isNull,
     );
   });
+
+  test(
+    'history day and range queries preserve selected date identity',
+    () async {
+      final persistence = await TestPersistence.create();
+      addTearDown(persistence.dispose);
+      final repository = persistence.routineRecords;
+      final yesterday = CalendarDay(year: 2026, month: 10, day: 12);
+      final today = CalendarDay(year: 2026, month: 10, day: 13);
+      final lateEntry = DateTime.utc(2026, 10, 13, 2, 15);
+
+      await repository.markCompleted(
+        routine: RoutineDemoData.zuhur,
+        day: yesterday,
+        now: lateEntry,
+      );
+      await repository.markCompleted(
+        routine: RoutineDemoData.dhuha,
+        day: today,
+        now: lateEntry,
+      );
+
+      final records = await repository.getRecordsBetween(yesterday, today);
+      expect(records.map((record) => record.calendarDay.toDateKey()), [
+        '2026-10-13',
+        '2026-10-12',
+      ]);
+      expect(await repository.getEarliestRecordDay(), yesterday);
+      final steps = await repository.getStepRecordsBetween(yesterday, today);
+      expect(steps, isNotEmpty);
+      expect(await repository.getStepRecordsForDay(yesterday), hasLength(2));
+      expect(
+        (await repository.getRoutineRecord(yesterday, 'zuhur'))?.recordedAt,
+        lateEntry,
+      );
+      final row = (await (await persistence.database.open()).query(
+        DatabaseSchema.routineRecords,
+        where: 'routine_id = ?',
+        whereArgs: ['zuhur'],
+      )).single;
+      expect(row['date_key'], '2026-10-12');
+      expect(row['recorded_at_utc'], lateEntry.toIso8601String());
+    },
+  );
+
+  test(
+    'clear removes historical reminder state in the same record operation',
+    () async {
+      final persistence = await TestPersistence.create();
+      addTearDown(persistence.dispose);
+      final db = await persistence.database.open();
+      await persistence.routineRecords.markCompleted(
+        routine: RoutineDemoData.dhuha,
+        day: day,
+        now: DateTime.utc(2026, 10, 13),
+      );
+      await db.insert(DatabaseSchema.routineReminderStates, {
+        'date_key': day.toDateKey(),
+        'routine_id': 'dhuha',
+        'snoozed_until_utc': null,
+        'follow_up_scheduled_at_utc': null,
+        'follow_up_suppressed': 1,
+        'last_action': 'snooze',
+        'last_action_at_utc': DateTime.utc(2026, 10, 13).toIso8601String(),
+        'updated_at_utc': DateTime.utc(2026, 10, 13).toIso8601String(),
+      });
+
+      await persistence.routineRecords.clearRoutineRecord(day, 'dhuha');
+
+      expect(
+        await persistence.routineRecords.getRoutineRecord(day, 'dhuha'),
+        isNull,
+      );
+      expect(
+        await persistence.routineRecords.getStepRecords(day, 'dhuha'),
+        isEmpty,
+      );
+      expect(await db.query(DatabaseSchema.routineReminderStates), isEmpty);
+    },
+  );
 }

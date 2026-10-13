@@ -13,6 +13,7 @@ import '../../../routines/domain/models/routine_status.dart' as routine_domain;
 import '../../../routines/domain/models/prayer_key.dart';
 import '../../../routines/domain/models/routine_definition.dart';
 import '../../../routines/domain/models/routine_schedule.dart';
+import '../../../routines/domain/models/built_in_routine_defaults.dart';
 
 class _RoutineEntry {
   const _RoutineEntry({
@@ -108,13 +109,20 @@ class RoutineTimeline extends StatelessWidget {
         status: design.RoutineStatus.upcoming,
         isEvening: true,
       ),
-      const _RoutineEntry(
-        time: '21:00',
+      _RoutineEntry(
+        time: _formatMinutes(
+          BuiltInRoutineDefaults.penutupHariMinutesAfterMidnight,
+        ),
         title: 'Penutup Hari',
+        routineId: 'penutup-hari',
         status: design.RoutineStatus.upcoming,
       ),
     ];
   }
+
+  static String _formatMinutes(int minutes) =>
+      '${(minutes ~/ 60).toString().padLeft(2, '0')}:'
+      '${(minutes % 60).toString().padLeft(2, '0')}';
 
   List<_RoutineEntry> _managedEntries() {
     int prayerMinutes(PrayerKey key) {
@@ -168,7 +176,7 @@ class RoutineTimeline extends StatelessWidget {
             ? '--:--'
             : PrayerTimePresentation.time(this.schedule!.timeFor(prayer)),
         title: title,
-        routineId: definition.id == 'penutup-hari' ? null : definition.id,
+        routineId: definition.id,
         prayer: prayer,
         status: _statusFor(definition.id, fallbackStatus),
         detail: isFocused ? period?.focusLabel : null,

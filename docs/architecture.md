@@ -100,10 +100,10 @@ routine or removing a step keeps its definition row so historical progress can
 still be interpreted.
 
 Reader follows the same feature-first structure: `ReaderContent` and
-`ReaderSection` live in the domain, `ReaderDemoData` provides temporary local
-fixtures, and `ReaderViewModel` owns visibility and text-size preferences for
-the current screen session. Arabic remains visible for Arabic content; opening
-a reading never changes a routine's completion state.
+`ReaderSection` live in the domain, `ReaderContentCatalog` provides verified
+local content, and `ReaderViewModel` owns visibility and text-size preferences
+for the current screen session. Arabic remains visible for Arabic content;
+opening a reading never changes a routine's completion state.
 
 Dhikr uses immutable `DhikrSequence` and `DhikrItem` domain models.
 `DhikrDemoData` provides the post-prayer fixture, and `DhikrCounterViewModel`
@@ -252,3 +252,21 @@ device timezone matches the physical location; remote location selection and
 coordinate-to-timezone lookup are not implemented. Coordinates and settings
 are not persisted, and calculation does not use a Kemenag network service or
 background location.
+
+## History
+
+History presentation uses `HistoryViewModel` for bounded, 30-day loading,
+Load Earlier pagination, and record-change refresh. `GetHistoryRangeUseCase`
+loads SQL date ranges once per page and groups by `CalendarDay`; it also clamps
+the range to locally persisted routine creation or record data.
+`BuildHistoryDayUseCase` derives mandatory `Unrecorded` entries, resolves
+recorded optional entries, and calculates neutral summary counts. A resolver
+contract in the History domain keeps persisted routine definitions and archived
+step resolution outside presentation. No current-day prayer calculations,
+location lookups, or network reads run for History.
+
+History day detail and historical routine detail use root-level nested routes.
+Historical Routine Detail reuses `RoutineDetailScreen` and
+`RoutineDetailViewModel` with an explicit `CalendarDay`. The app's record-change
+subscription only reconciles notification actions for today's local date;
+historical progress changes therefore cannot touch OS reminders.

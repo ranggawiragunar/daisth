@@ -147,6 +147,43 @@ void main() {
   });
 
   test(
+    'Penutup Hari Done completes six readings and leaves Wudu untouched',
+    () async {
+      final persistence = await TestPersistence.create();
+      addTearDown(persistence.dispose);
+      final states = RoutineReminderStateRepositoryData(
+        service: RoutineReminderStateSqliteService(persistence.database),
+        mapper: RoutineReminderStateMapper(),
+      );
+      final handler = _handler(
+        persistence.routineRecords,
+        states,
+        _Reminders(),
+      );
+      await handler(
+        action: ReminderAction.done,
+        payload: _payload('penutup-hari'),
+        actionAt: DateTime.utc(2026, 10, 13, 10),
+      );
+
+      final record = await persistence.routineRecords.getRoutineRecord(
+        payloadDay,
+        'penutup-hari',
+      );
+      final steps = await persistence.routineRecords.getStepRecords(
+        payloadDay,
+        'penutup-hari',
+      );
+      expect(record!.status, RoutineStatus.completed);
+      expect(steps.where((step) => step.isCompleted), hasLength(6));
+      expect(
+        steps.singleWhere((step) => step.stepId == 'wudu').isCompleted,
+        isFalse,
+      );
+    },
+  );
+
+  test(
     'Snooze schedules one ten minute reminder and suppresses follow-up',
     () async {
       final persistence = await TestPersistence.create();

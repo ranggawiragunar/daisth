@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/design_system/components/daisth_notice_controller.dart';
+import '../../core/time/domain/models/calendar_day.dart';
 import '../../app/dependencies/app_dependencies.dart';
-import '../../features/history/presentation/history_placeholder_screen.dart';
+import '../../features/history/presentation/screens/history_screens.dart';
 import '../../features/dhikr/data/demo/dhikr_demo_data.dart';
 import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
 import '../../features/routines/presentation/routine_detail_route_screen.dart';
 import '../../features/routines/presentation/routines_screen.dart';
 import '../../features/settings/presentation/settings_placeholder_screen.dart';
 import '../../features/today/presentation/today_screen.dart';
-import '../../features/reader/data/demo/reader_demo_data.dart';
+import '../../features/reader/data/catalog/reader_content_catalog.dart';
 import '../../features/reader/presentation/screens/reader_screen.dart';
 import '../../features/mosque/presentation/screens/mosque_finder_screen.dart';
 import '../../features/mosque/presentation/view_models/mosque_finder_view_model.dart';
@@ -60,9 +61,48 @@ GoRouter createAppRouter({
             GoRoute(
               path: RoutePaths.history,
               name: AppRoute.history.name,
-              builder: (context, state) => const HistoryPlaceholderScreen(
+              builder: (context, state) => HistoryScreen(
+                dependencies: dependencies,
                 bottomContentPadding: AppShell.contentBottomPadding,
               ),
+              routes: [
+                GoRoute(
+                  path: ':date',
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => HistoryDayScreen(
+                    date: state.pathParameters['date']!,
+                    dependencies: dependencies,
+                  ),
+                  routes: [
+                    GoRoute(
+                      path: 'routines/:routineId',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) {
+                        final dateValue = state.pathParameters['date']!;
+                        CalendarDay? selectedDay;
+                        try {
+                          selectedDay = CalendarDay.parseDateKey(dateValue);
+                        } on FormatException {
+                          return HistoryDayScreen(
+                            date: dateValue,
+                            dependencies: dependencies,
+                          );
+                        }
+                        return RoutineDetailRouteScreen(
+                          key: ValueKey(
+                            'history-routine-$dateValue-${state.pathParameters['routineId']}',
+                          ),
+                          routineId: state.pathParameters['routineId']!,
+                          dependencies: dependencies,
+                          noticeController: noticeController,
+                          calendarDay: selectedDay,
+                          historical: true,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
@@ -122,7 +162,7 @@ GoRouter createAppRouter({
           builder: (context, state) {
             final routineId = state.pathParameters['routineId']!;
             final contentId = state.pathParameters['contentId']!;
-            final content = ReaderDemoData.byRoute(routineId, contentId);
+            final content = ReaderContentCatalog.byRoute(routineId, contentId);
             if (content == null) {
               return ReaderUnavailableScreen(routineId: routineId);
             }
@@ -130,6 +170,7 @@ GoRouter createAppRouter({
               key: ValueKey('reader-$routineId-$contentId'),
               routineId: routineId,
               content: content,
+              fallbackRoute: _readerFallbackRoute(state, routineId),
             );
           },
         ),
@@ -172,3 +213,14 @@ GoRouter createAppRouter({
     ),
   ],
 );
+
+String? _readerFallbackRoute(GoRouterState state, String routineId) {
+  final dateKey = state.uri.queryParameters['historyDate'];
+  if (dateKey == null) return null;
+  try {
+    CalendarDay.parseDateKey(dateKey);
+  } on FormatException {
+    return null;
+  }
+  return RoutePaths.historyRoutine(dateKey, routineId);
+}

@@ -14,6 +14,7 @@ import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/theme/daisth_theme_extension.dart';
 import '../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../core/time/domain/models/calendar_day.dart';
 import '../../prayer_times/domain/models/prayer_name.dart';
 import '../../prayer_times/presentation/prayer_schedule_session.dart';
 import '../../prayer_times/presentation/prayer_time_presentation.dart';
@@ -38,6 +39,8 @@ class RoutineDetailScreen extends StatefulWidget {
     required this.markRoutineComplete,
     required this.markRoutineNotToday,
     this.prayerScheduleSession,
+    this.calendarDay,
+    this.historical = false,
     super.key,
   });
 
@@ -48,6 +51,8 @@ class RoutineDetailScreen extends StatefulWidget {
   final MarkRoutineCompleteUseCase markRoutineComplete;
   final MarkRoutineNotTodayUseCase markRoutineNotToday;
   final PrayerScheduleSession? prayerScheduleSession;
+  final CalendarDay? calendarDay;
+  final bool historical;
 
   @override
   State<RoutineDetailScreen> createState() => _RoutineDetailScreenState();
@@ -74,6 +79,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
       setStepCompletion: widget.setRoutineStepCompletion,
       markRoutineComplete: widget.markRoutineComplete,
       markRoutineNotToday: widget.markRoutineNotToday,
+      calendarDay: widget.calendarDay,
     );
     _viewModel.addListener(_onViewModelChanged);
     widget.prayerScheduleSession?.addListener(_onViewModelChanged);
@@ -106,7 +112,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   }
 
   String get _statusLabel => switch (_completionState) {
-    routine_domain.RoutineStatus.pending => 'Belum dimulai',
+    routine_domain.RoutineStatus.pending =>
+      widget.historical ? 'Unrecorded' : 'Belum dimulai',
     routine_domain.RoutineStatus.partial =>
       'Partial · $_completedRequiredCount of $_requiredCount',
     routine_domain.RoutineStatus.completed => _completedStatusLabel,
@@ -115,7 +122,9 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
 
   String? get _scheduledPrayerTime {
     final prayer = _prayerForRoutine(_routine.id);
-    final schedule = widget.prayerScheduleSession?.schedule;
+    final schedule = widget.historical
+        ? null
+        : widget.prayerScheduleSession?.schedule;
     if (prayer == null || schedule == null) return null;
     return PrayerTimePresentation.time(schedule.timeFor(prayer));
   }
@@ -160,6 +169,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   }
 
   void _announceCompletion() {
+    if (widget.historical) return;
     HapticFeedback.mediumImpact();
     _showNotice(
       type: DaisthNoticeType.success,
@@ -168,7 +178,11 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   }
 
   Future<void> _markAllRemaining() async {
-    if (!await _viewModel.markAllRemaining()) return;
+    final completed = _routine.id == 'penutup-hari'
+        ? await _viewModel.markRequiredStepsDone()
+        : await _viewModel.markAllRemaining();
+    if (!completed) return;
+    if (widget.historical) return;
     HapticFeedback.mediumImpact();
     _showNotice(
       type: DaisthNoticeType.success,
@@ -178,6 +192,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
 
   Future<void> _markSimplePrayerDone() async {
     if (!await _viewModel.markRequiredStepsDone()) return;
+    if (widget.historical) return;
     HapticFeedback.mediumImpact();
     _showNotice(
       type: DaisthNoticeType.success,
@@ -190,6 +205,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     if (!mounted || result == null) return;
     final didSave = await _viewModel.markNotToday(reason: result.reason);
     if (!didSave) return;
+    if (widget.historical) return;
     _showNotice(
       type: DaisthNoticeType.neutral,
       title: 'Status routine diperbarui',
@@ -197,16 +213,36 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     );
   }
 
-  Future<void> _openStep(RoutineStep step) => showRoutineStepSheet(
-    context: context,
-    step: step,
-    onToggle: () => unawaited(_toggleStep(step.id)),
-    onOpenReading: () =>
-        _showNotice(type: DaisthNoticeType.info, title: 'Reader segera hadir'),
-  );
+  Future<void> _openStep(RoutineStep step) {
+    if (step.readerContentId != null) {
+      _openReaderContent(step.readerContentId);
+      return Future<void>.value();
+    }
+    return showRoutineStepSheet(
+      context: context,
+      step: step,
+      onToggle: () => unawaited(_toggleStep(step.id)),
+      onOpenReading: _openReader,
+    );
+  }
 
   void _openReader() =>
       _showNotice(type: DaisthNoticeType.info, title: 'Reader segera hadir');
+
+  void _openReaderContent(String? contentId) {
+    if (contentId == null) {
+      _openReader();
+      return;
+    }
+    final path = RoutePaths.reader(_routine.id, contentId);
+    if (widget.historical) {
+      context.push(
+        '$path?historyDate=${Uri.encodeQueryComponent(_viewModel.calendarDay.toDateKey())}',
+      );
+    } else {
+      context.go(path);
+    }
+  }
 
   void _onMenuSelected(String value) {
     _showNotice(
@@ -222,8 +258,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     final extension = theme.extension<DaisthThemeExtension>()!;
     final hasIllustration = _routine.illustrationAsset != null;
     final metadata = [
-      _scheduledPrayerTime ?? _routine.preferredTime,
-      _routine.contextLabel,
+      if (!widget.historical) _scheduledPrayerTime ?? _routine.preferredTime,
+      if (!widget.historical) _routine.contextLabel,
     ].where((value) => value.isNotEmpty).join(' · ');
 
     return Scaffold(
@@ -236,6 +272,21 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
               child: Column(
                 children: [
                   _DetailTopBar(onMenuSelected: _onMenuSelected),
+                  if (widget.historical)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: DaisthSpacing.xl,
+                      ),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Editing ${MaterialLocalizations.of(context).formatMediumDate(_viewModel.calendarDay.toDateTime())}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.fromLTRB(
@@ -325,7 +376,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                   onTap: _onGuidanceTap,
                                 ),
                               ],
-                              if (_isMandatoryPrayer) ...[
+                              if (_isMandatoryPrayer && !widget.historical) ...[
                                 const SizedBox(height: DaisthSpacing.section),
                                 RoutineHelpfulActions(
                                   onTap: _openHelpfulAction,
@@ -393,7 +444,11 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
       return;
     }
     final path = RoutePaths.reader(_routine.id, contentId);
-    context.go(path);
+    if (widget.historical) {
+      context.push(path);
+    } else {
+      context.go(path);
+    }
   }
 
   Future<void> _openHelpfulAction(RoutineLinkItem item) async {
@@ -429,11 +484,16 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
             ? !_allRequiredDone
             : _routine.steps.isEmpty
             ? _completionState != routine_domain.RoutineStatus.completed
+            : _routine.id == 'penutup-hari'
+            ? !_allRequiredDone
             : _hasRemainingSteps && _routine.isComposite);
     final showNotToday =
         _viewModel.isOptional &&
         _completionState != routine_domain.RoutineStatus.notToday;
-    if (!showPrimary && !showNotToday) return const SizedBox.shrink();
+    final showClear = widget.historical && _viewModel.hasRecord;
+    if (!showPrimary && !showNotToday && !showClear) {
+      return const SizedBox.shrink();
+    }
 
     final label = _routine.steps.isEmpty
         ? 'Mark Done'
@@ -461,6 +521,13 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (showClear)
+                  TextButton(
+                    onPressed: _viewModel.isLoading || _viewModel.isSaving
+                        ? null
+                        : _confirmClearRecord,
+                    child: const Text('Clear record'),
+                  ),
                 if (showPrimary)
                   SizedBox(
                     width: double.infinity,
@@ -492,6 +559,33 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmClearRecord() async {
+    final mandatory = !_routine.isOptional;
+    final shouldClear = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear this record?'),
+        content: Text(
+          mandatory
+              ? 'This day will return to Unrecorded.'
+              : "This routine will be removed from this day's history.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Clear record'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || shouldClear != true) return;
+    if (await _viewModel.clearRecord() && mounted) context.pop();
   }
 
   Future<void> _markSimpleRoutineDone() async {
@@ -604,7 +698,7 @@ class RoutineUnavailableScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: DaisthSpacing.sm),
                   Text(
-                    'Routine "$routineId" tidak dapat ditemukan.',
+                    'Routine ini tidak dapat ditemukan.',
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,

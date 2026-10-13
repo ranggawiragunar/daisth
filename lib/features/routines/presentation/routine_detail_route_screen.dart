@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/dependencies/app_dependencies.dart';
 import '../../../core/design_system/components/daisth_notice_controller.dart';
+import '../../../core/time/domain/models/calendar_day.dart';
 import '../data/resolvers/routine_resolver.dart';
 import 'routine_detail_screen.dart';
 
@@ -10,12 +11,16 @@ class RoutineDetailRouteScreen extends StatefulWidget {
     required this.routineId,
     required this.dependencies,
     required this.noticeController,
+    this.calendarDay,
+    this.historical = false,
     super.key,
   });
 
   final String routineId;
   final AppDependencies dependencies;
   final DaisthNoticeController noticeController;
+  final CalendarDay? calendarDay;
+  final bool historical;
 
   @override
   State<RoutineDetailRouteScreen> createState() =>
@@ -44,7 +49,11 @@ class _RoutineDetailRouteScreenState extends State<RoutineDetailRouteScreen> {
         setRoutineStepCompletion: widget.dependencies.setRoutineStepCompletion,
         markRoutineComplete: widget.dependencies.markRoutineComplete,
         markRoutineNotToday: widget.dependencies.markRoutineNotToday,
-        prayerScheduleSession: widget.dependencies.prayerScheduleSession,
+        prayerScheduleSession: widget.historical
+            ? null
+            : widget.dependencies.prayerScheduleSession,
+        calendarDay: widget.calendarDay,
+        historical: widget.historical,
       );
     },
   );
@@ -54,6 +63,26 @@ class _RoutineDetailRouteScreenState extends State<RoutineDetailRouteScreen> {
 
   Future<ResolvedRoutine?> _load() async {
     await dependencies.ensureRoutineDefinitionsReady();
-    return dependencies.routineResolver.resolve(routineId);
+    if (widget.historical) {
+      final day = widget.calendarDay;
+      if (day == null ||
+          day.compareTo(CalendarDay.fromDateTime(DateTime.now())) >= 0) {
+        return null;
+      }
+      final recordDay = await dependencies.routineRecordRepository
+          .getEarliestRecordDay();
+      final definitionDay = await dependencies.routineRepository
+          .getEarliestRoutineCreationDay();
+      final boundary = recordDay == null
+          ? definitionDay
+          : definitionDay == null || recordDay.compareTo(definitionDay) <= 0
+          ? recordDay
+          : definitionDay;
+      if (boundary == null || day.compareTo(boundary) < 0) return null;
+    }
+    return dependencies.routineResolver.resolve(
+      routineId,
+      includeArchived: widget.historical,
+    );
   }
 }

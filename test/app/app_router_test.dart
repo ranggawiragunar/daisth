@@ -8,6 +8,7 @@ import 'package:daisth/app/router/route_paths.dart';
 import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
 import 'package:daisth/core/location/domain/models/location_access_status.dart';
 import 'package:daisth/core/location/domain/repositories/location_repository.dart';
+import 'package:daisth/core/time/domain/models/calendar_day.dart';
 import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
 import 'package:daisth/core/design_system/theme/daisth_theme.dart';
 import 'package:daisth/features/routines/presentation/routine_detail_screen.dart';
@@ -16,6 +17,9 @@ import 'package:daisth/features/routines/domain/models/routine_definition.dart';
 import 'package:daisth/features/routines/domain/models/routine_origin.dart';
 import 'package:daisth/features/routines/domain/models/routine_priority.dart';
 import 'package:daisth/features/routines/domain/models/routine_schedule.dart';
+import 'package:daisth/features/routines/data/catalog/default_routine_template_catalog.dart';
+import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
+import 'package:daisth/features/reader/presentation/screens/reader_screen.dart';
 
 import '../support/fake_routine_repository.dart';
 import '../support/fake_routine_record_repository.dart';
@@ -30,6 +34,165 @@ void main() {
 
     expect(find.text("Assalamu'alaikum"), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-today')), findsOneWidget);
+  });
+
+  testWidgets(
+    'History day opens an editable historical routine and clear restores Unrecorded',
+    (tester) async {
+      final records = FakeRoutineRecordRepository();
+      final definitions = FakeRoutineRepository(
+        definitions: DefaultRoutineTemplateCatalog.definitions(
+          DateTime.utc(2026, 10, 1),
+        ),
+      );
+      final harness = _RouterHarness(
+        initialLocation: '/history/2026-10-12',
+        dependencies: AppDependencies(
+          locationRepository: _DeniedLocation(),
+          databaseService: TestPersistence.createDatabaseService(),
+          routineRepository: definitions,
+          routineRecordRepository: records,
+          startTodayClock: false,
+        ),
+      );
+      addTearDown(harness.dispose);
+      await tester.pumpWidget(harness.app);
+      await tester.pumpAndSettle();
+      expect(find.text('Unrecorded'), findsNWidgets(5));
+
+      await tester.tap(find.text('Sholat Zuhur'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Editing'), findsOneWidget);
+      await tester.tap(find.text('Mark Zuhur Done'));
+      await tester.pumpAndSettle();
+      final selectedDay = CalendarDay(year: 2026, month: 10, day: 12);
+      expect(await records.getRoutineRecord(selectedDay, 'zuhur'), isNotNull);
+      expect(
+        await records.getRoutineRecord(
+          CalendarDay.fromDateTime(DateTime.now()),
+          'zuhur',
+        ),
+        isNull,
+      );
+
+      await tester.tap(find.text('Clear record'));
+      await tester.pumpAndSettle();
+      expect(find.text('This day will return to Unrecorded.'), findsOneWidget);
+      await tester.tap(find.text('Clear record').last);
+      await tester.pumpAndSettle();
+      expect(await records.getRoutineRecord(selectedDay, 'zuhur'), isNull);
+    },
+  );
+
+  testWidgets('historical Penutup Hari Reader returns to its selected date', (
+    tester,
+  ) async {
+    final day = CalendarDay.fromDateTime(DateTime.now()).addDays(-1);
+    final records = FakeRoutineRecordRepository();
+    final definitions = FakeRoutineRepository(
+      definitions: DefaultRoutineTemplateCatalog.definitions(
+        DateTime.now().subtract(const Duration(days: 40)),
+      ),
+    );
+    await records.markCompleted(
+      routine: RoutineDemoData.penutupHari,
+      day: day,
+      now: DateTime.now().toUtc(),
+    );
+    final harness = _RouterHarness(
+      initialLocation: RoutePaths.historyDay(day.toDateKey()),
+      dependencies: AppDependencies(
+        locationRepository: _DeniedLocation(),
+        databaseService: TestPersistence.createDatabaseService(),
+        routineRepository: definitions,
+        routineRecordRepository: records,
+        startTodayClock: false,
+      ),
+    );
+    addTearDown(records.close);
+    addTearDown(harness.dispose);
+    await tester.pumpWidget(harness.app);
+    await tester.pumpAndSettle();
+
+    final bedtimeEntry = find.ancestor(
+      of: find.text('Penutup Hari'),
+      matching: find.byType(InkWell),
+    );
+    await tester.ensureVisible(bedtimeEntry.last);
+    await tester.tap(bedtimeEntry.last);
+    await tester.pumpAndSettle();
+    expect(find.byType(RoutineDetailScreen), findsOneWidget);
+    await tester.ensureVisible(find.text('Ayat Kursi'));
+    await tester.tap(find.text('Ayat Kursi').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ReaderScreen), findsOneWidget);
+    final reader = tester.widget<ReaderScreen>(find.byType(ReaderScreen));
+    expect(
+      reader.fallbackRoute,
+      RoutePaths.historyRoutine(day.toDateKey(), 'penutup-hari'),
+    );
+
+    expect(await tester.binding.handlePopRoute(), isTrue);
+    await tester.pumpAndSettle();
+    expect(find.byType(RoutineDetailScreen), findsOneWidget);
+    expect(find.textContaining('Editing'), findsOneWidget);
+  });
+
+  testWidgets('malformed history date is a safe route', (tester) async {
+    final harness = _RouterHarness(initialLocation: '/history/foo');
+    addTearDown(harness.dispose);
+    await tester.pumpWidget(harness.app);
+    await tester.pumpAndSettle();
+    expect(find.text('Tanggal history tidak valid.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('History list renders neutral daily summaries and opens a day', (
+    tester,
+  ) async {
+    final day = CalendarDay.fromDateTime(DateTime.now()).addDays(-1);
+    final records = FakeRoutineRecordRepository();
+    final definitions = FakeRoutineRepository(
+      definitions: DefaultRoutineTemplateCatalog.definitions(
+        DateTime.now().subtract(const Duration(days: 40)),
+      ),
+    );
+    for (final routine in [
+      RoutineDemoData.subuh,
+      RoutineDemoData.zuhur,
+      RoutineDemoData.asar,
+      RoutineDemoData.maghrib,
+      RoutineDemoData.isya,
+    ]) {
+      await records.markCompleted(
+        routine: routine,
+        day: day,
+        now: DateTime.now(),
+      );
+    }
+    final harness = _RouterHarness(
+      initialLocation: RoutePaths.history,
+      dependencies: AppDependencies(
+        locationRepository: _DeniedLocation(),
+        databaseService: TestPersistence.createDatabaseService(),
+        routineRepository: definitions,
+        routineRecordRepository: records,
+        startTodayClock: false,
+      ),
+    );
+    addTearDown(records.close);
+    addTearDown(harness.dispose);
+    await tester.pumpWidget(harness.app);
+    await tester.pumpAndSettle();
+    expect(find.text('Yesterday'), findsOneWidget);
+    expect(find.text('5 completed'), findsOneWidget);
+    expect(find.textContaining('%'), findsNothing);
+
+    await tester.tap(find.text('Yesterday'));
+    await tester.pumpAndSettle();
+    expect(find.text('Day Detail'), findsOneWidget);
+    expect(find.text('Completed'), findsNWidgets(5));
   });
 
   testWidgets('stable Routine Detail paths resolve outside the shell', (

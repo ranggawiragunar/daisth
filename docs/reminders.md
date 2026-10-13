@@ -9,11 +9,12 @@ an explicit prayer-time refresh also rebuilds the remaining reminders.
 The five mandatory prayers use the existing `PrayerDaySchedule`, with the
 primary reminder ten minutes before Fajr, Dhuhr, Asr, Maghrib, and Isha. Sholat
 Malam is planned for 03:00, Dhuha for 07:00, Daily Reflection for 20:30, and
-Penutup Hari for 21:00. Past primary times are skipped. One automatic
+Penutup Hari at its persisted preferred time (21:00 by default). Past primary times are skipped. One automatic
 follow-up can be scheduled for each supported routine day. Zuhur, Asar, and
 Maghrib use the next same-day prayer boundary with a one-hour window-end target
 and a 45-minute minimum gap; Sholat Malam, Subuh, Dhuha, and Isya use one hour
-after the primary reminder. Follow-up is skipped when its time has passed, the
+after the primary reminder. Penutup Hari uses the same one-hour fallback.
+Follow-up is skipped when its time has passed, the
 routine is complete or Not Today, or the user has snoozed it.
 
 Android uses the `daisth_high` channel for mandatory prayers and Sholat Malam,
@@ -31,11 +32,13 @@ the app settings and restored on launch. OS permission remains controlled by
 the operating system and is checked again when the app resumes. Daisth does
 not request permission automatically during restoration.
 
-Actionable routine reminders offer Done, Snooze, and Open. Reflection and
-Penutup Hari offer Open only and route to Today. Done uses the existing routine
-completion use case and payload date. Snooze replaces one reminder ten minutes
-later and suppresses that day's automatic follow-up. Open and body taps route
-to the matching Routine Detail through `go_router` without changing progress.
+Actionable routine reminders offer Done, Snooze, and Open. Daily Reflection
+remains Open-only and routes to Today. Penutup Hari supports Done, Snooze, and
+Open. Done uses the existing routine completion use case and payload date;
+Penutup Hari Done completes its six required readings and leaves optional Wudu
+unchanged. Snooze replaces one reminder ten minutes later and suppresses that
+day's automatic follow-up. Open and body taps route to the matching Routine
+Detail through `go_router` without changing progress.
 
 Android Done/Snooze actions run in the notification background engine. The
 top-level callback builds its own SQLite and reminder services and calls the

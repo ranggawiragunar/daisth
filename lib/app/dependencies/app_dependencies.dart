@@ -14,6 +14,7 @@ import '../../core/persistence/data/services/daisth_database_service.dart';
 import '../../core/timezone/data/repositories/timezone_repository_data.dart';
 import '../../core/timezone/data/services/timezone_flutter_service.dart';
 import '../../core/timezone/domain/repositories/timezone_repository.dart';
+import '../../core/time/domain/models/calendar_day.dart';
 import '../../features/prayer_times/data/mappers/prayer_time_mapper.dart';
 import '../../features/prayer_times/data/repositories/prayer_time_repository_data.dart';
 import '../../features/prayer_times/data/services/prayer_time_adhan_service.dart';
@@ -269,6 +270,7 @@ class AppDependencies {
   }
 
   Future<void> _reconcileRoutineChange(RoutineRecordChange change) async {
+    if (change.calendarDay != CalendarDay.fromDateTime(DateTime.now())) return;
     try {
       final record = await routineRecordRepository.getRoutineRecord(
         change.calendarDay,

@@ -68,6 +68,24 @@ void main() {
     );
     expect(
       policy.scheduleAt(
+        routineId: 'penutup-hari',
+        primaryAt: DateTime(2026, 10, 13, 21),
+        prayerSchedule: schedule,
+        now: DateTime(2026, 10, 13, 20),
+      ),
+      DateTime(2026, 10, 13, 22),
+    );
+    expect(
+      policy.scheduleAt(
+        routineId: 'penutup-hari',
+        primaryAt: DateTime(2026, 10, 13, 22, 15),
+        prayerSchedule: schedule,
+        now: DateTime(2026, 10, 13, 22),
+      ),
+      DateTime(2026, 10, 13, 23, 15),
+    );
+    expect(
+      policy.scheduleAt(
         routineId: 'reflection',
         primaryAt: DateTime(2026, 10, 13, 20),
         prayerSchedule: schedule,

@@ -1,5 +1,6 @@
 import '../../domain/models/prayer_key.dart';
 import '../../domain/models/routine_definition.dart';
+import '../../domain/models/built_in_routine_defaults.dart';
 import '../../domain/models/routine_origin.dart';
 import '../../domain/models/routine_priority.dart';
 import '../../domain/models/routine_schedule.dart';
@@ -57,7 +58,7 @@ abstract final class DefaultRoutineTemplateCatalog {
       _fixed(
         'penutup-hari',
         'Penutup Hari',
-        1260,
+        BuiltInRoutineDefaults.penutupHariMinutesAfterMidnight,
         RoutinePriority.medium,
         7,
         instant,

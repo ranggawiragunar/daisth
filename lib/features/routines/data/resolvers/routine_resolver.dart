@@ -18,9 +18,14 @@ class RoutineResolver {
   const RoutineResolver(this.repository);
   final RoutineRepository repository;
 
-  Future<ResolvedRoutine?> resolve(String id) async {
+  Future<ResolvedRoutine?> resolve(
+    String id, {
+    bool includeArchived = false,
+  }) async {
     final definition = await repository.getRoutine(id);
-    if (definition == null || definition.isArchived) return null;
+    if (definition == null || (definition.isArchived && !includeArchived)) {
+      return null;
+    }
     if (definition.origin == RoutineOrigin.defaultRoutine) {
       final template = RoutineDemoData.byId(definition.templateKey ?? id);
       if (template == null) return null;
@@ -42,7 +47,9 @@ class RoutineResolver {
         ),
       );
     }
-    final definitions = await repository.getSteps(id);
+    final definitions = includeArchived
+        ? await repository.getAllStepsIncludingArchived(id)
+        : await repository.getSteps(id);
     return ResolvedRoutine(
       definition: definition,
       routine: Routine(

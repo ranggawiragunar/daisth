@@ -6,6 +6,10 @@ import 'package:daisth/features/reminders/domain/models/reminder.dart';
 import 'package:daisth/features/reminders/domain/models/reminder_permission_status.dart';
 import 'package:daisth/features/reminders/domain/models/reminder_scheduling_mode.dart';
 import 'package:daisth/features/reminders/domain/repositories/reminder_repository.dart';
+import 'package:daisth/core/time/domain/models/calendar_day.dart';
+import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
+import '../support/fake_routine_record_repository.dart';
+import '../support/fake_routine_repository.dart';
 import 'package:daisth/app/dependencies/app_dependencies.dart';
 import '../support/test_persistence.dart';
 
@@ -33,6 +37,45 @@ void main() {
       expect(openedPayload, reminders.launchPayload);
     },
   );
+
+  test(
+    'historical record changes never reconcile OS reminders, current day still does',
+    () async {
+      final timezone = _TimezoneRepository([]);
+      final reminders = _ReminderRepository([]);
+      final records = FakeRoutineRecordRepository();
+      final dependencies = AppDependencies(
+        databaseService: TestPersistence.createDatabaseService(),
+        timezoneRepository: timezone,
+        reminderRepository: reminders,
+        routineRepository: FakeRoutineRepository(),
+        routineRecordRepository: records,
+        startTodayClock: false,
+      );
+      addTearDown(records.close);
+      addTearDown(dependencies.dispose);
+      await dependencies.initialize();
+
+      final today = CalendarDay.fromDateTime(DateTime.now());
+      final yesterday = today.addDays(-1);
+      await records.markCompleted(
+        routine: RoutineDemoData.zuhur,
+        day: yesterday,
+        now: DateTime.now(),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(reminders.cancelCount, 0);
+      expect(reminders.scheduleCount, 0);
+
+      await records.markCompleted(
+        routine: RoutineDemoData.zuhur,
+        day: today,
+        now: DateTime.now(),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(reminders.cancelCount, 2);
+    },
+  );
 }
 
 class _TimezoneRepository implements TimezoneRepository {
@@ -55,6 +98,8 @@ class _ReminderRepository implements ReminderRepository {
   final List<String> order;
   final String launchPayload =
       '{"app":"daisth","v":1,"type":"routine","routineId":"zuhur"}';
+  int scheduleCount = 0;
+  int cancelCount = 0;
 
   @override
   Future<void> initialize({
@@ -85,9 +130,15 @@ class _ReminderRepository implements ReminderRepository {
   Future<void> schedule(
     Reminder reminder, {
     required ReminderSchedulingMode mode,
-  }) async {}
+  }) async {
+    scheduleCount++;
+  }
+
   @override
-  Future<void> cancel(Reminder reminder) async {}
+  Future<void> cancel(Reminder reminder) async {
+    cancelCount++;
+  }
+
   @override
   Future<void> cancelRemindersForDate(DateTime date) async {}
   @override

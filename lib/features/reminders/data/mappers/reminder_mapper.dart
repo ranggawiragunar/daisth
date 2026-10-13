@@ -128,7 +128,7 @@ class ReminderMapper {
     _ => 'Pengingat Daisth',
   };
 
-  static const _referenceRoutines = {'reflection', 'penutup-hari'};
+  static const _referenceRoutines = {'reflection'};
   static const _highPriorityRoutines = {
     'subuh',
     'zuhur',

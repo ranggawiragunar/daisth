@@ -148,6 +148,27 @@ void main() {
       expect(await routines.getActiveRoutines(), isEmpty);
       expect((await routines.getRoutine(definition.id))!.isArchived, isTrue);
       expect(
+        (await routines.getAllRoutineDefinitions())
+            .singleWhere((item) => item.id == definition.id)
+            .isArchived,
+        isTrue,
+      );
+      expect(
+        (await routines.getAllStepsIncludingArchived(
+          definition.id,
+        )).single.title,
+        'Read five pages',
+      );
+      expect(
+        await routines.getEarliestRoutineCreationDay(),
+        CalendarDay.fromDateTime(now.toLocal()),
+      );
+      final historical = (await RoutineResolver(
+        routines,
+      ).resolve(definition.id, includeArchived: true))!;
+      expect(historical.definition.isArchived, isTrue);
+      expect(historical.routine.steps.single.title, 'Read five pages');
+      expect(
         (await records.getRoutineRecord(
           CalendarDay.fromDateTime(now),
           definition.id,

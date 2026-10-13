@@ -131,6 +131,68 @@ abstract final class RoutineDemoData {
     rakaaCount: 4,
   );
 
+  static final penutupHari = Routine(
+    id: 'penutup-hari',
+    title: 'Penutup Hari',
+    description:
+        'Bacaan sebelum tidur. Selesaikan yang terasa sesuai malam ini.',
+    preferredTime: '',
+    contextLabel: 'Sebelum tidur',
+    isOptional: true,
+    steps: const [
+      RoutineStep(
+        id: 'wudu',
+        title: 'Wudu',
+        subtitle: 'Persiapan',
+        requirement: RoutineRequirement.optional,
+        badge: 'Opsional',
+        sectionTitle: 'Persiapan',
+      ),
+      RoutineStep(
+        id: 'ayat-kursi',
+        title: 'Ayat Kursi',
+        subtitle: 'Al-Baqarah · 2:255',
+        sectionTitle: 'Bacaan',
+        readerContentId: 'ayat-kursi',
+      ),
+      RoutineStep(
+        id: 'al-ikhlas',
+        title: 'Al-Ikhlas',
+        subtitle: 'Surah 112',
+        sectionTitle: 'Bacaan',
+        readerContentId: 'al-ikhlas',
+      ),
+      RoutineStep(
+        id: 'al-falaq',
+        title: 'Al-Falaq',
+        subtitle: 'Surah 113',
+        sectionTitle: 'Bacaan',
+        readerContentId: 'al-falaq',
+      ),
+      RoutineStep(
+        id: 'an-nas',
+        title: 'An-Nas',
+        subtitle: 'Surah 114',
+        sectionTitle: 'Bacaan',
+        readerContentId: 'an-nas',
+      ),
+      RoutineStep(
+        id: 'al-baqarah-285-286',
+        title: 'Al-Baqarah 285–286',
+        subtitle: 'Dua ayat terakhir',
+        sectionTitle: 'Bacaan',
+        readerContentId: 'al-baqarah-285-286',
+      ),
+      RoutineStep(
+        id: 'doa-sebelum-tidur',
+        title: 'Doa Sebelum Tidur',
+        subtitle: 'Sahih al-Bukhari 6314',
+        sectionTitle: 'Penutup',
+        readerContentId: 'doa-sebelum-tidur',
+      ),
+    ],
+  );
+
   static Routine _mandatoryPrayer({
     required String id,
     required String title,
@@ -170,6 +232,7 @@ abstract final class RoutineDemoData {
     'asar' => asar,
     'maghrib' => maghrib,
     'isya' => isya,
+    'penutup-hari' => penutupHari,
     _ => null,
   };
 }

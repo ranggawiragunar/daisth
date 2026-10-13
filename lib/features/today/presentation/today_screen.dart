@@ -230,7 +230,8 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     RoutineDefinition? closest;
     var closestDistance = 31;
     for (final routine in _viewModel.routines) {
-      if (routine.origin != RoutineOrigin.custom ||
+      if ((routine.origin != RoutineOrigin.custom &&
+              routine.id != 'penutup-hari') ||
           _viewModel.recordedStatuses[routine.id] ==
               routine_domain.RoutineStatus.completed ||
           _viewModel.recordedStatuses[routine.id] ==

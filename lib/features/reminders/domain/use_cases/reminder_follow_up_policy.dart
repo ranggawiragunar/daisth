@@ -10,6 +10,7 @@ class ReminderFollowUpPolicy {
     'asar',
     'maghrib',
     'isya',
+    'penutup-hari',
   };
 
   DateTime? scheduleAt({

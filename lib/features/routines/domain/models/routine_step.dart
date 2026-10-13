@@ -11,6 +11,8 @@ class RoutineStep {
     this.guidanceTitle,
     this.guidanceType,
     this.rakaatCount,
+    this.sectionTitle,
+    this.readerContentId,
   });
 
   final String id;
@@ -22,9 +24,11 @@ class RoutineStep {
   final String? guidanceTitle;
   final String? guidanceType;
   final int? rakaatCount;
+  final String? sectionTitle;
+  final String? readerContentId;
 
   bool get isRequired => requirement == RoutineRequirement.required;
-  bool get hasGuidance => guidanceTitle != null;
+  bool get hasGuidance => guidanceTitle != null || readerContentId != null;
 
   RoutineStep copyWith({bool? completed}) => RoutineStep(
     id: id,
@@ -36,5 +40,7 @@ class RoutineStep {
     guidanceTitle: guidanceTitle,
     guidanceType: guidanceType,
     rakaatCount: rakaatCount,
+    sectionTitle: sectionTitle,
+    readerContentId: readerContentId,
   );
 }

@@ -192,6 +192,8 @@ class ScheduleTodayRemindersUseCase {
       title: primary.title,
       body: isSnooze
           ? 'Pengingat yang kamu tunda.'
+          : primary.routineId == 'penutup-hari'
+          ? 'Kalau masih memungkinkan, rutinitas ini masih tersedia.'
           : '${primary.title} masih tersedia. Kalau belum sempat, masih ada waktu.',
       scheduledAt: at,
       priority: primary.priority,
@@ -243,5 +245,6 @@ class ScheduleTodayRemindersUseCase {
     'asar',
     'maghrib',
     'isya',
+    'penutup-hari',
   ];
 }

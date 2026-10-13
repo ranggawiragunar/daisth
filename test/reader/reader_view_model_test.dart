@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:daisth/features/reader/data/demo/reader_demo_data.dart';
+import 'package:daisth/features/reader/data/catalog/reader_content_catalog.dart';
 import 'package:daisth/features/reader/presentation/view_models/reader_view_model.dart';
 
 void main() {
   test('transliteration and translation are visible by default', () {
-    final viewModel = ReaderViewModel(ReaderDemoData.bedtimeDua);
+    final viewModel = ReaderViewModel(ReaderContentCatalog.bedtimeDua);
     addTearDown(viewModel.dispose);
 
     expect(viewModel.transliterationVisible, isTrue);
@@ -13,7 +13,7 @@ void main() {
   });
 
   test('visibility settings can be changed independently', () {
-    final viewModel = ReaderViewModel(ReaderDemoData.bedtimeDua);
+    final viewModel = ReaderViewModel(ReaderContentCatalog.bedtimeDua);
     addTearDown(viewModel.dispose);
 
     viewModel.setTransliterationVisible(false);
@@ -27,7 +27,7 @@ void main() {
   });
 
   test('text size accepts only the supported discrete values', () {
-    final viewModel = ReaderViewModel(ReaderDemoData.bedtimeDua);
+    final viewModel = ReaderViewModel(ReaderContentCatalog.bedtimeDua);
     addTearDown(viewModel.dispose);
 
     expect(viewModel.setTextScale(1.15), isTrue);

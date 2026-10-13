@@ -60,3 +60,11 @@ database; existing Daisth installs upgrade in place to schema version 3.
 This phase does not persist Dhikr counter position, location coordinates,
 mosque results or cache entries, Reader presentation state, or remote account
 data. Mosque and prayer-time behavior continue to use their existing services.
+
+History uses schema v3 without a migration. `RoutineRecordRepository` provides
+indexed `date_key` day/range reads for routine records and step records, plus
+an earliest-record query. `RoutineRepository` reads all routine definitions
+and archived steps for historical resolution and finds the earliest definition
+creation day. History groups range results in memory rather than querying each
+routine for every day. Clearing a routine record deletes its step rows and
+matching `routine_reminder_states` row in the same SQLite transaction.

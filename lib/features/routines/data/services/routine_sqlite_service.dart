@@ -32,6 +32,20 @@ class RoutineSqliteService {
     );
   }
 
+  Future<List<Map<String, Object?>>> getAllRoutines() async =>
+      (await databaseService.open()).query(
+        DatabaseSchema.routineDefinitions,
+        orderBy: 'sort_order, created_at_utc, id',
+      );
+
+  Future<String?> getEarliestRoutineCreatedAt() async {
+    final rows = await (await databaseService.open()).rawQuery(
+      'SELECT MIN(created_at_utc) AS earliest FROM '
+      '${DatabaseSchema.routineDefinitions}',
+    );
+    return rows.firstOrNull?['earliest'] as String?;
+  }
+
   Future<List<Map<String, Object?>>> getSteps(String routineId) async =>
       (await databaseService.open()).query(
         DatabaseSchema.routineStepDefinitions,
@@ -46,5 +60,11 @@ class RoutineSqliteService {
         where: 'routine_id = ?',
         whereArgs: [routineId],
         orderBy: 'sort_order, created_at_utc, step_id',
+      );
+
+  Future<List<Map<String, Object?>>> getAllStepDefinitions() async =>
+      (await databaseService.open()).query(
+        DatabaseSchema.routineStepDefinitions,
+        orderBy: 'routine_id, sort_order, created_at_utc, step_id',
       );
 }

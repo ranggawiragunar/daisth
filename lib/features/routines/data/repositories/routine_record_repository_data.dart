@@ -61,6 +61,41 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
           .toList(growable: false);
 
   @override
+  Future<List<RoutineRecord>> getRecordsBetween(
+    CalendarDay startDay,
+    CalendarDay endDay,
+  ) async => (await service.getRecordsBetween(
+    startDay.toDateKey(),
+    endDay.toDateKey(),
+  )).map((row) => mapper.fromData(RoutineRecordData.fromMap(row))).toList();
+
+  @override
+  Future<List<RoutineStepRecord>> getStepRecordsForDay(CalendarDay day) async =>
+      (await service.getStepRecordsForDay(day.toDateKey()))
+          .map((row) => mapper.stepFromData(RoutineStepRecordData.fromMap(row)))
+          .toList(growable: false);
+
+  @override
+  Future<List<RoutineStepRecord>> getStepRecordsBetween(
+    CalendarDay startDay,
+    CalendarDay endDay,
+  ) async =>
+      (await service.getStepRecordsBetween(
+            startDay.toDateKey(),
+            endDay.toDateKey(),
+          ))
+          .map((row) => mapper.stepFromData(RoutineStepRecordData.fromMap(row)))
+          .toList();
+
+  @override
+  Future<CalendarDay?> getEarliestRecordDay() async {
+    final value = await service.getEarliestRecordDateKey();
+    if (value == null) return null;
+    final parts = value.split('-').map(int.parse).toList(growable: false);
+    return CalendarDay(year: parts[0], month: parts[1], day: parts[2]);
+  }
+
+  @override
   Future<void> setStepCompletion({
     required Routine routine,
     required CalendarDay day,
@@ -188,6 +223,11 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
       );
       await transaction.delete(
         DatabaseSchema.routineRecords,
+        where: 'date_key = ? AND routine_id = ?',
+        whereArgs: [day.toDateKey(), routineId],
+      );
+      await transaction.delete(
+        DatabaseSchema.routineReminderStates,
         where: 'date_key = ? AND routine_id = ?',
         whereArgs: [day.toDateKey(), routineId],
       );

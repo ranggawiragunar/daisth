@@ -13,11 +13,13 @@ class ReaderScreen extends StatefulWidget {
   const ReaderScreen({
     required this.routineId,
     required this.content,
+    this.fallbackRoute,
     super.key,
   });
 
   final String routineId;
   final ReaderContent content;
+  final String? fallbackRoute;
 
   @override
   State<ReaderScreen> createState() => _ReaderScreenState();
@@ -48,7 +50,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
     if (context.canPop()) {
       context.pop();
     } else {
-      context.go(RoutePaths.routineDetail(widget.routineId));
+      context.go(
+        widget.fallbackRoute ?? RoutePaths.routineDetail(widget.routineId),
+      );
     }
   }
 

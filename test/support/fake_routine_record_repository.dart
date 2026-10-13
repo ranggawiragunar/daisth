@@ -15,6 +15,8 @@ class FakeRoutineRecordRepository implements RoutineRecordRepository {
   final _changes = StreamController<RoutineRecordChange>.broadcast();
   final _resolveStatus = const ResolveRoutineStatusUseCase();
 
+  Future<void> close() => _changes.close();
+
   String _routineKey(CalendarDay day, String routineId) =>
       '${day.toDateKey()}:$routineId';
 
@@ -44,6 +46,43 @@ class FakeRoutineRecordRepository implements RoutineRecordRepository {
     for (final record in _records.values)
       if (record.calendarDay == day) record,
   ];
+
+  @override
+  Future<List<RoutineRecord>> getRecordsBetween(
+    CalendarDay startDay,
+    CalendarDay endDay,
+  ) async => [
+    for (final record in _records.values)
+      if (record.calendarDay.compareTo(startDay) >= 0 &&
+          record.calendarDay.compareTo(endDay) <= 0)
+        record,
+  ];
+
+  @override
+  Future<List<RoutineStepRecord>> getStepRecordsForDay(CalendarDay day) async =>
+      [
+        for (final item in _steps.values)
+          if (item.calendarDay == day) item,
+      ];
+
+  @override
+  Future<List<RoutineStepRecord>> getStepRecordsBetween(
+    CalendarDay startDay,
+    CalendarDay endDay,
+  ) async => [
+    for (final item in _steps.values)
+      if (item.calendarDay.compareTo(startDay) >= 0 &&
+          item.calendarDay.compareTo(endDay) <= 0)
+        item,
+  ];
+
+  @override
+  Future<CalendarDay?> getEarliestRecordDay() async {
+    if (_records.isEmpty) return null;
+    return _records.values
+        .map((item) => item.calendarDay)
+        .reduce((a, b) => a.compareTo(b) < 0 ? a : b);
+  }
 
   @override
   Future<void> setStepCompletion({

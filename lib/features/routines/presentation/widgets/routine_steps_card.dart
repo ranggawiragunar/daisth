@@ -27,6 +27,27 @@ class RoutineStepsCard extends StatelessWidget {
       child: Column(
         children: [
           for (var index = 0; index < steps.length; index++) ...[
+            if (steps[index].sectionTitle != null &&
+                (index == 0 ||
+                    steps[index - 1].sectionTitle != steps[index].sectionTitle))
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  DaisthSpacing.md,
+                  index == 0 ? DaisthSpacing.md : DaisthSpacing.lg,
+                  DaisthSpacing.md,
+                  DaisthSpacing.xs,
+                ),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    steps[index].sectionTitle!,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             _RoutineStepTile(
               step: steps[index],
               onToggle: () => onToggle(steps[index].id),

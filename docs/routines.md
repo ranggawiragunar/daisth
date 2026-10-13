@@ -20,6 +20,12 @@ can be edited for Sholat Malam, Dhuha, and Penutup Hari. Prayer routines keep a
 stable prayer key and continue to use the current Prayer Time schedule. Default
 titles and built-in capabilities remain part of the product definition.
 
+Penutup Hari is an optional built-in capability with six required readings and
+one optional Wudu step. Its checklist and Reader content are part of the app,
+not user-editable checklist definitions. The persisted preferred time remains
+user-owned after startup and is used by Today and reminder planning; 21:00 is
+only the factory/reset value.
+
 Disabling a routine removes it from active Today planning and future reminder
 scheduling. It does not create a Not Today record or erase earlier progress.
 Default routines cannot be archived.

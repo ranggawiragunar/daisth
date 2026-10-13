@@ -103,6 +103,28 @@ void main() {
     }
   });
 
+  test('Penutup Hari uses its configured time and actionable calm copy', () {
+    final definition = DefaultRoutineTemplateCatalog.definitions(
+      DateTime.utc(2026, 10, 1),
+    ).singleWhere((item) => item.id == 'penutup-hari');
+    final configured = definition.copyWith(
+      schedule: const FixedRoutineSchedule(22 * 60 + 15),
+    );
+    final plan = builder(
+      schedule: schedule,
+      timezone: const DeviceTimezone(ianaName: 'Asia/Jakarta'),
+      now: now,
+      definitions: [configured],
+    );
+    final reminder = plan.reminders.singleWhere(
+      (item) => item.routineId == 'penutup-hari',
+    );
+
+    expect(_time(plan, 'penutup-hari'), '22:15');
+    expect(reminder.actionable, isTrue);
+    expect(reminder.body, 'Siapkan bacaan dan rutinitas sebelum tidur.');
+  });
+
   test(
     'uses active custom definitions and respects reminder configuration',
     () {

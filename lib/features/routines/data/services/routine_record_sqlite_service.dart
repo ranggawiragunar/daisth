@@ -51,4 +51,50 @@ class RoutineRecordSqliteService {
       orderBy: 'routine_id',
     );
   }
+
+  Future<List<Map<String, Object?>>> getRecordsBetween(
+    String startDateKey,
+    String endDateKey,
+  ) async {
+    final db = await databaseService.open();
+    return db.query(
+      DatabaseSchema.routineRecords,
+      where: 'date_key >= ? AND date_key <= ?',
+      whereArgs: [startDateKey, endDateKey],
+      orderBy: 'date_key DESC, routine_id',
+    );
+  }
+
+  Future<List<Map<String, Object?>>> getStepRecordsForDay(
+    String dateKey,
+  ) async {
+    final db = await databaseService.open();
+    return db.query(
+      DatabaseSchema.routineStepRecords,
+      where: 'date_key = ?',
+      whereArgs: [dateKey],
+      orderBy: 'routine_id, step_id',
+    );
+  }
+
+  Future<List<Map<String, Object?>>> getStepRecordsBetween(
+    String startDateKey,
+    String endDateKey,
+  ) async {
+    final db = await databaseService.open();
+    return db.query(
+      DatabaseSchema.routineStepRecords,
+      where: 'date_key >= ? AND date_key <= ?',
+      whereArgs: [startDateKey, endDateKey],
+      orderBy: 'date_key DESC, routine_id, step_id',
+    );
+  }
+
+  Future<String?> getEarliestRecordDateKey() async {
+    final db = await databaseService.open();
+    final rows = await db.rawQuery(
+      'SELECT MIN(date_key) AS earliest FROM ${DatabaseSchema.routineRecords}',
+    );
+    return rows.firstOrNull?['earliest'] as String?;
+  }
 }

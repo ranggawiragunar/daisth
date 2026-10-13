@@ -22,7 +22,14 @@ import 'package:daisth/features/reminders/data/mappers/routine_reminder_state_ma
 import 'package:daisth/features/reminders/data/repositories/routine_reminder_state_repository_data.dart';
 import 'package:daisth/features/reminders/data/services/routine_reminder_state_sqlite_service.dart';
 import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
+import 'package:daisth/features/routines/data/catalog/default_routine_template_catalog.dart';
+import 'package:daisth/features/routines/data/mappers/routine_definition_mapper.dart';
+import 'package:daisth/features/routines/data/repositories/routine_repository_data.dart';
+import 'package:daisth/features/routines/data/services/routine_sqlite_service.dart';
 import 'package:daisth/features/routines/domain/repositories/routine_record_repository.dart';
+import 'package:daisth/features/routines/domain/repositories/routine_repository.dart';
+import 'package:daisth/features/routines/domain/models/routine_schedule.dart';
+import 'package:daisth/features/routines/domain/use_cases/ensure_default_routines_use_case.dart';
 import '../support/test_persistence.dart';
 
 void main() {
@@ -62,6 +69,54 @@ void main() {
       isTrue,
     );
   });
+
+  test(
+    'Penutup Hari uses its saved primary time and schedules one-hour follow-up',
+    () async {
+      final persistence = await TestPersistence.create();
+      addTearDown(persistence.dispose);
+      final definitions = RoutineRepositoryData(
+        service: RoutineSqliteService(persistence.database),
+        mapper: RoutineDefinitionMapper(),
+      );
+      await EnsureDefaultRoutinesUseCase(
+        repository: definitions,
+        templates: DefaultRoutineTemplateCatalog.definitions,
+      )(now: DateTime.utc(2026, 10, 1));
+      final penutup = (await definitions.getRoutine('penutup-hari'))!;
+      await definitions.saveRoutine(
+        penutup.copyWith(
+          schedule: const FixedRoutineSchedule(22 * 60 + 15),
+          updatedAt: DateTime.utc(2026, 10, 1),
+        ),
+      );
+      final states = RoutineReminderStateRepositoryData(
+        service: RoutineReminderStateSqliteService(persistence.database),
+        mapper: RoutineReminderStateMapper(),
+      );
+      final reminders = _Reminders(ExactAlarmStatus.enabled);
+
+      await _useCase(
+        reminders,
+        routineRepository: persistence.routineRecords,
+        definitionsRepository: definitions,
+        reminderStateRepository: states,
+      )(schedule: _schedule(), now: DateTime(2026, 10, 13, 20));
+
+      final penutupReminders = reminders.scheduled
+          .where((reminder) => reminder.routineId == 'penutup-hari')
+          .toList();
+      expect(penutupReminders, hasLength(2));
+      expect(penutupReminders.map((reminder) => reminder.scheduledAt), [
+        DateTime(2026, 10, 13, 22, 15),
+        DateTime(2026, 10, 13, 23, 15),
+      ]);
+      expect(
+        penutupReminders.last.body,
+        'Kalau masih memungkinkan, rutinitas ini masih tersedia.',
+      );
+    },
+  );
 
   test(
     'startup reconciliation restores future snooze and skips suppressed/completed follow-up',
@@ -130,6 +185,7 @@ void main() {
 ScheduleTodayRemindersUseCase _useCase(
   _Reminders reminders, {
   RoutineRecordRepository? routineRepository,
+  RoutineRepository? definitionsRepository,
   RoutineReminderStateRepository? reminderStateRepository,
 }) => ScheduleTodayRemindersUseCase(
   reminderRepository: reminders,
@@ -142,6 +198,7 @@ ScheduleTodayRemindersUseCase _useCase(
   ),
   buildTodayReminderPlan: BuildTodayReminderPlanUseCase(),
   routineRecordRepository: routineRepository,
+  routineRepository: definitionsRepository,
   reminderStateRepository: reminderStateRepository,
 );
 

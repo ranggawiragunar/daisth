@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:sqflite/sqflite.dart';
 
+import '../../../../core/time/domain/models/calendar_day.dart';
 import '../../../../core/persistence/data/schema/database_schema.dart';
 
 import '../../domain/models/routine_definition.dart';
@@ -41,11 +42,35 @@ class RoutineRepositoryData implements RoutineRepository {
       )).map(mapper.fromMap).toList(growable: false);
 
   @override
+  Future<List<RoutineDefinition>> getAllRoutineDefinitions() async =>
+      (await service.getAllRoutines())
+          .map(mapper.fromMap)
+          .toList(growable: false);
+
+  @override
+  Future<CalendarDay?> getEarliestRoutineCreationDay() async {
+    final value = await service.getEarliestRoutineCreatedAt();
+    return value == null
+        ? null
+        : CalendarDay.fromDateTime(DateTime.parse(value).toLocal());
+  }
+
+  @override
   Future<List<RoutineStepDefinition>> getSteps(String routineId) async =>
       (await service.getSteps(routineId)).map(mapper.stepFromMap).toList();
 
-  Future<List<RoutineStepDefinition>> getAllSteps(String routineId) async =>
+  @override
+  Future<List<RoutineStepDefinition>> getAllStepsIncludingArchived(
+    String routineId,
+  ) async =>
       (await service.getAllSteps(routineId)).map(mapper.stepFromMap).toList();
+
+  @override
+  Future<List<RoutineStepDefinition>>
+  getAllStepDefinitionsIncludingArchived() async =>
+      (await service.getAllStepDefinitions())
+          .map(mapper.stepFromMap)
+          .toList(growable: false);
 
   @override
   Future<void> saveRoutine(

@@ -6,6 +6,7 @@ import '../../../routines/domain/models/routine_definition.dart';
 import '../../../routines/domain/models/routine_priority.dart'
     as routine_priority;
 import '../../../routines/domain/models/routine_schedule.dart';
+import '../../../routines/domain/models/built_in_routine_defaults.dart';
 import '../models/reminder.dart';
 import '../models/reminder_plan.dart';
 import '../models/reminder_priority.dart';
@@ -42,7 +43,7 @@ class BuildTodayReminderPlanUseCase {
           priority: priority,
           dateKey: _dateKey(date),
           timezoneIdentifier: timezone.ianaName,
-          actionable: !{'reflection', 'penutup-hari'}.contains(routineId),
+          actionable: routineId != 'reflection',
         ),
       );
     }
@@ -71,6 +72,8 @@ class BuildTodayReminderPlanUseCase {
               : definition.title,
           body: isPrayer
               ? 'Sekitar 10 menit lagi.'
+              : definition.id == 'penutup-hari'
+              ? 'Siapkan bacaan dan rutinitas sebelum tidur.'
               : 'Waktu yang kamu pilih sudah tiba.',
           scheduledAt: isPrayer
               ? scheduledAt.subtract(const Duration(minutes: 10))
@@ -164,7 +167,11 @@ class BuildTodayReminderPlanUseCase {
       routineId: 'penutup-hari',
       title: 'Penutup Hari',
       body: 'Siapkan bacaan dan rutinitas sebelum tidur.',
-      scheduledAt: DateTime(date.year, date.month, date.day, 21),
+      scheduledAt: DateTime(date.year, date.month, date.day).add(
+        const Duration(
+          minutes: BuiltInRoutineDefaults.penutupHariMinutesAfterMidnight,
+        ),
+      ),
       priority: ReminderPriority.medium,
     );
   }

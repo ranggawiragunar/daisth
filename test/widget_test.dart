@@ -58,14 +58,14 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('navigation-history')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Belum ada history'), findsOneWidget);
+    expect(find.text('No history yet'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('navigation-today')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('today-routine-zuhur')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('navigation-history')));
     await tester.pumpAndSettle();
-    expect(find.text('Belum ada history'), findsOneWidget);
+    expect(find.text('No history yet'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('navigation-routines')));
     await tester.pumpAndSettle();
@@ -213,7 +213,7 @@ void main() {
     expect(
       historyDecoration.color,
       Theme.of(
-        tester.element(find.text('Belum ada history')),
+        tester.element(find.text('No history yet')),
       ).colorScheme.primaryContainer,
     );
     expect(inactiveTodayDecoration.color, Colors.transparent);

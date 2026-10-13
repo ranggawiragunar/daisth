@@ -13,6 +13,9 @@ import 'package:daisth/features/prayer_times/presentation/prayer_schedule_sessio
 import 'package:daisth/core/time/domain/models/calendar_day.dart';
 import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
 import 'package:daisth/features/routines/domain/models/routine_status.dart';
+import 'package:daisth/features/routines/data/catalog/default_routine_template_catalog.dart';
+import 'package:daisth/features/routines/domain/models/routine_schedule.dart';
+import 'package:daisth/features/today/presentation/widgets/routine_timeline.dart';
 import 'package:daisth/features/today/presentation/view_models/today_view_model.dart';
 import '../support/test_persistence.dart';
 import 'package:daisth/features/today/presentation/today_screen.dart';
@@ -98,6 +101,49 @@ void main() {
     }
     expect(opened, ['subuh', 'zuhur', 'asar', 'maghrib', 'isya']);
     expect(repository.calls, 1);
+  });
+
+  testWidgets('Penutup Hari uses its saved time and opens from Today', (
+    tester,
+  ) async {
+    final date = DateTime(2026, 10, 13);
+    final schedule = PrayerDaySchedule(
+      date: date,
+      coordinate: const GeoCoordinate(latitude: -6.2, longitude: 106.8),
+      fajr: DateTime(2026, 10, 13, 4, 16),
+      sunrise: DateTime(2026, 10, 13, 5, 30),
+      dhuhr: DateTime(2026, 10, 13, 11, 41),
+      asr: DateTime(2026, 10, 13, 14, 42),
+      maghrib: DateTime(2026, 10, 13, 17, 46),
+      isha: DateTime(2026, 10, 13, 18, 56),
+      calculationSettings: PrayerCalculationSettings.defaultSettings,
+    );
+    final definition =
+        DefaultRoutineTemplateCatalog.definitions(DateTime.utc(2026, 10, 1))
+            .singleWhere((item) => item.id == 'penutup-hari')
+            .copyWith(schedule: const FixedRoutineSchedule(22 * 60 + 15));
+    final opened = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: DaisthTheme.light,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: RoutineTimeline(
+              schedule: schedule,
+              period: null,
+              definitions: [definition],
+              onRoutineTap: opened.add,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final row = find.byKey(const ValueKey('today-routine-penutup-hari'));
+    expect(find.text('22:15'), findsOneWidget);
+    await tester.ensureVisible(row);
+    await tester.tap(row);
+    expect(opened, ['penutup-hari']);
   });
 
   testWidgets('Today labels last-known location and refreshes on request', (
