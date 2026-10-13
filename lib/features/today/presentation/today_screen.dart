@@ -8,6 +8,7 @@ import '../../../core/design_system/tokens/istiqam_colors.dart';
 import '../../../core/design_system/tokens/istiqam_spacing.dart';
 import '../../prayer_times/presentation/prayer_schedule_session.dart';
 import '../../prayer_times/presentation/prayer_time_presentation.dart';
+import '../../routines/domain/repositories/routine_record_repository.dart';
 import '../presentation/view_models/today_view_model.dart';
 import 'widgets/daily_progress.dart';
 import 'widgets/focus_routine_card.dart';
@@ -16,6 +17,7 @@ import 'widgets/routine_timeline.dart';
 class TodayScreen extends StatefulWidget {
   const TodayScreen({
     required this.prayerScheduleSession,
+    required this.routineRecordRepository,
     this.startClock = true,
     this.bottomContentPadding = 0,
     this.onRoutineTap,
@@ -23,6 +25,7 @@ class TodayScreen extends StatefulWidget {
   });
 
   final PrayerScheduleSession prayerScheduleSession;
+  final RoutineRecordRepository routineRecordRepository;
   final bool startClock;
   final double bottomContentPadding;
   final ValueChanged<String>? onRoutineTap;
@@ -39,6 +42,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     super.initState();
     _viewModel = TodayViewModel(
       prayerScheduleSession: widget.prayerScheduleSession,
+      routineRecordRepository: widget.routineRecordRepository,
       startClock: widget.startClock,
     )..addListener(_onChanged);
     WidgetsBinding.instance.addObserver(this);
@@ -134,7 +138,9 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                         _LastKnownScheduleNotice(onRefresh: _viewModel.refresh),
                       ],
                       const SizedBox(height: IstiqamSpacing.xxl),
-                      const DailyProgress(),
+                      DailyProgress(
+                        recordedCount: _viewModel.recordedStatuses.length,
+                      ),
                       const SizedBox(height: IstiqamSpacing.section),
                       Text(
                         "Today's Routine",
@@ -144,6 +150,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                       RoutineTimeline(
                         schedule: widget.prayerScheduleSession.schedule,
                         period: _viewModel.currentPeriod,
+                        recordedStatuses: _viewModel.recordedStatuses,
                         onRoutineTap: widget.onRoutineTap,
                       ),
                     ],

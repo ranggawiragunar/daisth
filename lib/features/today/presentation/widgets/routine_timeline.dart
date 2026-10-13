@@ -9,6 +9,7 @@ import '../../../prayer_times/domain/models/prayer_day_schedule.dart';
 import '../../../prayer_times/domain/models/prayer_name.dart';
 import '../../../prayer_times/domain/models/prayer_period_state.dart';
 import '../../../prayer_times/presentation/prayer_time_presentation.dart';
+import '../../../routines/domain/models/routine_status.dart' as routine_domain;
 
 class _RoutineEntry {
   const _RoutineEntry({
@@ -37,12 +38,24 @@ class RoutineTimeline extends StatelessWidget {
     required this.schedule,
     required this.period,
     this.onRoutineTap,
+    this.recordedStatuses = const {},
     super.key,
   });
 
   final PrayerDaySchedule? schedule;
   final PrayerPeriodState? period;
   final ValueChanged<String>? onRoutineTap;
+  final Map<String, routine_domain.RoutineStatus> recordedStatuses;
+
+  design.RoutineStatus _statusFor(
+    String routineId,
+    design.RoutineStatus scheduledStatus,
+  ) => switch (recordedStatuses[routineId]) {
+    routine_domain.RoutineStatus.completed => design.RoutineStatus.completed,
+    routine_domain.RoutineStatus.partial => design.RoutineStatus.partial,
+    routine_domain.RoutineStatus.notToday => design.RoutineStatus.notToday,
+    _ => scheduledStatus,
+  };
 
   List<_RoutineEntry> _entries() {
     _RoutineEntry prayerEntry(PrayerName prayer) {
@@ -54,27 +67,30 @@ class RoutineTimeline extends StatelessWidget {
         title: 'Sholat ${PrayerTimePresentation.label(prayer)}',
         routineId: PrayerTimePresentation.routineId(prayer),
         prayer: prayer,
-        status: isFocused && period?.currentPrayer == prayer
-            ? design.RoutineStatus.due
-            : design.RoutineStatus.upcoming,
+        status: _statusFor(
+          PrayerTimePresentation.routineId(prayer),
+          isFocused && period?.currentPrayer == prayer
+              ? design.RoutineStatus.due
+              : design.RoutineStatus.upcoming,
+        ),
         detail: isFocused ? period?.focusLabel : null,
         isCurrent: isFocused,
       );
     }
 
     return [
-      const _RoutineEntry(
+      _RoutineEntry(
         time: '03:00',
         title: 'Sholat Malam',
         routineId: 'sholat-malam',
-        status: design.RoutineStatus.upcoming,
+        status: _statusFor('sholat-malam', design.RoutineStatus.upcoming),
       ),
       prayerEntry(PrayerName.fajr),
-      const _RoutineEntry(
+      _RoutineEntry(
         time: '07:00',
         title: 'Sholat Dhuha',
         routineId: 'dhuha',
-        status: design.RoutineStatus.upcoming,
+        status: _statusFor('dhuha', design.RoutineStatus.upcoming),
       ),
       prayerEntry(PrayerName.dhuhr),
       prayerEntry(PrayerName.asr),

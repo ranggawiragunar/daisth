@@ -4,9 +4,9 @@ import '../../../../core/design_system/components/istiqam_segmented_progress.dar
 import '../../../../core/design_system/tokens/istiqam_spacing.dart';
 
 class DailyProgress extends StatelessWidget {
-  const DailyProgress({super.key});
+  const DailyProgress({required this.recordedCount, super.key});
 
-  static const recorded = 3;
+  final int recordedCount;
   static const total = 7;
 
   @override
@@ -19,11 +19,11 @@ class DailyProgress extends StatelessWidget {
         Text('Today', style: theme.textTheme.titleMedium),
         const SizedBox(height: IstiqamSpacing.xs),
         Text(
-          '$recorded of $total routines recorded',
+          '$recordedCount of $total routines recorded',
           style: theme.textTheme.bodySmall?.copyWith(color: secondary),
         ),
         const SizedBox(height: IstiqamSpacing.md),
-        const IstiqamSegmentedProgress(completed: recorded, total: total),
+        IstiqamSegmentedProgress(completed: recordedCount, total: total),
       ],
     );
   }

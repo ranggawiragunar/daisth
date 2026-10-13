@@ -13,6 +13,8 @@ import 'package:istiqam/core/design_system/theme/istiqam_theme.dart';
 import 'package:istiqam/features/routines/presentation/routine_detail_screen.dart';
 import 'package:istiqam/features/mosque/presentation/screens/mosque_finder_screen.dart';
 
+import '../support/test_persistence.dart';
+
 void main() {
   testWidgets('root redirects to Today', (tester) async {
     final harness = _RouterHarness(initialLocation: RoutePaths.root);
@@ -36,7 +38,7 @@ void main() {
 
     harness.router.go('/routines/sholat-malam');
     await tester.pumpAndSettle();
-    expect(find.text('Partial · 2 of 4'), findsOneWidget);
+    expect(find.text('Belum dimulai'), findsOneWidget);
     expect(find.byType(RoutineDetailScreen), findsOneWidget);
 
     harness.router.go('/routines/zuhur');
@@ -69,6 +71,7 @@ void main() {
         initialLocation: '/routines/zuhur',
         dependencies: AppDependencies(
           locationRepository: _DeniedLocation(),
+          databaseService: TestPersistence.createDatabaseService(),
           startTodayClock: false,
         ),
       );
@@ -144,6 +147,7 @@ class _RouterHarness {
            dependencies ??
            AppDependencies(
              locationRepository: _DeniedLocation(),
+             databaseService: TestPersistence.createDatabaseService(),
              startTodayClock: false,
            ) {
     router = createAppRouter(

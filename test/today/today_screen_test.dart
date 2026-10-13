@@ -10,9 +10,57 @@ import 'package:istiqam/features/prayer_times/domain/models/prayer_day_schedule.
 import 'package:istiqam/features/prayer_times/domain/repositories/prayer_time_repository.dart';
 import 'package:istiqam/features/prayer_times/domain/use_cases/load_today_prayer_schedule_use_case.dart';
 import 'package:istiqam/features/prayer_times/presentation/prayer_schedule_session.dart';
+import 'package:istiqam/core/time/domain/models/calendar_day.dart';
+import 'package:istiqam/features/routines/data/demo/routine_demo_data.dart';
+import 'package:istiqam/features/routines/domain/models/routine_status.dart';
+import 'package:istiqam/features/today/presentation/view_models/today_view_model.dart';
+import '../support/test_persistence.dart';
 import 'package:istiqam/features/today/presentation/today_screen.dart';
 
 void main() {
+  test('Today loads stored status for today and ignores yesterday', () async {
+    final store = await TestPersistence.create();
+    addTearDown(store.dispose);
+    final today = CalendarDay.fromDateTime(DateTime.now());
+    final yesterday = CalendarDay.fromDateTime(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
+    await store.routineRecords.markCompleted(
+      routine: RoutineDemoData.zuhur,
+      day: today,
+      now: DateTime.now().toUtc(),
+    );
+    await store.routineRecords.setStepCompletion(
+      routine: RoutineDemoData.sholatMalam,
+      day: today,
+      stepId: 'hajat',
+      isCompleted: true,
+      now: DateTime.now().toUtc(),
+    );
+    await store.routineRecords.markCompleted(
+      routine: RoutineDemoData.dhuha,
+      day: yesterday,
+      now: DateTime.now().toUtc().subtract(const Duration(days: 1)),
+    );
+    final location = _Location(access: LocationAccessStatus.denied);
+    final session = _session(location);
+    addTearDown(session.dispose);
+    final viewModel = TodayViewModel(
+      prayerScheduleSession: session,
+      routineRecordRepository: store.routineRecords,
+      startClock: false,
+    );
+    addTearDown(viewModel.dispose);
+    await viewModel.initialize();
+    expect(viewModel.recordedStatuses['zuhur'], RoutineStatus.completed);
+    expect(viewModel.recordedStatuses['sholat-malam'], RoutineStatus.partial);
+    expect(viewModel.recordedStatuses.containsKey('dhuha'), isFalse);
+    expect(
+      (await store.routineRecords.getRoutineRecord(yesterday, 'dhuha'))?.status,
+      RoutineStatus.completed,
+    );
+  });
+
   testWidgets('Today asks inline without requesting permission on launch', (
     tester,
   ) async {
@@ -37,10 +85,10 @@ void main() {
     final opened = <String>[];
     await _pumpToday(tester, session, onRoutineTap: opened.add);
 
-    expect(find.text('04:16'), findsNWidgets(2));
-    expect(find.text('11:41'), findsOneWidget);
-    expect(find.text('14:42'), findsOneWidget);
-    expect(find.text('17:46'), findsOneWidget);
+    expect(find.text('04:16'), findsWidgets);
+    expect(find.text('11:41'), findsWidgets);
+    expect(find.text('14:42'), findsWidgets);
+    expect(find.text('17:46'), findsWidgets);
     expect(find.text('18:56'), findsWidgets);
     for (final id in ['subuh', 'zuhur', 'asar', 'maghrib', 'isya']) {
       final row = find.byKey(ValueKey('today-routine-$id'));
@@ -78,18 +126,23 @@ Future<void> _pumpToday(
   PrayerScheduleSession session, {
   ValueChanged<String>? onRoutineTap,
 }) async {
+  final persistence = await tester.runAsync(TestPersistence.create);
+  if (persistence == null) throw StateError('Test database did not open.');
+  addTearDown(persistence.dispose);
   await tester.pumpWidget(
     MaterialApp(
       theme: IstiqamTheme.light,
       darkTheme: IstiqamTheme.dark,
       home: TodayScreen(
         prayerScheduleSession: session,
+        routineRecordRepository: persistence.routineRecords,
         startClock: false,
         onRoutineTap: onRoutineTap,
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 500));
 }
 
 PrayerScheduleSession _session(

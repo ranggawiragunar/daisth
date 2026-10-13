@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +20,10 @@ import '../../prayer_times/presentation/prayer_time_presentation.dart';
 import '../domain/models/routine.dart';
 import '../domain/models/routine_status.dart' as routine_domain;
 import '../domain/models/routine_step.dart';
+import '../domain/repositories/routine_record_repository.dart';
+import '../domain/use_cases/mark_routine_complete_use_case.dart';
+import '../domain/use_cases/mark_routine_not_today_use_case.dart';
+import '../domain/use_cases/set_routine_step_completion_use_case.dart';
 import 'view_models/routine_detail_view_model.dart';
 import 'widgets/routine_link_sections.dart';
 import 'widgets/routine_sheets.dart';
@@ -27,12 +33,20 @@ class RoutineDetailScreen extends StatefulWidget {
   const RoutineDetailScreen({
     required this.routine,
     required this.noticeController,
+    required this.routineRecordRepository,
+    required this.setRoutineStepCompletion,
+    required this.markRoutineComplete,
+    required this.markRoutineNotToday,
     this.prayerScheduleSession,
     super.key,
   });
 
   final Routine routine;
   final IstiqamNoticeController noticeController;
+  final RoutineRecordRepository routineRecordRepository;
+  final SetRoutineStepCompletionUseCase setRoutineStepCompletion;
+  final MarkRoutineCompleteUseCase markRoutineComplete;
+  final MarkRoutineNotTodayUseCase markRoutineNotToday;
   final PrayerScheduleSession? prayerScheduleSession;
 
   @override
@@ -49,17 +63,37 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   bool get _allRequiredDone => _viewModel.allRequiredCompleted;
   bool get _hasRemainingSteps => _viewModel.hasRemainingSteps;
   String? get _notTodayReason => _viewModel.notTodayReason;
+  String? _lastDisplayedError;
 
   @override
   void initState() {
     super.initState();
-    _viewModel = RoutineDetailViewModel(widget.routine);
+    _viewModel = RoutineDetailViewModel(
+      routine: widget.routine,
+      repository: widget.routineRecordRepository,
+      setStepCompletion: widget.setRoutineStepCompletion,
+      markRoutineComplete: widget.markRoutineComplete,
+      markRoutineNotToday: widget.markRoutineNotToday,
+    );
     _viewModel.addListener(_onViewModelChanged);
     widget.prayerScheduleSession?.addListener(_onViewModelChanged);
+    unawaited(_viewModel.initialize());
   }
 
   void _onViewModelChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    final error = _viewModel.errorMessage;
+    if (error != null && error != _lastDisplayedError) {
+      _lastDisplayedError = error;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _showNotice(type: IstiqamNoticeType.error, title: error);
+        }
+      });
+    } else if (error == null) {
+      _lastDisplayedError = null;
+    }
   }
 
   @override
@@ -120,9 +154,9 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     );
   }
 
-  void _toggleStep(String id) {
+  Future<void> _toggleStep(String id) async {
     HapticFeedback.selectionClick();
-    if (_viewModel.toggleStep(id)) _announceCompletion();
+    if (await _viewModel.toggleStep(id)) _announceCompletion();
   }
 
   void _announceCompletion() {
@@ -133,8 +167,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     );
   }
 
-  void _markAllRemaining() {
-    if (!_viewModel.markAllRemaining()) return;
+  Future<void> _markAllRemaining() async {
+    if (!await _viewModel.markAllRemaining()) return;
     HapticFeedback.mediumImpact();
     _showNotice(
       type: IstiqamNoticeType.success,
@@ -142,8 +176,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     );
   }
 
-  void _markSimplePrayerDone() {
-    if (!_viewModel.markRequiredStepsDone()) return;
+  Future<void> _markSimplePrayerDone() async {
+    if (!await _viewModel.markRequiredStepsDone()) return;
     HapticFeedback.mediumImpact();
     _showNotice(
       type: IstiqamNoticeType.success,
@@ -154,7 +188,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   Future<void> _markNotToday() async {
     final result = await showNotTodaySheet(context);
     if (!mounted || result == null) return;
-    _viewModel.markNotToday(reason: result.reason);
+    final didSave = await _viewModel.markNotToday(reason: result.reason);
+    if (!didSave) return;
     _showNotice(
       type: IstiqamNoticeType.neutral,
       title: 'Status routine diperbarui',
@@ -165,7 +200,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   Future<void> _openStep(RoutineStep step) => showRoutineStepSheet(
     context: context,
     step: step,
-    onToggle: () => _toggleStep(step.id),
+    onToggle: () => unawaited(_toggleStep(step.id)),
     onOpenReading: () =>
         _showNotice(type: IstiqamNoticeType.info, title: 'Reader segera hadir'),
   );
@@ -383,7 +418,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
       RoutePaths.dhikr(_routine.id, 'post-prayer'),
     );
     if (!mounted || completed != true) return;
-    _viewModel.completeOptionalStep('post-prayer-dhikr');
+    await _viewModel.completeOptionalStep('post-prayer-dhikr');
   }
 
   Widget _buildBottomActions(ThemeData theme, IstiqamThemeExtension extension) {
@@ -427,7 +462,9 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                     width: double.infinity,
                     child: IstiqamButton(
                       label: label,
-                      onPressed: isSimplePrayer
+                      onPressed: _viewModel.isLoading
+                          ? null
+                          : isSimplePrayer
                           ? _markSimplePrayerDone
                           : _markAllRemaining,
                     ),
@@ -435,7 +472,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                 if (showNotToday) ...[
                   if (showPrimary) const SizedBox(height: IstiqamSpacing.xs),
                   TextButton(
-                    onPressed: _markNotToday,
+                    onPressed: _viewModel.isLoading ? null : _markNotToday,
                     style: TextButton.styleFrom(
                       foregroundColor: theme.colorScheme.onSurfaceVariant,
                       minimumSize: const Size(44, 44),

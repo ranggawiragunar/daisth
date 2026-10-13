@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:istiqam/app/app.dart';
+import 'package:istiqam/app/dependencies/app_dependencies.dart';
 import 'package:istiqam/core/design_system/components/istiqam_notice.dart';
 import 'package:istiqam/features/routines/presentation/routine_detail_screen.dart';
 import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
 import 'package:istiqam/core/location/domain/models/location_access_status.dart';
 import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
+
+import 'support/test_persistence.dart';
+import 'support/fake_routine_record_repository.dart';
 
 void main() {
   testWidgets('Today is the initial destination and navigation works', (
@@ -14,7 +18,7 @@ void main() {
     await tester.pumpWidget(_testApp());
 
     expect(find.text("Assalamu'alaikum"), findsOneWidget);
-    expect(find.text('3 of 7 routines recorded'), findsOneWidget);
+    expect(find.text('0 of 7 routines recorded'), findsOneWidget);
     expect(find.text('Sholat Zuhur'), findsOneWidget);
 
     await tester.ensureVisible(
@@ -22,12 +26,20 @@ void main() {
     );
     await tester.tap(find.byKey(const ValueKey('today-routine-zuhur')));
     await tester.pumpAndSettle();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pumpAndSettle();
 
     expect(find.byType(RoutineDetailScreen), findsOneWidget);
     expect(find.text('Rangkaian'), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
 
     await tester.tap(find.text('Mark Zuhur Done'));
+    await tester.pumpAndSettle();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Zuhur recorded'), findsOneWidget);
     expect(find.byType(IstiqamNotice), findsOneWidget);
@@ -133,6 +145,11 @@ void main() {
         find.byKey(ValueKey('navigation-${destination.toLowerCase()}')),
       );
       await tester.pumpAndSettle();
+      if (destination == 'Settings') {
+        expect(find.text('Notifications'), findsOneWidget);
+        expect(find.text('Reminders'), findsOneWidget);
+        expect(find.text('Timezone'), findsOneWidget);
+      }
       expect(tester.takeException(), isNull);
     }
   });
@@ -196,8 +213,14 @@ void main() {
   });
 }
 
-Widget _testApp() =>
-    IstiqamApp(startTodayClock: false, locationRepository: _DeniedLocation());
+Widget _testApp() => IstiqamApp(
+  dependencies: AppDependencies(
+    startTodayClock: false,
+    locationRepository: _DeniedLocation(),
+    routineRecordRepository: FakeRoutineRecordRepository(),
+    databaseService: TestPersistence.createDatabaseService(),
+  ),
+);
 
 class _DeniedLocation implements LocationRepository {
   @override

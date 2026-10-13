@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:istiqam/app/app_preferences_scope.dart';
 import 'package:istiqam/app/dependencies/app_dependencies.dart';
+import '../support/fake_routine_record_repository.dart';
 import 'package:istiqam/app/router/app_router.dart';
 import 'package:istiqam/core/design_system/components/istiqam_notice_controller.dart';
 import 'package:istiqam/core/design_system/theme/istiqam_theme.dart';
@@ -19,7 +20,7 @@ void main() {
     await tester.pumpWidget(harness.app);
     await tester.pumpAndSettle();
 
-    expect(find.text('Partial · 2 of 4'), findsOneWidget);
+    expect(find.text('Belum dimulai'), findsOneWidget);
 
     await tester.ensureVisible(find.text('Doa Sebelum Tidur'));
     await tester.tap(
@@ -40,7 +41,7 @@ void main() {
       harness.router.routeInformationProvider.value.uri.path,
       '/routines/sholat-malam',
     );
-    expect(find.text('Partial · 2 of 4'), findsOneWidget);
+    expect(find.text('Belum dimulai'), findsOneWidget);
   });
 
   testWidgets('direct Reader route renders content and display controls', (
@@ -157,7 +158,10 @@ class _ReaderRouterHarness {
 
   final ThemeMode themeMode;
   final noticeController = IstiqamNoticeController();
-  final dependencies = AppDependencies();
+  final dependencies = AppDependencies(
+    routineRecordRepository: FakeRoutineRecordRepository(),
+    startTodayClock: false,
+  );
   late final GoRouter router;
 
   Widget get app => MaterialApp.router(

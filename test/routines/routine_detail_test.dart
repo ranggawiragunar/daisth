@@ -3,17 +3,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:istiqam/core/design_system/components/istiqam_notice_controller.dart';
 import 'package:istiqam/core/design_system/theme/istiqam_theme.dart';
 import 'package:istiqam/app/dependencies/app_dependencies.dart';
-import 'package:istiqam/app/app.dart';
 import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
 import 'package:istiqam/core/location/domain/models/location_access_status.dart';
 import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
 import 'package:istiqam/features/dhikr/data/demo/dhikr_demo_data.dart';
 import 'package:istiqam/features/routines/data/demo/routine_demo_data.dart';
 import 'package:istiqam/features/routines/domain/models/routine.dart';
+import 'package:istiqam/features/routines/domain/use_cases/mark_routine_complete_use_case.dart';
+import 'package:istiqam/features/routines/domain/use_cases/mark_routine_not_today_use_case.dart';
+import 'package:istiqam/features/routines/domain/use_cases/resolve_routine_status_use_case.dart';
+import 'package:istiqam/features/routines/domain/use_cases/set_routine_step_completion_use_case.dart';
 import 'package:istiqam/features/routines/presentation/routine_detail_screen.dart';
 import 'package:istiqam/features/prayer_times/domain/models/prayer_day_schedule.dart';
 import 'package:istiqam/features/prayer_times/domain/models/prayer_calculation_settings.dart';
 import 'package:istiqam/features/prayer_times/presentation/prayer_schedule_session.dart';
+import 'package:istiqam/features/today/presentation/today_screen.dart';
+
+import '../support/fake_routine_record_repository.dart';
+import '../support/test_persistence.dart';
 
 void main() {
   testWidgets('Sholat Malam tracks partial progress, completion, and undo', (
@@ -23,18 +30,18 @@ void main() {
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller);
 
-    expect(find.text('Partial · 2 of 4'), findsOneWidget);
-    expect(find.text('Mark Remaining Done'), findsOneWidget);
+    expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(find.text('Mark All Done'), findsOneWidget);
 
     await tester.ensureVisible(
       find.byKey(const ValueKey('routine-step-toggle-hajat')),
     );
     await tester.tap(find.byKey(const ValueKey('routine-step-toggle-hajat')));
-    await tester.pumpAndSettle();
-    expect(find.text('Partial · 3 of 4'), findsOneWidget);
+    await _settle(tester);
+    expect(find.text('Partial · 1 of 4'), findsOneWidget);
 
     await tester.tap(find.text('Mark Remaining Done'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Completed · 4 of 4'), findsOneWidget);
     expect(find.text('Sholat Malam recorded'), findsOneWidget);
     expect(find.byType(SnackBar), findsNothing);
@@ -44,7 +51,7 @@ void main() {
       find.byKey(const ValueKey('routine-step-toggle-hajat')),
     );
     await tester.tap(find.byKey(const ValueKey('routine-step-toggle-hajat')));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Partial · 3 of 4'), findsOneWidget);
   });
 
@@ -60,7 +67,7 @@ void main() {
     await tester.tap(
       find.byKey(const ValueKey('routine-step-toggle-dhuha-minimum')),
     );
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     expect(find.text('Completed · 2 rakaat'), findsOneWidget);
     expect(find.text('Partial'), findsNothing);
@@ -70,7 +77,7 @@ void main() {
     await _dismissNotice(tester, controller);
 
     await tester.tap(find.text('Mark Remaining Done'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Completed · 4 rakaat'), findsOneWidget);
     await _dismissNotice(tester, controller);
     await _dismissNotice(tester, controller);
@@ -84,10 +91,12 @@ void main() {
     await _pumpRoutine(tester, RoutineDemoData.dhuha, controller);
 
     await tester.tap(find.text('Not Today'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Tidak dilakukan hari ini?'), findsOneWidget);
-    await tester.tap(find.text('Lewati alasan'));
-    await tester.pumpAndSettle();
+    final saveButton = find.text('Simpan');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await _settle(tester);
 
     expect(find.text('Tidak dilakukan hari ini'), findsOneWidget);
     expect(find.text('Status routine diperbarui'), findsOneWidget);
@@ -102,10 +111,10 @@ void main() {
     await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller);
 
     await tester.tap(find.text('Not Today'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     await tester.tap(find.text('Bepergian'));
     await tester.tap(find.text('Simpan'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     expect(find.text('Alasan: Bepergian'), findsOneWidget);
     await _dismissNotice(tester, controller);
@@ -123,7 +132,7 @@ void main() {
     expect(find.text('Post-Prayer Dhikr'), findsOneWidget);
 
     await tester.tap(find.text('Mark Zuhur Done'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Recorded just now'), findsOneWidget);
     expect(find.text('Zuhur recorded'), findsOneWidget);
     expect(find.text('Mark Zuhur Done'), findsNothing);
@@ -134,7 +143,10 @@ void main() {
     tester,
   ) async {
     final controller = IstiqamNoticeController();
-    final dependencies = AppDependencies(locationRepository: _TestLocation());
+    final dependencies = AppDependencies(
+      locationRepository: _TestLocation(),
+      databaseService: TestPersistence.createDatabaseService(),
+    );
     addTearDown(controller.dispose);
     addTearDown(dependencies.dispose);
     final day = DateTime(2026, 10, 10);
@@ -181,23 +193,63 @@ void main() {
   });
 
   testWidgets('Today timeline opens the Malam and Dhuha demos', (tester) async {
+    final repository = FakeRoutineRecordRepository();
+    final noticeController = IstiqamNoticeController();
+    final dependencies = AppDependencies(
+      databaseService: TestPersistence.createDatabaseService(),
+      locationRepository: _TestLocation(access: LocationAccessStatus.denied),
+      routineRecordRepository: repository,
+      startTodayClock: false,
+    );
+    final session = dependencies.prayerScheduleSession;
+    addTearDown(noticeController.dispose);
+    addTearDown(dependencies.dispose);
     await tester.pumpWidget(
-      IstiqamApp(
-        startTodayClock: false,
-        locationRepository: _TestLocation(access: LocationAccessStatus.denied),
+      MaterialApp(
+        theme: IstiqamTheme.light,
+        home: Builder(
+          builder: (context) => TodayScreen(
+            prayerScheduleSession: session,
+            routineRecordRepository: repository,
+            startClock: false,
+            onRoutineTap: (id) {
+              final routine = RoutineDemoData.byId(id);
+              if (routine == null) return;
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => RoutineDetailScreen(
+                    routine: routine,
+                    noticeController: noticeController,
+                    routineRecordRepository: repository,
+                    setRoutineStepCompletion: SetRoutineStepCompletionUseCase(
+                      repository: repository,
+                    ),
+                    markRoutineComplete: MarkRoutineCompleteUseCase(
+                      repository: repository,
+                      resolveStatus: const ResolveRoutineStatusUseCase(),
+                    ),
+                    markRoutineNotToday: MarkRoutineNotTodayUseCase(repository),
+                    prayerScheduleSession: session,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
+    await _settle(tester);
 
     await tester.ensureVisible(find.text('Sholat Malam'));
     await tester.tap(find.text('Sholat Malam'));
-    await tester.pumpAndSettle();
-    expect(find.text('Partial · 2 of 4'), findsOneWidget);
-    await tester.tap(find.byTooltip('Back'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
+    expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(await tester.binding.handlePopRoute(), isTrue);
+    await _settle(tester);
 
     await tester.ensureVisible(find.text('Sholat Dhuha'));
     await tester.tap(find.text('Sholat Dhuha'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Belum dimulai'), findsOneWidget);
     expect(find.text('Sholat Dhuha'), findsOneWidget);
     expect(find.text('2 rakaat'), findsOneWidget);
@@ -211,10 +263,10 @@ void main() {
     await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller);
 
     await tester.tap(find.text('Tahajud'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Guidance'), findsOneWidget);
     await tester.tap(find.text('Open Reading'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Reader segera hadir'), findsOneWidget);
     await _dismissNotice(tester, controller);
   });
@@ -254,6 +306,8 @@ Future<void> _pumpRoutine(
   bool dark = false,
   PrayerScheduleSession? prayerScheduleSession,
 }) async {
+  final repository = FakeRoutineRecordRepository();
+  final resolveStatus = const ResolveRoutineStatusUseCase();
   await tester.pumpWidget(
     MaterialApp(
       theme: IstiqamTheme.light,
@@ -263,11 +317,20 @@ Future<void> _pumpRoutine(
         key: ValueKey('test-routine-${data.id}'),
         routine: data,
         noticeController: controller,
+        routineRecordRepository: repository,
+        setRoutineStepCompletion: SetRoutineStepCompletionUseCase(
+          repository: repository,
+        ),
+        markRoutineComplete: MarkRoutineCompleteUseCase(
+          repository: repository,
+          resolveStatus: resolveStatus,
+        ),
+        markRoutineNotToday: MarkRoutineNotTodayUseCase(repository),
         prayerScheduleSession: prayerScheduleSession,
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  await _settle(tester);
 }
 
 class _TestLocation implements LocationRepository {
@@ -295,5 +358,13 @@ Future<void> _dismissNotice(
   IstiqamNoticeController controller,
 ) async {
   controller.dismiss();
+  await _settle(tester);
+}
+
+Future<void> _settle(WidgetTester tester) async {
+  await tester.pump();
+  await tester.runAsync(
+    () => Future<void>.delayed(const Duration(milliseconds: 50)),
+  );
   await tester.pumpAndSettle();
 }

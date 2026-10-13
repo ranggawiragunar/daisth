@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
+import '../../../core/design_system/components/istiqam_notice_controller.dart';
+import '../../../core/design_system/components/istiqam_notice.dart';
 import '../../../core/design_system/components/istiqam_surface.dart';
 import '../../../core/design_system/theme/istiqam_theme_extension.dart';
 import '../../../core/design_system/tokens/istiqam_radius.dart';
@@ -10,12 +13,17 @@ import '../../../core/design_system/tokens/istiqam_spacing.dart';
 import '../../../core/location/domain/models/location_access_status.dart';
 import '../../prayer_times/presentation/prayer_schedule_session.dart';
 import '../../prayer_times/presentation/prayer_time_presentation.dart';
+import '../../reminders/domain/models/exact_alarm_status.dart';
+import '../../reminders/domain/models/reminder_permission_status.dart';
+import '../../reminders/presentation/view_models/reminder_settings_view_model.dart';
 
 class SettingsPlaceholderScreen extends StatefulWidget {
   const SettingsPlaceholderScreen({
     required this.themeMode,
     required this.onThemeModeChanged,
     required this.prayerScheduleSession,
+    required this.reminderSettings,
+    required this.noticeController,
     this.bottomContentPadding = 0,
     super.key,
   });
@@ -23,6 +31,8 @@ class SettingsPlaceholderScreen extends StatefulWidget {
   final ThemeMode themeMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
   final PrayerScheduleSession prayerScheduleSession;
+  final ReminderSettingsViewModel reminderSettings;
+  final IstiqamNoticeController noticeController;
   final double bottomContentPadding;
 
   @override
@@ -32,16 +42,20 @@ class SettingsPlaceholderScreen extends StatefulWidget {
 
 class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
   PrayerScheduleSession get _session => widget.prayerScheduleSession;
+  ReminderSettingsViewModel get _reminders => widget.reminderSettings;
 
   @override
   void initState() {
     super.initState();
     _session.addListener(_onChanged);
+    _reminders.addListener(_onChanged);
+    unawaited(_reminders.initialize());
   }
 
   @override
   void dispose() {
     _session.removeListener(_onChanged);
+    _reminders.removeListener(_onChanged);
     super.dispose();
   }
 
@@ -50,6 +64,64 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
   }
 
   void _refresh() => unawaited(_session.refresh(requestPermission: true));
+
+  Future<void> _onRemindersChanged(bool enabled) async {
+    if (enabled) {
+      final success = await _reminders.enableReminders();
+      if (!mounted) return;
+      if (success) {
+        widget.noticeController.show(
+          context,
+          type: IstiqamNoticeType.success,
+          title: 'Reminders scheduled',
+          message:
+              '${_reminders.lastSummary?.scheduledCount ?? 0} reminders updated.',
+        );
+      }
+    } else {
+      await _reminders.disableReminders();
+      if (mounted) {
+        widget.noticeController.show(
+          context,
+          type: IstiqamNoticeType.info,
+          title: 'Reminders turned off',
+          message: 'All Istiqam reminders have been cancelled.',
+        );
+      }
+    }
+  }
+
+  Future<void> _requestPreciseReminders() async {
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Precise reminders'),
+        content: const Text(
+          'Android may require additional permission so prayer reminders can arrive closer to their scheduled time.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Not now'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+    if (proceed == true) {
+      await _reminders.requestExactAlarmPermission();
+      if (mounted && _reminders.exactAlarmStatus == ExactAlarmStatus.enabled) {
+        widget.noticeController.show(
+          context,
+          type: IstiqamNoticeType.success,
+          title: 'Precise reminders enabled',
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -172,6 +244,13 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
                   ),
                 ),
                 const SizedBox(height: IstiqamSpacing.section),
+                _NotificationsSettingsSection(
+                  viewModel: _reminders,
+                  onRemindersChanged: _onRemindersChanged,
+                  onRequestPrecise: _requestPreciseReminders,
+                  onOpenSettings: _reminders.openNotificationSettings,
+                ),
+                const SizedBox(height: IstiqamSpacing.section),
                 _AppearanceSelector(
                   themeMode: widget.themeMode,
                   onChanged: widget.onThemeModeChanged,
@@ -188,6 +267,218 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _NotificationsSettingsSection extends StatelessWidget {
+  const _NotificationsSettingsSection({
+    required this.viewModel,
+    required this.onRemindersChanged,
+    required this.onRequestPrecise,
+    required this.onOpenSettings,
+  });
+
+  final ReminderSettingsViewModel viewModel;
+  final ValueChanged<bool> onRemindersChanged;
+  final VoidCallback onRequestPrecise;
+  final VoidCallback onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final permission = switch (viewModel.permissionStatus) {
+      ReminderPermissionStatus.granted => 'Allowed',
+      ReminderPermissionStatus.denied => 'Not allowed',
+      ReminderPermissionStatus.unavailable => 'Unavailable',
+    };
+    final precise = switch (viewModel.exactAlarmStatus) {
+      ExactAlarmStatus.enabled => 'Enabled',
+      ExactAlarmStatus.needsPermission => 'Needs permission',
+      ExactAlarmStatus.unavailable => 'Unavailable',
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Notifications', style: theme.textTheme.titleMedium),
+        const SizedBox(height: IstiqamSpacing.md),
+        IstiqamSurface(
+          padding: const EdgeInsets.all(IstiqamSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Reminders', style: theme.textTheme.titleSmall),
+                        const SizedBox(height: IstiqamSpacing.xs),
+                        Text(
+                          viewModel.remindersEnabled ? 'On' : 'Off',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch.adaptive(
+                    value: viewModel.remindersEnabled,
+                    onChanged: viewModel.isLoading ? null : onRemindersChanged,
+                  ),
+                ],
+              ),
+              const SizedBox(height: IstiqamSpacing.md),
+              _SettingsValueRow(
+                label: 'Notification permission',
+                value: permission,
+              ),
+              if (viewModel.permissionStatus ==
+                  ReminderPermissionStatus.denied) ...[
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: onOpenSettings,
+                    child: const Text('Open Settings'),
+                  ),
+                ),
+              ],
+              if (defaultTargetPlatform == TargetPlatform.android) ...[
+                const SizedBox(height: IstiqamSpacing.md),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _SettingsValueRow(
+                        label: 'Precise reminders',
+                        value: precise,
+                      ),
+                    ),
+                    if (viewModel.exactAlarmStatus ==
+                        ExactAlarmStatus.needsPermission)
+                      TextButton(
+                        onPressed: viewModel.isLoading
+                            ? null
+                            : onRequestPrecise,
+                        child: const Text('Enable'),
+                      ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: IstiqamSpacing.md),
+              _SettingsValueRow(
+                label: 'Timezone',
+                value: viewModel.deviceTimezone?.ianaName ?? '—',
+              ),
+              const SizedBox(height: IstiqamSpacing.md),
+              InkWell(
+                borderRadius: BorderRadius.circular(IstiqamRadius.medium),
+                onTap: () => _showPendingReminders(context),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: IstiqamSpacing.xs,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Scheduled today',
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ),
+                      Text(
+                        '${viewModel.scheduledTodayCount} upcoming',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: IstiqamSpacing.xs),
+                      const Icon(Icons.chevron_right_rounded, size: 18),
+                    ],
+                  ),
+                ),
+              ),
+              if (viewModel.errorMessage != null) ...[
+                const SizedBox(height: IstiqamSpacing.sm),
+                Text(
+                  viewModel.errorMessage!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
+              if (kDebugMode) ...[
+                const SizedBox(height: IstiqamSpacing.sm),
+                OutlinedButton.icon(
+                  onPressed:
+                      viewModel.isLoading ||
+                          viewModel.permissionStatus !=
+                              ReminderPermissionStatus.granted
+                      ? null
+                      : () => unawaited(viewModel.sendTestReminder()),
+                  icon: const Icon(Icons.notifications_active_outlined),
+                  label: const Text('Send test reminder'),
+                ),
+              ],
+              if (!viewModel.remindersEnabled &&
+                  viewModel.pendingReminders.isNotEmpty) ...[
+                const SizedBox(height: IstiqamSpacing.sm),
+                Text(
+                  'Reminder preference is session-only. Scheduled notifications may remain after the app is restarted.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showPendingReminders(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        final reminders = viewModel.todayPendingReminders;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              IstiqamSpacing.screenHorizontal,
+              IstiqamSpacing.sm,
+              IstiqamSpacing.screenHorizontal,
+              IstiqamSpacing.xl,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Scheduled today',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: IstiqamSpacing.md),
+                if (reminders.isEmpty)
+                  const Text('No upcoming reminders today.')
+                else
+                  for (final reminder in reminders)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(reminder.title),
+                      subtitle: Text(reminder.routineId),
+                      trailing: Text(
+                        '${reminder.scheduledAt.hour.toString().padLeft(2, '0')}:${reminder.scheduledAt.minute.toString().padLeft(2, '0')}',
+                      ),
+                    ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

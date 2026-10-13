@@ -55,11 +55,25 @@ paths, shell branches, and root-level detail routes are centralized under
 with the floating navigation dock; detail routes sit on the root navigator
 outside that shell.
 
-Routine Detail currently uses demo fixtures from
-`features/routines/data/demo/routine_demo_data.dart`. Its view model owns the
-current in-memory session state. Step changes and Not Today reasons are
-temporary and can reset when the detail route is closed and reopened. This
-demo-state limitation is intentional until a real data source is introduced.
+Routine Detail uses demo fixtures from
+`features/routines/data/demo/routine_demo_data.dart` for routine content. Daily
+progress is stored by `RoutineRecordRepositoryData` through
+`RoutineRecordSqliteService` and the shared `IstiqamDatabaseService`:
+
+```text
+RoutineRecordRepository
+↓
+RoutineRecordRepositoryData
+↓
+RoutineRecordSqliteService
+↓
+IstiqamDatabaseService → SQLite
+```
+
+`RoutineDetailViewModel` loads the selected local calendar day's step and
+routine records when the route opens. Status is resolved from required steps;
+optional progress is stored separately. Dhikr counter state remains session
+only, while finishing its optional post-prayer action records that routine step.
 
 Reader follows the same feature-first structure: `ReaderContent` and
 `ReaderSection` live in the domain, `ReaderDemoData` provides temporary local
@@ -67,11 +81,25 @@ fixtures, and `ReaderViewModel` owns visibility and text-size preferences for
 the current screen session. Arabic remains visible for Arabic content; opening
 a reading never changes a routine's completion state.
 
-Dhikr follows the same local-session pattern: `DhikrSequence` and `DhikrItem`
-are immutable domain models, `DhikrDemoData` provides the post-prayer fixture,
-and `DhikrCounterViewModel` owns count, sequence progress, undo, and reset state.
+Dhikr uses immutable `DhikrSequence` and `DhikrItem` domain models.
+`DhikrDemoData` provides the post-prayer fixture, and `DhikrCounterViewModel`
+owns count, sequence progress, undo, and reset state for the active session.
 Finishing the sequence returns a result to Routine Detail, where the optional
-post-prayer step is marked complete. No counter progress is persisted.
+post-prayer step is persisted with the routine's daily progress.
+
+App appearance and the reminder enabled preference are stored through
+`AppSettingsRepositoryData` and `AppSettingsSqliteService`, sharing the same
+database service:
+
+```text
+AppSettingsRepository
+↓
+AppSettingsRepositoryData
+↓
+AppSettingsSqliteService
+↓
+IstiqamDatabaseService → SQLite
+```
 
 ## Real location and mosque data
 
@@ -136,6 +164,33 @@ PrayerTimeAdhanService
 `ResolveCurrentLocationUseCase` with `PrayerTimeRepository`. The session-level
 `PrayerScheduleSession` holds the current schedule in memory for Today, Settings,
 and Routine Detail without repeating location reads for each route.
+
+Local reminders use technology-neutral domain contracts and keep plugin types in
+the data service:
+
+```text
+ReminderRepository
+↑
+ReminderRepositoryData
+↓
+ReminderLocalNotificationsService
+```
+
+Device timezone resolution follows the same boundary:
+
+```text
+TimezoneRepository
+↑
+TimezoneRepositoryData
+↓
+TimezoneFlutterService
+```
+
+`AppDependencies` owns these long-lived services and initializes the IANA
+timezone database and device timezone before the local notification plugin.
+`ScheduleTodayRemindersUseCase` reuses the current prayer schedule when it is
+for today, otherwise it loads today's schedule through the existing prayer time
+use case. Reminder preferences are session-only until persistence is added.
 
 Prayer times are calculated locally with the Indonesia (KEMENAG) preset and
 Shafi Asr by default. The app uses foreground current-device location and

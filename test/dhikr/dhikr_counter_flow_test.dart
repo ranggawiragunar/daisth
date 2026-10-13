@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:istiqam/app/app_preferences_scope.dart';
 import 'package:istiqam/app/dependencies/app_dependencies.dart';
+import '../support/fake_routine_record_repository.dart';
 import 'package:istiqam/app/router/app_router.dart';
 import 'package:istiqam/core/design_system/components/istiqam_notice_controller.dart';
 import 'package:istiqam/core/design_system/theme/istiqam_theme.dart';
@@ -17,32 +18,32 @@ void main() {
     final harness = _DhikrRouterHarness(initialLocation: '/routines/zuhur');
     addTearDown(harness.dispose);
     await tester.pumpWidget(harness.app);
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     expect(find.text('Available after prayer'), findsOneWidget);
     await tester.ensureVisible(find.text('Post-Prayer Dhikr'));
     await tester.tap(find.text('Post-Prayer Dhikr'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Selesaikan sholat terlebih dahulu'), findsOneWidget);
     expect(find.byType(DhikrCounterScreen), findsNothing);
     harness.noticeController.dismiss();
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     await tester.tap(find.text('Mark Zuhur Done'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     harness.noticeController.dismiss();
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Mulai dzikir setelah sholat'), findsOneWidget);
 
     await tester.tap(find.text('Post-Prayer Dhikr'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.byType(DhikrCounterScreen), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
     expect(find.text('Dzikir Setelah Sholat'), findsOneWidget);
     expect(find.text('Sahih Muslim 597a'), findsOneWidget);
 
     expect(await tester.binding.handlePopRoute(), isTrue);
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Recorded just now'), findsOneWidget);
     expect(find.byType(DhikrCounterScreen), findsNothing);
   });
@@ -53,22 +54,22 @@ void main() {
     final harness = _DhikrRouterHarness(initialLocation: '/routines/zuhur');
     addTearDown(harness.dispose);
     await tester.pumpWidget(harness.app);
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     await tester.tap(find.text('Mark Zuhur Done'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     harness.noticeController.dismiss();
-    await tester.pumpAndSettle();
+    await _settle(tester);
     await tester.ensureVisible(find.text('Post-Prayer Dhikr'));
     await tester.tap(find.text('Post-Prayer Dhikr'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     final countSurface = find.byKey(const ValueKey('dhikr-count-tap-surface'));
     await Scrollable.ensureVisible(
       tester.element(countSurface),
       alignment: 0.5,
     );
-    await tester.pumpAndSettle();
+    await _settle(tester);
     for (var count = 0; count < 100; count++) {
       await Scrollable.ensureVisible(
         tester.element(countSurface),
@@ -77,12 +78,12 @@ void main() {
       await tester.tap(countSurface);
       await tester.pump(const Duration(milliseconds: 16));
     }
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     expect(find.text('Dzikir selesai'), findsOneWidget);
     expect(find.text('100 hitungan selesai'), findsOneWidget);
     await tester.tap(find.text('Selesai'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     expect(find.text('Recorded just now'), findsOneWidget);
     expect(find.text('Dzikir sudah tercatat'), findsOneWidget);
@@ -106,25 +107,25 @@ void main() {
     );
     addTearDown(harness.dispose);
     await tester.pumpWidget(harness.app);
-    await tester.pumpAndSettle();
+    await _settle(tester);
     await tester.tap(find.byKey(const ValueKey('dhikr-count-tap-surface')));
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     expect(await tester.binding.handlePopRoute(), isTrue);
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Keluar dari sesi?'), findsOneWidget);
     expect(
       find.text('Progress dzikir sesi ini belum disimpan.'),
       findsOneWidget,
     );
     await tester.tap(find.text('Lanjut Dzikir'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.byType(DhikrCounterScreen), findsOneWidget);
 
     expect(await tester.binding.handlePopRoute(), isTrue);
-    await tester.pumpAndSettle();
+    await _settle(tester);
     await tester.tap(find.text('Keluar'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.byType(DhikrCounterScreen), findsNothing);
     expect(find.text('Belum dimulai'), findsOneWidget);
   });
@@ -137,29 +138,29 @@ void main() {
     );
     addTearDown(harness.dispose);
     await tester.pumpWidget(harness.app);
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     final countSurface = find.byKey(const ValueKey('dhikr-count-tap-surface'));
     await tester.ensureVisible(countSurface);
     await tester.tap(countSurface);
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('1'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Pilihan sesi'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     await tester.tap(find.text('Reset sesi'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('Reset sesi?'), findsOneWidget);
     await tester.tap(find.text('Batal'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('1'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Pilihan sesi'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     await tester.tap(find.text('Reset sesi'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     await tester.tap(find.text('Reset sesi'));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     expect(find.text('0'), findsOneWidget);
   });
 
@@ -170,7 +171,7 @@ void main() {
         initialLocation: '/routines/zuhur/dhikr/not-found',
       );
       await tester.pumpWidget(unknown.app);
-      await tester.pumpAndSettle();
+      await _settle(tester);
       expect(find.byType(DhikrUnavailableScreen), findsOneWidget);
       expect(find.text('Dzikir tidak tersedia'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -187,7 +188,7 @@ void main() {
           themeMode: mode,
         );
         await tester.pumpWidget(harness.app);
-        await tester.pumpAndSettle();
+        await _settle(tester);
         expect(
           harness.router.routeInformationProvider.value.uri.path,
           '/routines/zuhur/dhikr/post-prayer',
@@ -200,6 +201,14 @@ void main() {
       }
     },
   );
+}
+
+Future<void> _settle(WidgetTester tester) async {
+  await tester.pump();
+  await tester.runAsync(
+    () => Future<void>.delayed(const Duration(milliseconds: 50)),
+  );
+  await tester.pumpAndSettle();
 }
 
 class _DhikrRouterHarness {
@@ -216,7 +225,10 @@ class _DhikrRouterHarness {
 
   final ThemeMode themeMode;
   final noticeController = IstiqamNoticeController();
-  final dependencies = AppDependencies();
+  final dependencies = AppDependencies(
+    routineRecordRepository: FakeRoutineRecordRepository(),
+    startTodayClock: false,
+  );
   late final GoRouter router;
 
   Widget get app => MaterialApp.router(

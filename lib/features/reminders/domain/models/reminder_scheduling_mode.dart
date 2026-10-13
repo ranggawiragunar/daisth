@@ -1,0 +1,1 @@
+enum ReminderSchedulingMode { exact, inexact }
