@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/design_system/components/istiqam_notice.dart';
-import '../../../../core/design_system/components/istiqam_notice_controller.dart';
-import '../../../../core/design_system/components/istiqam_surface.dart';
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
-import '../../../../core/design_system/tokens/istiqam_radius.dart';
+import '../../../../core/design_system/components/daisth_notice.dart';
+import '../../../../core/design_system/components/daisth_notice_controller.dart';
+import '../../../../core/design_system/components/daisth_surface.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../../core/maps/services/map_navigation_service.dart';
 import '../../domain/models/mosque_place.dart';
 import '../../domain/models/mosque_place_type.dart';
@@ -23,7 +23,7 @@ class MosqueFinderScreen extends StatefulWidget {
   final String routineId;
   final MosqueFinderViewModel viewModel;
   final MapNavigationService navigationService;
-  final IstiqamNoticeController noticeController;
+  final DaisthNoticeController noticeController;
 
   @override
   State<MosqueFinderScreen> createState() => _MosqueFinderScreenState();
@@ -68,7 +68,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
     if (!mounted || opened) return;
     widget.noticeController.show(
       context,
-      type: IstiqamNoticeType.error,
+      type: DaisthNoticeType.error,
       title: 'Tidak dapat membuka navigasi',
     );
   }
@@ -83,7 +83,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
     if (!mounted || opened) return;
     widget.noticeController.show(
       context,
-      type: IstiqamNoticeType.info,
+      type: DaisthNoticeType.info,
       title: 'Tidak dapat membuka informasi OpenStreetMap',
     );
   }
@@ -215,7 +215,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
       MosqueFinderState.deniedForever => _PermissionState(
         key: const ValueKey('denied-forever'),
         title: 'Izin lokasi dinonaktifkan',
-        message: 'Aktifkan izin lokasi Istiqam melalui pengaturan perangkat.',
+        message: 'Aktifkan izin lokasi Daisth melalui pengaturan perangkat.',
         action: 'Buka Pengaturan',
         onPressed: _model.openAppSettings,
       ),
@@ -288,7 +288,7 @@ class _LoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(
     child: Padding(
-      padding: const EdgeInsets.all(IstiqamSpacing.xxl),
+      padding: const EdgeInsets.all(DaisthSpacing.xxl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -299,7 +299,7 @@ class _LoadingState extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
-          const SizedBox(height: IstiqamSpacing.lg),
+          const SizedBox(height: DaisthSpacing.lg),
           Text(message, textAlign: TextAlign.center),
         ],
       ),
@@ -325,9 +325,9 @@ class _PermissionState extends StatelessWidget {
   Widget build(BuildContext context) => Center(
     child: SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
-        IstiqamSpacing.xl,
-        IstiqamSpacing.xl,
-        IstiqamSpacing.xl,
+        DaisthSpacing.xl,
+        DaisthSpacing.xl,
+        DaisthSpacing.xl,
         104,
       ),
       child: ConstrainedBox(
@@ -341,13 +341,13 @@ class _PermissionState extends StatelessWidget {
               height: 148,
               fit: BoxFit.contain,
             ),
-            const SizedBox(height: IstiqamSpacing.lg),
+            const SizedBox(height: DaisthSpacing.lg),
             Text(
               title,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: IstiqamSpacing.sm),
+            const SizedBox(height: DaisthSpacing.sm),
             Text(
               message,
               textAlign: TextAlign.center,
@@ -355,7 +355,7 @@ class _PermissionState extends StatelessWidget {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: IstiqamSpacing.xl),
+            const SizedBox(height: DaisthSpacing.xl),
             FilledButton(onPressed: onPressed, child: Text(action)),
           ],
         ),
@@ -379,7 +379,7 @@ class _RetryState extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(
     child: Padding(
-      padding: const EdgeInsets.all(IstiqamSpacing.xl),
+      padding: const EdgeInsets.all(DaisthSpacing.xl),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: Column(
@@ -390,19 +390,19 @@ class _RetryState extends StatelessWidget {
               size: 42,
               color: Theme.of(context).colorScheme.primary,
             ),
-            const SizedBox(height: IstiqamSpacing.lg),
+            const SizedBox(height: DaisthSpacing.lg),
             Text(
               title,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleSmall,
             ),
-            const SizedBox(height: IstiqamSpacing.sm),
+            const SizedBox(height: DaisthSpacing.sm),
             Text(
               message,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            const SizedBox(height: IstiqamSpacing.lg),
+            const SizedBox(height: DaisthSpacing.lg),
             OutlinedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
@@ -433,9 +433,9 @@ class _ResultsState extends StatelessWidget {
     final theme = Theme.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(
-        IstiqamSpacing.screenHorizontal,
-        IstiqamSpacing.md,
-        IstiqamSpacing.screenHorizontal,
+        DaisthSpacing.screenHorizontal,
+        DaisthSpacing.md,
+        DaisthSpacing.screenHorizontal,
         104,
       ),
       children: [
@@ -445,15 +445,15 @@ class _ResultsState extends StatelessWidget {
             color: theme.colorScheme.primary,
             backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
           ),
-          const SizedBox(height: IstiqamSpacing.sm),
+          const SizedBox(height: DaisthSpacing.sm),
         ],
         if (result.isUsingCachedResults) ...[
           _CachedResultsNotice(isRefreshing: isRefreshing),
-          const SizedBox(height: IstiqamSpacing.md),
+          const SizedBox(height: DaisthSpacing.md),
         ],
         if (result.usedLastKnownLocation) ...[
           const _LastKnownNotice(),
-          const SizedBox(height: IstiqamSpacing.md),
+          const SizedBox(height: DaisthSpacing.md),
         ],
         Text(
           'Terdekat',
@@ -461,13 +461,13 @@ class _ResultsState extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: IstiqamSpacing.sm),
+        const SizedBox(height: DaisthSpacing.sm),
         _NearestMosqueCard(place: places.first, onNavigate: onNavigate),
         if (places.length > 1) ...[
-          const SizedBox(height: IstiqamSpacing.xl),
+          const SizedBox(height: DaisthSpacing.xl),
           Text('Tempat lainnya', style: theme.textTheme.titleSmall),
-          const SizedBox(height: IstiqamSpacing.sm),
-          IstiqamSurface(
+          const SizedBox(height: DaisthSpacing.sm),
+          DaisthSurface(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
@@ -483,7 +483,7 @@ class _ResultsState extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: IstiqamSpacing.md),
+        const SizedBox(height: DaisthSpacing.md),
         Text(
           'Pencarian hingga ${_formatDistance(result.searchedRadiusMeters)}',
           textAlign: TextAlign.center,
@@ -506,14 +506,14 @@ class _CachedResultsNotice extends StatelessWidget {
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: IstiqamSpacing.md,
-        vertical: IstiqamSpacing.sm,
+        horizontal: DaisthSpacing.md,
+        vertical: DaisthSpacing.sm,
       ),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest.withValues(
           alpha: 0.55,
         ),
-        borderRadius: BorderRadius.circular(IstiqamRadius.medium),
+        borderRadius: BorderRadius.circular(DaisthRadius.medium),
       ),
       child: Row(
         children: [
@@ -522,7 +522,7 @@ class _CachedResultsNotice extends StatelessWidget {
             size: 16,
             color: theme.colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(width: IstiqamSpacing.sm),
+          const SizedBox(width: DaisthSpacing.sm),
           Expanded(
             child: Text(
               isRefreshing
@@ -543,11 +543,11 @@ class _LastKnownNotice extends StatelessWidget {
   const _LastKnownNotice();
 
   @override
-  Widget build(BuildContext context) => IstiqamSurface(
-    style: IstiqamSurfaceStyle.softPrimary,
+  Widget build(BuildContext context) => DaisthSurface(
+    style: DaisthSurfaceStyle.softPrimary,
     padding: const EdgeInsets.symmetric(
-      horizontal: IstiqamSpacing.md,
-      vertical: IstiqamSpacing.sm,
+      horizontal: DaisthSpacing.md,
+      vertical: DaisthSpacing.sm,
     ),
     child: Row(
       children: [
@@ -556,7 +556,7 @@ class _LastKnownNotice extends StatelessWidget {
           color: Theme.of(context).colorScheme.primary,
           size: 18,
         ),
-        const SizedBox(width: IstiqamSpacing.sm),
+        const SizedBox(width: DaisthSpacing.sm),
         const Expanded(
           child: Text('Menggunakan lokasi terakhir yang tersedia.'),
         ),
@@ -574,9 +574,9 @@ class _NearestMosqueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return IstiqamSurface(
-      style: IstiqamSurfaceStyle.warm,
-      padding: const EdgeInsets.all(IstiqamSpacing.lg),
+    return DaisthSurface(
+      style: DaisthSurfaceStyle.warm,
+      padding: const EdgeInsets.all(DaisthSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -584,13 +584,13 @@ class _NearestMosqueCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(Icons.mosque_rounded, color: theme.colorScheme.primary),
-              const SizedBox(width: IstiqamSpacing.md),
+              const SizedBox(width: DaisthSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(place.name, style: theme.textTheme.titleMedium),
-                    const SizedBox(height: IstiqamSpacing.xxs),
+                    const SizedBox(height: DaisthSpacing.xxs),
                     Text(
                       '${_typeLabel(place.type)} · ${_formatDistance(place.distanceMeters)}',
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -598,7 +598,7 @@ class _NearestMosqueCard extends StatelessWidget {
                       ),
                     ),
                     if (place.shortAddress != null) ...[
-                      const SizedBox(height: IstiqamSpacing.xs),
+                      const SizedBox(height: DaisthSpacing.xs),
                       Text(
                         place.shortAddress!,
                         style: theme.textTheme.bodySmall,
@@ -609,7 +609,7 @@ class _NearestMosqueCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: IstiqamSpacing.lg),
+          const SizedBox(height: DaisthSpacing.lg),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(

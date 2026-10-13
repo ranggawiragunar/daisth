@@ -1,4 +1,4 @@
-# Istiqam Visual Direction
+# Daisth Visual Direction
 
 **Warm Minimal + Quiet Depth**
 

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/features/reminders/domain/use_cases/reminder_reschedule_policy.dart';
+import 'package:daisth/features/reminders/domain/use_cases/reminder_reschedule_policy.dart';
 
 void main() {
   const policy = ReminderReschedulePolicy();

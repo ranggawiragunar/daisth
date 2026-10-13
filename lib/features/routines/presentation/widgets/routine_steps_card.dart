@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
-import '../../../../core/design_system/components/istiqam_surface.dart';
-import '../../../../core/design_system/theme/istiqam_theme_extension.dart';
-import '../../../../core/design_system/tokens/istiqam_radius.dart';
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/components/daisth_surface.dart';
+import '../../../../core/design_system/theme/daisth_theme_extension.dart';
+import '../../../../core/design_system/tokens/daisth_radius.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../domain/models/routine_step.dart';
 
 class RoutineStepsCard extends StatelessWidget {
@@ -21,8 +21,8 @@ class RoutineStepsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final extension = Theme.of(context).extension<IstiqamThemeExtension>()!;
-    return IstiqamSurface(
+    final extension = Theme.of(context).extension<DaisthThemeExtension>()!;
+    return DaisthSurface(
       padding: EdgeInsets.zero,
       child: Column(
         children: [
@@ -38,7 +38,7 @@ class RoutineStepsCard extends StatelessWidget {
               Divider(
                 height: 1,
                 indent: 60,
-                endIndent: IstiqamSpacing.md,
+                endIndent: DaisthSpacing.md,
                 color: extension.divider,
               ),
           ],
@@ -67,7 +67,7 @@ class _RoutineStepTile extends StatelessWidget {
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 68),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: IstiqamSpacing.md),
+        padding: const EdgeInsets.symmetric(horizontal: DaisthSpacing.md),
         child: Row(
           children: [
             Semantics(
@@ -78,7 +78,7 @@ class _RoutineStepTile extends StatelessWidget {
                   '${step.title}, ${step.completed ? 'completed' : 'not completed'}',
               child: InkWell(
                 onTap: onToggle,
-                borderRadius: BorderRadius.circular(IstiqamRadius.pill),
+                borderRadius: BorderRadius.circular(DaisthRadius.pill),
                 child: SizedBox(
                   width: 44,
                   height: 56,
@@ -117,7 +117,7 @@ class _RoutineStepTile extends StatelessWidget {
               child: InkWell(
                 onTap: onOpen,
                 canRequestFocus: onOpen != null,
-                borderRadius: BorderRadius.circular(IstiqamRadius.medium),
+                borderRadius: BorderRadius.circular(DaisthRadius.medium),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Row(
@@ -139,8 +139,8 @@ class _RoutineStepTile extends StatelessWidget {
                             const SizedBox(height: 2),
                             Wrap(
                               crossAxisAlignment: WrapCrossAlignment.center,
-                              spacing: IstiqamSpacing.xs,
-                              runSpacing: IstiqamSpacing.xxs,
+                              spacing: DaisthSpacing.xs,
+                              runSpacing: DaisthSpacing.xxs,
                               children: [
                                 Text(
                                   step.subtitle,
@@ -155,7 +155,7 @@ class _RoutineStepTile extends StatelessWidget {
                         ),
                       ),
                       if (onOpen != null) ...[
-                        const SizedBox(width: IstiqamSpacing.xs),
+                        const SizedBox(width: DaisthSpacing.xs),
                         Icon(
                           PhosphorIconsRegular.caretRight,
                           size: 16,
@@ -186,7 +186,7 @@ class _StepBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
         color: theme.colorScheme.primaryContainer.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(IstiqamRadius.pill),
+        borderRadius: BorderRadius.circular(DaisthRadius.pill),
       ),
       child: Text(
         label,

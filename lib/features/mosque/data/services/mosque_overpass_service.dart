@@ -75,7 +75,7 @@ class MosqueOverpassService {
             endpoint,
             headers: const {
               'Accept': 'application/json',
-              'User-Agent': 'Istiqam/1.0.0',
+              'User-Agent': 'Daisth/1.0.0',
             },
             body: {'data': query},
           )

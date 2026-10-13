@@ -10,7 +10,7 @@ class ReminderMapper {
     final notificationId = _stableNotificationId(identity);
     final payload = jsonEncode({
       'v': 1,
-      'app': 'istiqam',
+      'app': 'daisth',
       'type': 'routine',
       'routineId': reminder.routineId,
       'identity': identity,
@@ -40,7 +40,7 @@ class ReminderMapper {
     try {
       final decoded = jsonDecode(payload);
       if (decoded is! Map<String, dynamic> ||
-          decoded['app'] != 'istiqam' ||
+          decoded['app'] != 'daisth' ||
           decoded['v'] != 1 ||
           decoded['type'] != 'routine') {
         return null;
@@ -84,7 +84,7 @@ class ReminderMapper {
     try {
       final decoded = jsonDecode(payload);
       if (decoded is! Map<String, dynamic> ||
-          decoded['app'] != 'istiqam' ||
+          decoded['app'] != 'daisth' ||
           decoded['v'] != 1 ||
           decoded['type'] != 'routine') {
         return null;
@@ -134,9 +134,9 @@ class ReminderMapper {
     'sholat-malam' => 'Sholat Malam',
     'reflection' => 'Refleksi hari ini',
     'penutup-hari' => 'Penutup Hari',
-    _ => 'Pengingat Istiqam',
+    _ => 'Pengingat Daisth',
   };
 
-  static const highChannelId = 'istiqam_high';
-  static const standardChannelId = 'istiqam_standard';
+  static const highChannelId = 'daisth_high';
+  static const standardChannelId = 'daisth_standard';
 }

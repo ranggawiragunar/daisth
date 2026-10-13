@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/design_system/components/istiqam_notice_controller.dart';
-import 'package:istiqam/core/design_system/theme/istiqam_theme.dart';
-import 'package:istiqam/app/dependencies/app_dependencies.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/core/location/domain/models/location_access_status.dart';
-import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
-import 'package:istiqam/features/dhikr/data/demo/dhikr_demo_data.dart';
-import 'package:istiqam/features/routines/data/demo/routine_demo_data.dart';
-import 'package:istiqam/features/routines/domain/models/routine.dart';
-import 'package:istiqam/features/routines/domain/use_cases/mark_routine_complete_use_case.dart';
-import 'package:istiqam/features/routines/domain/use_cases/mark_routine_not_today_use_case.dart';
-import 'package:istiqam/features/routines/domain/use_cases/resolve_routine_status_use_case.dart';
-import 'package:istiqam/features/routines/domain/use_cases/set_routine_step_completion_use_case.dart';
-import 'package:istiqam/features/routines/presentation/routine_detail_screen.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_day_schedule.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_calculation_settings.dart';
-import 'package:istiqam/features/prayer_times/presentation/prayer_schedule_session.dart';
-import 'package:istiqam/features/today/presentation/today_screen.dart';
+import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
+import 'package:daisth/core/design_system/theme/daisth_theme.dart';
+import 'package:daisth/app/dependencies/app_dependencies.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/core/location/domain/models/location_access_status.dart';
+import 'package:daisth/core/location/domain/repositories/location_repository.dart';
+import 'package:daisth/features/dhikr/data/demo/dhikr_demo_data.dart';
+import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
+import 'package:daisth/features/routines/domain/models/routine.dart';
+import 'package:daisth/features/routines/domain/use_cases/mark_routine_complete_use_case.dart';
+import 'package:daisth/features/routines/domain/use_cases/mark_routine_not_today_use_case.dart';
+import 'package:daisth/features/routines/domain/use_cases/resolve_routine_status_use_case.dart';
+import 'package:daisth/features/routines/domain/use_cases/set_routine_step_completion_use_case.dart';
+import 'package:daisth/features/routines/presentation/routine_detail_screen.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_day_schedule.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_calculation_settings.dart';
+import 'package:daisth/features/prayer_times/presentation/prayer_schedule_session.dart';
+import 'package:daisth/features/today/presentation/today_screen.dart';
 
 import '../support/fake_routine_record_repository.dart';
 import '../support/test_persistence.dart';
@@ -26,7 +26,7 @@ void main() {
   testWidgets('Sholat Malam tracks partial progress, completion, and undo', (
     tester,
   ) async {
-    final controller = IstiqamNoticeController();
+    final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller);
 
@@ -58,7 +58,7 @@ void main() {
   testWidgets('Dhuha completes at its minimum while extra remains optional', (
     tester,
   ) async {
-    final controller = IstiqamNoticeController();
+    final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.dhuha, controller);
 
@@ -86,7 +86,7 @@ void main() {
   testWidgets('optional routine can be marked Not Today without a reason', (
     tester,
   ) async {
-    final controller = IstiqamNoticeController();
+    final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.dhuha, controller);
 
@@ -106,7 +106,7 @@ void main() {
   testWidgets('Not Today saves a selected reason in this detail session', (
     tester,
   ) async {
-    final controller = IstiqamNoticeController();
+    final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller);
 
@@ -123,7 +123,7 @@ void main() {
   testWidgets('mandatory Zuhur completes and has no Not Today action', (
     tester,
   ) async {
-    final controller = IstiqamNoticeController();
+    final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.zuhur, controller);
 
@@ -142,7 +142,7 @@ void main() {
   testWidgets('all five mandatory prayer details use calculated times', (
     tester,
   ) async {
-    final controller = IstiqamNoticeController();
+    final controller = DaisthNoticeController();
     final dependencies = AppDependencies(
       locationRepository: _TestLocation(),
       databaseService: TestPersistence.createDatabaseService(),
@@ -194,7 +194,7 @@ void main() {
 
   testWidgets('Today timeline opens the Malam and Dhuha demos', (tester) async {
     final repository = FakeRoutineRecordRepository();
-    final noticeController = IstiqamNoticeController();
+    final noticeController = DaisthNoticeController();
     final dependencies = AppDependencies(
       databaseService: TestPersistence.createDatabaseService(),
       locationRepository: _TestLocation(access: LocationAccessStatus.denied),
@@ -206,7 +206,7 @@ void main() {
     addTearDown(dependencies.dispose);
     await tester.pumpWidget(
       MaterialApp(
-        theme: IstiqamTheme.light,
+        theme: DaisthTheme.light,
         home: Builder(
           builder: (context) => TodayScreen(
             prayerScheduleSession: session,
@@ -255,10 +255,10 @@ void main() {
     expect(find.text('2 rakaat'), findsOneWidget);
   });
 
-  testWidgets('step guidance opens a sheet and Reader uses an Istiqam notice', (
+  testWidgets('step guidance opens a sheet and Reader uses an Daisth notice', (
     tester,
   ) async {
-    final controller = IstiqamNoticeController();
+    final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller);
 
@@ -278,7 +278,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    final controller = IstiqamNoticeController();
+    final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
 
     await _pumpRoutine(
@@ -302,7 +302,7 @@ void main() {
 Future<void> _pumpRoutine(
   WidgetTester tester,
   Routine data,
-  IstiqamNoticeController controller, {
+  DaisthNoticeController controller, {
   bool dark = false,
   PrayerScheduleSession? prayerScheduleSession,
 }) async {
@@ -310,8 +310,8 @@ Future<void> _pumpRoutine(
   final resolveStatus = const ResolveRoutineStatusUseCase();
   await tester.pumpWidget(
     MaterialApp(
-      theme: IstiqamTheme.light,
-      darkTheme: IstiqamTheme.dark,
+      theme: DaisthTheme.light,
+      darkTheme: DaisthTheme.dark,
       themeMode: dark ? ThemeMode.dark : ThemeMode.light,
       home: RoutineDetailScreen(
         key: ValueKey('test-routine-${data.id}'),
@@ -355,7 +355,7 @@ class _TestLocation implements LocationRepository {
 
 Future<void> _dismissNotice(
   WidgetTester tester,
-  IstiqamNoticeController controller,
+  DaisthNoticeController controller,
 ) async {
   controller.dismiss();
   await _settle(tester);

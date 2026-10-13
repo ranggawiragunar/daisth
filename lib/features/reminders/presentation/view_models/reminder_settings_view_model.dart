@@ -137,7 +137,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
     try {
-      await reminderRepository.cancelAllIstiqamReminders();
+      await reminderRepository.cancelAllDaisthReminders();
       await _saveReminderPreference(false);
       remindersEnabled = false;
       lastSummary = null;
@@ -193,7 +193,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
       Reminder(
         id: 'debug-test-primary-$dateKey',
         routineId: 'debug-test',
-        title: 'Pengingat uji Istiqam',
+        title: 'Pengingat uji Daisth',
         body: 'Notifikasi lokal berfungsi.',
         scheduledAt: scheduledAt,
         priority: ReminderPriority.medium,
@@ -229,7 +229,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
         notifyListeners();
         return;
       }
-      await reminderRepository.cancelAllIstiqamReminders();
+      await reminderRepository.cancelAllDaisthReminders();
       await prayerScheduleSession.refresh(now: current);
       await _reschedule(now: current);
     } catch (_) {

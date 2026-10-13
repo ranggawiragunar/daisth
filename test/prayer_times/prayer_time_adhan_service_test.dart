@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/features/prayer_times/data/services/prayer_time_adhan_service.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_calculation_settings.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_name.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/features/prayer_times/data/services/prayer_time_adhan_service.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_calculation_settings.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_name.dart';
 
 void main() {
   final service = PrayerTimeAdhanService();

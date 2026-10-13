@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/location/domain/models/location_access_status.dart';
-import '../../../core/design_system/components/istiqam_surface.dart';
-import '../../../core/design_system/tokens/istiqam_colors.dart';
-import '../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../core/design_system/components/daisth_surface.dart';
+import '../../../core/design_system/tokens/daisth_colors.dart';
+import '../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../prayer_times/presentation/prayer_schedule_session.dart';
 import '../../prayer_times/presentation/prayer_time_presentation.dart';
 import '../../routines/domain/repositories/routine_record_repository.dart';
@@ -74,8 +74,8 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final ambience = theme.brightness == Brightness.dark
-        ? IstiqamColors.darkPrimary.withValues(alpha: 0.09)
-        : IstiqamColors.primary200.withValues(alpha: 0.28);
+        ? DaisthColors.darkPrimary.withValues(alpha: 0.09)
+        : DaisthColors.primary200.withValues(alpha: 0.28);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -94,15 +94,15 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
             constraints: const BoxConstraints(
-              maxWidth: IstiqamSpacing.contentMaxWidth,
+              maxWidth: DaisthSpacing.contentMaxWidth,
             ),
             child: CustomScrollView(
               slivers: [
                 SliverPadding(
                   padding: EdgeInsets.fromLTRB(
-                    IstiqamSpacing.screenHorizontal,
-                    IstiqamSpacing.lg,
-                    IstiqamSpacing.screenHorizontal,
+                    DaisthSpacing.screenHorizontal,
+                    DaisthSpacing.lg,
+                    DaisthSpacing.screenHorizontal,
                     widget.bottomContentPadding,
                   ),
                   sliver: SliverList.list(
@@ -131,22 +131,22 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                           ),
                         ],
                       ),
-                      const SizedBox(height: IstiqamSpacing.xl),
+                      const SizedBox(height: DaisthSpacing.xl),
                       _focusContent(context),
                       if (_viewModel.usedLastKnownLocation) ...[
-                        const SizedBox(height: IstiqamSpacing.md),
+                        const SizedBox(height: DaisthSpacing.md),
                         _LastKnownScheduleNotice(onRefresh: _viewModel.refresh),
                       ],
-                      const SizedBox(height: IstiqamSpacing.xxl),
+                      const SizedBox(height: DaisthSpacing.xxl),
                       DailyProgress(
                         recordedCount: _viewModel.recordedStatuses.length,
                       ),
-                      const SizedBox(height: IstiqamSpacing.section),
+                      const SizedBox(height: DaisthSpacing.section),
                       Text(
                         "Today's Routine",
                         style: theme.textTheme.titleMedium,
                       ),
-                      const SizedBox(height: IstiqamSpacing.lg),
+                      const SizedBox(height: DaisthSpacing.lg),
                       RoutineTimeline(
                         schedule: widget.prayerScheduleSession.schedule,
                         period: _viewModel.currentPeriod,
@@ -228,10 +228,10 @@ class _PrayerScheduleSetupCard extends StatelessWidget {
         : hasLocationError || hasCalculationError
         ? 'Periksa akses dan layanan lokasi, lalu coba lagi.'
         : accessStatus == LocationAccessStatus.deniedForever
-        ? 'Aktifkan izin lokasi Istiqam melalui pengaturan perangkat.'
+        ? 'Aktifkan izin lokasi Daisth melalui pengaturan perangkat.'
         : accessStatus == LocationAccessStatus.serviceDisabled
         ? 'Aktifkan layanan lokasi perangkat untuk menghitung waktu sholat.'
-        : 'Istiqam menggunakan lokasi saat aplikasi dibuka untuk menghitung waktu sholat di daerahmu.';
+        : 'Daisth menggunakan lokasi saat aplikasi dibuka untuk menghitung waktu sholat di daerahmu.';
     final actionLabel = switch (accessStatus) {
       LocationAccessStatus.deniedForever => 'Buka Pengaturan',
       LocationAccessStatus.serviceDisabled => 'Buka Pengaturan Lokasi',
@@ -247,9 +247,9 @@ class _PrayerScheduleSetupCard extends StatelessWidget {
       null => onRequestLocation,
     };
 
-    return IstiqamSurface(
-      style: IstiqamSurfaceStyle.softPrimary,
-      padding: const EdgeInsets.all(IstiqamSpacing.xl),
+    return DaisthSurface(
+      style: DaisthSurfaceStyle.softPrimary,
+      padding: const EdgeInsets.all(DaisthSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -268,11 +268,11 @@ class _PrayerScheduleSetupCard extends StatelessWidget {
                   Icons.location_on_outlined,
                   color: theme.colorScheme.primary,
                 ),
-              const SizedBox(width: IstiqamSpacing.sm),
+              const SizedBox(width: DaisthSpacing.sm),
               Expanded(child: Text(title, style: theme.textTheme.titleSmall)),
             ],
           ),
-          const SizedBox(height: IstiqamSpacing.sm),
+          const SizedBox(height: DaisthSpacing.sm),
           Text(
             message,
             style: theme.textTheme.bodySmall?.copyWith(
@@ -280,7 +280,7 @@ class _PrayerScheduleSetupCard extends StatelessWidget {
             ),
           ),
           if (!isLoading) ...[
-            const SizedBox(height: IstiqamSpacing.md),
+            const SizedBox(height: DaisthSpacing.md),
             Align(
               alignment: Alignment.centerRight,
               child: FilledButton(
@@ -301,10 +301,10 @@ class _LastKnownScheduleNotice extends StatelessWidget {
   final VoidCallback onRefresh;
 
   @override
-  Widget build(BuildContext context) => IstiqamSurface(
+  Widget build(BuildContext context) => DaisthSurface(
     padding: const EdgeInsets.symmetric(
-      horizontal: IstiqamSpacing.md,
-      vertical: IstiqamSpacing.sm,
+      horizontal: DaisthSpacing.md,
+      vertical: DaisthSpacing.sm,
     ),
     child: Row(
       children: [
@@ -313,7 +313,7 @@ class _LastKnownScheduleNotice extends StatelessWidget {
           size: 18,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        const SizedBox(width: IstiqamSpacing.sm),
+        const SizedBox(width: DaisthSpacing.sm),
         const Expanded(child: Text('Menggunakan lokasi terakhir.')),
         TextButton(onPressed: onRefresh, child: const Text('Refresh')),
       ],

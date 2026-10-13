@@ -3,13 +3,13 @@ import 'dart:ui' show CheckedState;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:istiqam/app/app_preferences_scope.dart';
-import 'package:istiqam/app/dependencies/app_dependencies.dart';
+import 'package:daisth/app/app_preferences_scope.dart';
+import 'package:daisth/app/dependencies/app_dependencies.dart';
 import '../support/fake_routine_record_repository.dart';
-import 'package:istiqam/app/router/app_router.dart';
-import 'package:istiqam/core/design_system/components/istiqam_notice_controller.dart';
-import 'package:istiqam/core/design_system/theme/istiqam_theme.dart';
-import 'package:istiqam/features/dhikr/presentation/screens/dhikr_counter_screen.dart';
+import 'package:daisth/app/router/app_router.dart';
+import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
+import 'package:daisth/core/design_system/theme/daisth_theme.dart';
+import 'package:daisth/features/dhikr/presentation/screens/dhikr_counter_screen.dart';
 
 void main() {
   testWidgets('Zuhur gates dhikr until the required prayer is complete', (
@@ -224,7 +224,7 @@ class _DhikrRouterHarness {
   }
 
   final ThemeMode themeMode;
-  final noticeController = IstiqamNoticeController();
+  final noticeController = DaisthNoticeController();
   final dependencies = AppDependencies(
     routineRecordRepository: FakeRoutineRecordRepository(),
     startTodayClock: false,
@@ -232,14 +232,14 @@ class _DhikrRouterHarness {
   late final GoRouter router;
 
   Widget get app => MaterialApp.router(
-    theme: IstiqamTheme.light,
-    darkTheme: IstiqamTheme.dark,
+    theme: DaisthTheme.light,
+    darkTheme: DaisthTheme.dark,
     themeMode: themeMode,
     routerConfig: router,
     builder: (context, child) => AppPreferencesScope(
       themeMode: themeMode,
       onThemeModeChanged: (_) {},
-      child: IstiqamNoticeScope(
+      child: DaisthNoticeScope(
         controller: noticeController,
         child: child ?? const SizedBox.shrink(),
       ),

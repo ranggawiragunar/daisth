@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../../app/router/route_paths.dart';
-import '../../../../core/design_system/components/istiqam_button.dart';
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/components/daisth_button.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../reader/presentation/widgets/reader_typography.dart';
 import '../../domain/models/dhikr_item.dart';
 import '../../domain/models/dhikr_sequence.dart';
@@ -168,10 +168,10 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
           top: false,
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
-              IstiqamSpacing.xl,
-              IstiqamSpacing.md,
-              IstiqamSpacing.xl,
-              IstiqamSpacing.section,
+              DaisthSpacing.xl,
+              DaisthSpacing.md,
+              DaisthSpacing.xl,
+              DaisthSpacing.section,
             ),
             child: Center(
               child: ConstrainedBox(
@@ -194,28 +194,28 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(sequence.title, style: theme.textTheme.titleLarge),
-        const SizedBox(height: IstiqamSpacing.xxs),
+        const SizedBox(height: DaisthSpacing.xxs),
         Text(
           sequence.context,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: IstiqamSpacing.xxs),
+        const SizedBox(height: DaisthSpacing.xxs),
         Text(
           sequence.sourceLabel,
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: IstiqamSpacing.xl),
+        const SizedBox(height: DaisthSpacing.xl),
         DhikrSequenceProgress(
           currentItemIndex: _viewModel.currentItemIndex,
           completedItemCount: _viewModel.completedItemCount,
           itemCount: sequence.items.length,
           isCompleted: false,
         ),
-        const SizedBox(height: IstiqamSpacing.xxl),
+        const SizedBox(height: DaisthSpacing.xxl),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 220),
           switchInCurve: Curves.easeOutCubic,
@@ -234,7 +234,7 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
             key: ValueKey(item.id),
             children: [
               Text(item.title, style: theme.textTheme.titleMedium),
-              const SizedBox(height: IstiqamSpacing.md),
+              const SizedBox(height: DaisthSpacing.md),
               SelectableText(
                 item.arabic,
                 key: const ValueKey('dhikr-arabic'),
@@ -245,7 +245,7 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
                   item.id == 'tahlil-closing' ? 0.8 : 1,
                 ),
               ),
-              const SizedBox(height: IstiqamSpacing.sm),
+              const SizedBox(height: DaisthSpacing.sm),
               Text(
                 item.transliteration,
                 textAlign: TextAlign.center,
@@ -257,13 +257,13 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
             ],
           ),
         ),
-        const SizedBox(height: IstiqamSpacing.xl),
+        const SizedBox(height: DaisthSpacing.xl),
         DhikrCountSurface(
           item: item,
           count: _viewModel.currentItemCount,
           onTap: _increment,
         ),
-        const SizedBox(height: IstiqamSpacing.xs),
+        const SizedBox(height: DaisthSpacing.xs),
         Align(
           alignment: Alignment.center,
           child: TextButton.icon(
@@ -287,16 +287,16 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: IstiqamSpacing.xl),
+        const SizedBox(height: DaisthSpacing.xl),
         Icon(PhosphorIconsRegular.checkCircle, size: 42, color: colors.primary),
-        const SizedBox(height: IstiqamSpacing.md),
+        const SizedBox(height: DaisthSpacing.md),
         Text(
           'Dzikir selesai',
           key: const ValueKey('dhikr-completed-title'),
           textAlign: TextAlign.center,
           style: theme.textTheme.titleLarge,
         ),
-        const SizedBox(height: IstiqamSpacing.xs),
+        const SizedBox(height: DaisthSpacing.xs),
         Text(
           '${_viewModel.totalCount} hitungan selesai',
           textAlign: TextAlign.center,
@@ -304,17 +304,17 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
             color: colors.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: IstiqamSpacing.xxl),
+        const SizedBox(height: DaisthSpacing.xxl),
         DhikrSequenceProgress(
           currentItemIndex: _viewModel.currentItemIndex,
           completedItemCount: _viewModel.completedItemCount,
           itemCount: widget.sequence.items.length,
           isCompleted: true,
         ),
-        const SizedBox(height: IstiqamSpacing.xl),
+        const SizedBox(height: DaisthSpacing.xl),
         for (var index = 0; index < widget.sequence.items.length; index++)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: IstiqamSpacing.sm),
+            padding: const EdgeInsets.symmetric(vertical: DaisthSpacing.sm),
             child: Row(
               children: [
                 Expanded(
@@ -333,10 +333,10 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
               ],
             ),
           ),
-        const SizedBox(height: IstiqamSpacing.xxl),
+        const SizedBox(height: DaisthSpacing.xxl),
         SizedBox(
           width: double.infinity,
-          child: IstiqamButton(label: 'Selesai', onPressed: _finish),
+          child: DaisthButton(label: 'Selesai', onPressed: _finish),
         ),
         Align(
           alignment: Alignment.center,
@@ -384,7 +384,7 @@ class DhikrUnavailableScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(IstiqamSpacing.xl),
+            padding: const EdgeInsets.all(DaisthSpacing.xl),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -393,14 +393,14 @@ class DhikrUnavailableScreen extends StatelessWidget {
                   size: 40,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: IstiqamSpacing.lg),
+                const SizedBox(height: DaisthSpacing.lg),
                 Text(
                   'Dzikir tidak tersedia',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleLarge,
                 ),
-                const SizedBox(height: IstiqamSpacing.lg),
-                IstiqamButton(label: 'Kembali', onPressed: goBack),
+                const SizedBox(height: DaisthSpacing.lg),
+                DaisthButton(label: 'Kembali', onPressed: goBack),
               ],
             ),
           ),

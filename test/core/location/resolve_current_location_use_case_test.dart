@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/core/location/domain/models/location_unavailable_exception.dart';
-import 'package:istiqam/core/location/domain/models/location_access_status.dart';
-import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
-import 'package:istiqam/core/location/domain/use_cases/resolve_current_location_use_case.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/core/location/domain/models/location_unavailable_exception.dart';
+import 'package:daisth/core/location/domain/models/location_access_status.dart';
+import 'package:daisth/core/location/domain/repositories/location_repository.dart';
+import 'package:daisth/core/location/domain/use_cases/resolve_current_location_use_case.dart';
 
 void main() {
   const current = GeoCoordinate(latitude: -6.2, longitude: 106.8);

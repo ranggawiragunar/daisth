@@ -1,0 +1,11 @@
+Daisth palette
+
+Deep Green  #1F4D3A
+Green       #2E7D5B
+Sage        #8FAE9B
+Ivory       #FAF7F0
+Sand        #E8DCC6
+Gold Accent #D4B883
+
+Typography: Plus Jakarta Sans
+Tagline: Stay consistent in what matters.

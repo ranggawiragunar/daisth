@@ -12,20 +12,20 @@
 - Present routine state with an icon and semantic color. An unrecorded routine
   is neutral and never communicates failure.
 - Use Plus Jakarta Sans through `google_fonts`, configured centrally in
-  `IstiqamTypography`. The font provider can later be switched to local font
+  `DaisthTypography`. The font provider can later be switched to local font
   assets without changing feature widgets. An Arabic reader typeface remains
   reserved and undecided.
 
 ## Color
 
-Light semantic colors live in `IstiqamColors`: background `#F7F6F2`, surface
+Light semantic colors live in `DaisthColors`: background `#F7F6F2`, surface
 `#FFFFFF`, secondary surface `#F1F0EB`, primary text `#202321`, secondary text
 `#666B67`, border `#E4E4DE`, and brand green from `#1E3A34` through `#5A8878`.
 Warm accent colors are `#8A654C`, `#B18768`, and `#F1E7DE`.
 
 Dark mode uses background `#111815`, surface `#19221E`, secondary surface
 `#202B26`, primary text `#F2F1EC`, secondary text `#B3B8B3`, and a soft green
-primary `#8DB5A5`. `IstiqamThemeExtension` holds borders, surfaces, and the
+primary `#8DB5A5`. `DaisthThemeExtension` holds borders, surfaces, and the
 status palette for both themes.
 
 ## Spacing and radius
@@ -39,13 +39,13 @@ and standard surfaces use 16px; focus surfaces use 20px.
 
 ## Typography, icons, and components
 
-`IstiqamTypography` defines the display, title, body, and label styles in Plus
+`DaisthTypography` defines the display, title, body, and label styles in Plus
 Jakarta Sans. Visible application icons use the `phosphor_icons` package, with
 regular weight for contextual and inactive icons and fill weight for selected
 navigation and completion states.
 
-`IstiqamButton`, `IstiqamSurface`, `IstiqamProgressBar`,
-`IstiqamSegmentedProgress`, `IstiqamStatusIndicator`, and `IstiqamEmptyState`
+`DaisthButton`, `DaisthSurface`, `DaisthProgressBar`,
+`DaisthSegmentedProgress`, `DaisthStatusIndicator`, and `DaisthEmptyState`
 provide reusable foundations. Today uses seven quiet segments for routine
 progress, filling recorded routines with the brand green.
 
@@ -83,7 +83,7 @@ files.
 
 ### Transient notices
 
-`IstiqamNotice` and `IstiqamNoticeController` provide the reusable floating
+`DaisthNotice` and `DaisthNoticeController` provide the reusable floating
 notice for transient feedback. Notices support success, info, warning, error,
 and neutral semantic variants, each with a tonal theme-aware surface and a
 Phosphor icon. A notice can include supporting text, an action, and a close

@@ -21,7 +21,7 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
     _onNotificationTap = onNotificationTap;
     final initialized = await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('ic_daisth_notification'),
         iOS: DarwinInitializationSettings(
           requestAlertPermission: false,
           requestBadgePermission: false,
@@ -41,7 +41,7 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
       await android?.createNotificationChannel(
         const AndroidNotificationChannel(
           ReminderMapper.highChannelId,
-          'Istiqam · Prioritas tinggi',
+          'Daisth · Prioritas tinggi',
           description: 'Pengingat waktu sholat dan Sholat Malam.',
           importance: Importance.high,
           enableVibration: true,
@@ -50,7 +50,7 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
       await android?.createNotificationChannel(
         const AndroidNotificationChannel(
           ReminderMapper.standardChannelId,
-          'Istiqam · Pengingat rutin',
+          'Daisth · Pengingat rutin',
           description: 'Pengingat Dhuha, refleksi, dan penutup hari.',
           importance: Importance.defaultImportance,
           enableVibration: true,
@@ -128,8 +128,8 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
         android: AndroidNotificationDetails(
           reminder.channelId,
           highPriority
-              ? 'Istiqam · Prioritas tinggi'
-              : 'Istiqam · Pengingat rutin',
+              ? 'Daisth · Prioritas tinggi'
+              : 'Daisth · Pengingat rutin',
           channelDescription: highPriority
               ? 'Pengingat waktu sholat dan Sholat Malam.'
               : 'Pengingat Dhuha, refleksi, dan penutup hari.',
@@ -139,6 +139,7 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
           priority: highPriority ? Priority.high : Priority.defaultPriority,
           enableVibration: true,
           playSound: true,
+          icon: 'ic_daisth_notification',
         ),
         iOS: const DarwinNotificationDetails(
           presentAlert: true,

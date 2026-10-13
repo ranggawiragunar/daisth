@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/core/location/domain/models/location_access_status.dart';
-import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
-import 'package:istiqam/core/location/domain/use_cases/resolve_current_location_use_case.dart';
-import 'package:istiqam/core/design_system/theme/istiqam_theme.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_calculation_settings.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_day_schedule.dart';
-import 'package:istiqam/features/prayer_times/domain/repositories/prayer_time_repository.dart';
-import 'package:istiqam/features/prayer_times/domain/use_cases/load_today_prayer_schedule_use_case.dart';
-import 'package:istiqam/features/prayer_times/presentation/prayer_schedule_session.dart';
-import 'package:istiqam/core/time/domain/models/calendar_day.dart';
-import 'package:istiqam/features/routines/data/demo/routine_demo_data.dart';
-import 'package:istiqam/features/routines/domain/models/routine_status.dart';
-import 'package:istiqam/features/today/presentation/view_models/today_view_model.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/core/location/domain/models/location_access_status.dart';
+import 'package:daisth/core/location/domain/repositories/location_repository.dart';
+import 'package:daisth/core/location/domain/use_cases/resolve_current_location_use_case.dart';
+import 'package:daisth/core/design_system/theme/daisth_theme.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_calculation_settings.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_day_schedule.dart';
+import 'package:daisth/features/prayer_times/domain/repositories/prayer_time_repository.dart';
+import 'package:daisth/features/prayer_times/domain/use_cases/load_today_prayer_schedule_use_case.dart';
+import 'package:daisth/features/prayer_times/presentation/prayer_schedule_session.dart';
+import 'package:daisth/core/time/domain/models/calendar_day.dart';
+import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
+import 'package:daisth/features/routines/domain/models/routine_status.dart';
+import 'package:daisth/features/today/presentation/view_models/today_view_model.dart';
 import '../support/test_persistence.dart';
-import 'package:istiqam/features/today/presentation/today_screen.dart';
+import 'package:daisth/features/today/presentation/today_screen.dart';
 
 void main() {
   test('Today loads stored status for today and ignores yesterday', () async {
@@ -131,8 +131,8 @@ Future<void> _pumpToday(
   addTearDown(persistence.dispose);
   await tester.pumpWidget(
     MaterialApp(
-      theme: IstiqamTheme.light,
-      darkTheme: IstiqamTheme.dark,
+      theme: DaisthTheme.light,
+      darkTheme: DaisthTheme.dark,
       home: TodayScreen(
         prayerScheduleSession: session,
         routineRecordRepository: persistence.routineRecords,

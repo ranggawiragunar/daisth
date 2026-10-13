@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
-import '../../../../core/design_system/components/istiqam_surface.dart';
-import '../../../../core/design_system/theme/istiqam_theme_extension.dart';
-import '../../../../core/design_system/tokens/istiqam_radius.dart';
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/components/daisth_surface.dart';
+import '../../../../core/design_system/theme/daisth_theme_extension.dart';
+import '../../../../core/design_system/tokens/daisth_radius.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 
 class RoutineLinkItem {
   const RoutineLinkItem({
@@ -95,13 +95,13 @@ class _RoutineLinkSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final extension = theme.extension<IstiqamThemeExtension>()!;
+    final extension = theme.extension<DaisthThemeExtension>()!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: theme.textTheme.titleSmall),
-        const SizedBox(height: IstiqamSpacing.md),
-        IstiqamSurface(
+        const SizedBox(height: DaisthSpacing.md),
+        DaisthSurface(
           padding: EdgeInsets.zero,
           child: Column(
             children: [
@@ -115,7 +115,7 @@ class _RoutineLinkSection extends StatelessWidget {
                   Divider(
                     height: 1,
                     indent: 58,
-                    endIndent: IstiqamSpacing.md,
+                    endIndent: DaisthSpacing.md,
                     color: extension.divider,
                   ),
               ],
@@ -144,11 +144,11 @@ class _RoutineLinkTile extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(IstiqamRadius.large),
+          borderRadius: BorderRadius.circular(DaisthRadius.large),
           child: Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: IstiqamSpacing.md,
-              vertical: IstiqamSpacing.sm,
+              horizontal: DaisthSpacing.md,
+              vertical: DaisthSpacing.sm,
             ),
             child: Row(
               children: [
@@ -163,7 +163,7 @@ class _RoutineLinkTile extends StatelessWidget {
                         : secondary,
                   ),
                 ),
-                const SizedBox(width: IstiqamSpacing.sm),
+                const SizedBox(width: DaisthSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,7 +187,7 @@ class _RoutineLinkTile extends StatelessWidget {
                   ),
                 ),
                 if (item.meta != null) ...[
-                  const SizedBox(width: IstiqamSpacing.xs),
+                  const SizedBox(width: DaisthSpacing.xs),
                   Text(
                     item.meta!,
                     style: theme.textTheme.labelSmall?.copyWith(
@@ -195,7 +195,7 @@ class _RoutineLinkTile extends StatelessWidget {
                     ),
                   ),
                 ],
-                const SizedBox(width: IstiqamSpacing.xs),
+                const SizedBox(width: DaisthSpacing.xs),
                 Icon(
                   PhosphorIconsRegular.caretRight,
                   size: 16,

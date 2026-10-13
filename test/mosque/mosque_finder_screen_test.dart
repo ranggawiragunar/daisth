@@ -2,20 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/design_system/components/istiqam_notice_controller.dart';
-import 'package:istiqam/core/design_system/theme/istiqam_theme.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/core/location/domain/models/location_access_status.dart';
-import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
-import 'package:istiqam/core/maps/services/map_navigation_service.dart';
-import 'package:istiqam/features/mosque/domain/models/mosque_place.dart';
-import 'package:istiqam/features/mosque/domain/models/cached_mosque_places.dart';
-import 'package:istiqam/features/mosque/domain/models/mosque_place_type.dart';
-import 'package:istiqam/features/mosque/domain/models/mosque_search_failure.dart';
-import 'package:istiqam/features/mosque/domain/repositories/mosque_repository.dart';
-import 'package:istiqam/features/mosque/domain/use_cases/find_nearby_mosques_use_case.dart';
-import 'package:istiqam/features/mosque/presentation/screens/mosque_finder_screen.dart';
-import 'package:istiqam/features/mosque/presentation/view_models/mosque_finder_view_model.dart';
+import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
+import 'package:daisth/core/design_system/theme/daisth_theme.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/core/location/domain/models/location_access_status.dart';
+import 'package:daisth/core/location/domain/repositories/location_repository.dart';
+import 'package:daisth/core/maps/services/map_navigation_service.dart';
+import 'package:daisth/features/mosque/domain/models/mosque_place.dart';
+import 'package:daisth/features/mosque/domain/models/cached_mosque_places.dart';
+import 'package:daisth/features/mosque/domain/models/mosque_place_type.dart';
+import 'package:daisth/features/mosque/domain/models/mosque_search_failure.dart';
+import 'package:daisth/features/mosque/domain/repositories/mosque_repository.dart';
+import 'package:daisth/features/mosque/domain/use_cases/find_nearby_mosques_use_case.dart';
+import 'package:daisth/features/mosque/presentation/screens/mosque_finder_screen.dart';
+import 'package:daisth/features/mosque/presentation/view_models/mosque_finder_view_model.dart';
 
 void main() {
   testWidgets('renders sorted result and refresh control in dark mode', (
@@ -27,7 +27,7 @@ void main() {
       lastKnown: true,
       places: [_place('Masjid Al Ikhlas', 120)],
     );
-    await tester.pumpWidget(harness.app(theme: IstiqamTheme.dark));
+    await tester.pumpWidget(harness.app(theme: DaisthTheme.dark));
     await tester.pumpAndSettle();
 
     expect(find.text('Masjid Al Ikhlas'), findsOneWidget);
@@ -243,7 +243,7 @@ class _Harness {
     this.launcher,
     this.cached,
     this.pendingResponse,
-  }) : noticeController = IstiqamNoticeController() {
+  }) : noticeController = DaisthNoticeController() {
     mosqueRepository = _FakeMosques(
       places: places,
       error: repositoryError,
@@ -273,13 +273,13 @@ class _Harness {
   final ExternalUriLauncher? launcher;
   final CachedMosquePlaces? cached;
   final Completer<List<MosquePlace>>? pendingResponse;
-  final IstiqamNoticeController noticeController;
+  final DaisthNoticeController noticeController;
   late final _FakeMosques mosqueRepository;
   late final MosqueFinderViewModel viewModel;
 
   Widget app({ThemeData? theme}) => MaterialApp(
-    theme: theme ?? IstiqamTheme.light,
-    home: IstiqamNoticeScope(
+    theme: theme ?? DaisthTheme.light,
+    home: DaisthNoticeScope(
       controller: noticeController,
       child: MosqueFinderScreen(
         routineId: 'zuhur',

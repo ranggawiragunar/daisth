@@ -1,6 +1,6 @@
 # Modern Alert / Toast Direction
 
-Istiqam should not use raw/default-looking snackbars for product feedback.
+Daisth should not use raw/default-looking snackbars for product feedback.
 
 Use a reusable floating in-app alert component with:
 - rounded container (about 16px)

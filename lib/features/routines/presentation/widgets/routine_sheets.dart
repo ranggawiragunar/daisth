@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
-import '../../../../core/design_system/components/istiqam_button.dart';
-import '../../../../core/design_system/tokens/istiqam_radius.dart';
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/components/daisth_button.dart';
+import '../../../../core/design_system/tokens/daisth_radius.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../domain/models/routine_step.dart';
 
 class NotTodaySelection {
@@ -38,26 +38,26 @@ Future<NotTodaySelection?> showNotTodaySheet(BuildContext context) {
                   height: 4,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(IstiqamRadius.pill),
+                    borderRadius: BorderRadius.circular(DaisthRadius.pill),
                   ),
                 ),
               ),
-              const SizedBox(height: IstiqamSpacing.xl),
+              const SizedBox(height: DaisthSpacing.xl),
               Text(
                 'Tidak dilakukan hari ini?',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(height: IstiqamSpacing.xs),
+              const SizedBox(height: DaisthSpacing.xs),
               Text(
                 'Kamu bisa menambahkan alasan jika ingin. Ini opsional.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: IstiqamSpacing.lg),
+              const SizedBox(height: DaisthSpacing.lg),
               Wrap(
-                spacing: IstiqamSpacing.sm,
-                runSpacing: IstiqamSpacing.sm,
+                spacing: DaisthSpacing.sm,
+                runSpacing: DaisthSpacing.sm,
                 children: [
                   for (final reason in reasons)
                     ChoiceChip(
@@ -71,17 +71,17 @@ Future<NotTodaySelection?> showNotTodaySheet(BuildContext context) {
                     ),
                 ],
               ),
-              const SizedBox(height: IstiqamSpacing.xl),
+              const SizedBox(height: DaisthSpacing.xl),
               SizedBox(
                 width: double.infinity,
-                child: IstiqamButton(
+                child: DaisthButton(
                   label: 'Simpan',
                   onPressed: () => Navigator.of(
                     sheetContext,
                   ).pop(NotTodaySelection(selectedReason)),
                 ),
               ),
-              const SizedBox(height: IstiqamSpacing.xs),
+              const SizedBox(height: DaisthSpacing.xs),
               TextButton(
                 onPressed: () => Navigator.of(
                   sheetContext,
@@ -118,11 +118,11 @@ Future<void> showRoutineStepSheet({
               height: 4,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(IstiqamRadius.pill),
+                borderRadius: BorderRadius.circular(DaisthRadius.pill),
               ),
             ),
           ),
-          const SizedBox(height: IstiqamSpacing.xl),
+          const SizedBox(height: DaisthSpacing.xl),
           Row(
             children: [
               Expanded(
@@ -139,19 +139,19 @@ Future<void> showRoutineStepSheet({
             ],
           ),
           Text(step.subtitle, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: IstiqamSpacing.xl),
+          const SizedBox(height: DaisthSpacing.xl),
           Text('Guidance', style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: IstiqamSpacing.sm),
+          const SizedBox(height: DaisthSpacing.sm),
           Text(
             step.guidanceTitle ?? 'Panduan ${step.title}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: IstiqamSpacing.xl),
+          const SizedBox(height: DaisthSpacing.xl),
           SizedBox(
             width: double.infinity,
-            child: IstiqamButton(
+            child: DaisthButton(
               label: step.completed
                   ? 'Mark as Not Done'
                   : 'Mark ${step.title} Done',
@@ -161,7 +161,7 @@ Future<void> showRoutineStepSheet({
               },
             ),
           ),
-          const SizedBox(height: IstiqamSpacing.xs),
+          const SizedBox(height: DaisthSpacing.xs),
           TextButton.icon(
             onPressed: () {
               Navigator.of(sheetContext).pop();
@@ -191,16 +191,16 @@ class _RoutineSheetFrame extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(IstiqamRadius.xLarge + 4),
+            top: Radius.circular(DaisthRadius.xLarge + 4),
           ),
           border: Border.all(color: theme.colorScheme.outlineVariant),
         ),
         child: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
-            IstiqamSpacing.xl,
-            IstiqamSpacing.md,
-            IstiqamSpacing.xl,
-            IstiqamSpacing.xl + MediaQuery.viewInsetsOf(context).bottom,
+            DaisthSpacing.xl,
+            DaisthSpacing.md,
+            DaisthSpacing.xl,
+            DaisthSpacing.xl + MediaQuery.viewInsetsOf(context).bottom,
           ),
           child: child,
         ),

@@ -1,6 +1,6 @@
-# Istiqam Architecture
+# Daisth Architecture
 
-Istiqam uses a feature-first structure. Feature-specific code belongs under
+Daisth uses a feature-first structure. Feature-specific code belongs under
 `lib/features/<feature>/`; `lib/core/` is reserved for infrastructure shared by
 multiple features, such as the design system.
 
@@ -29,7 +29,7 @@ Domain models use clean business names such as `Routine`, `RoutineStep`, and
 separate data model only when a source-specific representation is genuinely
 needed; its name uses the `Data` postfix, such as `RoutineData`.
 
-Do not use DTO suffix in Istiqam.
+Do not use DTO suffix in Daisth.
 
 Repository contracts use domain names, such as `RoutineRepository`. Concrete
 repository implementations in the data layer use the Data suffix, for example
@@ -49,7 +49,7 @@ the work warrants one.
 
 ## Navigation and app state
 
-`go_router` is Istiqam's application navigation standard. Route identities,
+`go_router` is Daisth's application navigation standard. Route identities,
 paths, shell branches, and root-level detail routes are centralized under
 `lib/app/router/`. Main destinations use a `StatefulShellRoute.indexedStack`
 with the floating navigation dock; detail routes sit on the root navigator
@@ -58,7 +58,7 @@ outside that shell.
 Routine Detail uses demo fixtures from
 `features/routines/data/demo/routine_demo_data.dart` for routine content. Daily
 progress is stored by `RoutineRecordRepositoryData` through
-`RoutineRecordSqliteService` and the shared `IstiqamDatabaseService`:
+`RoutineRecordSqliteService` and the shared `DaisthDatabaseService`:
 
 ```text
 RoutineRecordRepository
@@ -67,7 +67,7 @@ RoutineRecordRepositoryData
 ↓
 RoutineRecordSqliteService
 ↓
-IstiqamDatabaseService → SQLite
+DaisthDatabaseService → SQLite
 ```
 
 `RoutineDetailViewModel` loads the selected local calendar day's step and
@@ -98,7 +98,7 @@ AppSettingsRepositoryData
 ↓
 AppSettingsSqliteService
 ↓
-IstiqamDatabaseService → SQLite
+DaisthDatabaseService → SQLite
 ```
 
 ## Real location and mosque data

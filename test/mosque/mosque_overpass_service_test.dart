@@ -4,12 +4,12 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/features/mosque/data/mappers/mosque_mapper.dart';
-import 'package:istiqam/features/mosque/data/repositories/mosque_repository_data.dart';
-import 'package:istiqam/features/mosque/data/services/mosque_overpass_service.dart';
-import 'package:istiqam/features/mosque/domain/models/mosque_place_type.dart';
-import 'package:istiqam/features/mosque/domain/models/mosque_search_failure.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/features/mosque/data/mappers/mosque_mapper.dart';
+import 'package:daisth/features/mosque/data/repositories/mosque_repository_data.dart';
+import 'package:daisth/features/mosque/data/services/mosque_overpass_service.dart';
+import 'package:daisth/features/mosque/domain/models/mosque_place_type.dart';
+import 'package:daisth/features/mosque/domain/models/mosque_search_failure.dart';
 
 void main() {
   const origin = GeoCoordinate(latitude: -6.2, longitude: 106.8);

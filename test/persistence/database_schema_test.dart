@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:istiqam/core/persistence/data/schema/database_schema.dart';
-import 'package:istiqam/core/time/domain/models/calendar_day.dart';
-import 'package:istiqam/features/routines/data/demo/routine_demo_data.dart';
+import 'package:daisth/core/persistence/data/schema/database_schema.dart';
+import 'package:daisth/core/time/domain/models/calendar_day.dart';
+import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
 
 import '../support/test_persistence.dart';
 

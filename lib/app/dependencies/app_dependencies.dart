@@ -10,7 +10,7 @@ import '../../core/location/data/repositories/location_repository_data.dart';
 import '../../core/location/domain/repositories/location_repository.dart';
 import '../../core/location/domain/use_cases/resolve_current_location_use_case.dart';
 import '../../core/maps/services/map_navigation_service.dart';
-import '../../core/persistence/data/services/istiqam_database_service.dart';
+import '../../core/persistence/data/services/daisth_database_service.dart';
 import '../../core/timezone/data/repositories/timezone_repository_data.dart';
 import '../../core/timezone/data/services/timezone_flutter_service.dart';
 import '../../core/timezone/domain/repositories/timezone_repository.dart';
@@ -52,13 +52,13 @@ class AppDependencies {
     ReminderRepository? reminderRepository,
     TimezoneRepository? timezoneRepository,
     ReminderNotificationGateway? reminderNotificationGateway,
-    IstiqamDatabaseService? databaseService,
+    DaisthDatabaseService? databaseService,
     AppSettingsRepository? appSettingsRepository,
     RoutineRecordRepository? routineRecordRepository,
     this.startTodayClock = true,
   }) : httpClient = httpClient ?? http.Client(),
        _ownsHttpClient = httpClient == null {
-    this.databaseService = databaseService ?? IstiqamDatabaseService();
+    this.databaseService = databaseService ?? DaisthDatabaseService();
     this.appSettingsRepository =
         appSettingsRepository ??
         AppSettingsRepositoryData(
@@ -138,7 +138,7 @@ class AppDependencies {
   final http.Client httpClient;
   final bool startTodayClock;
   final bool _ownsHttpClient;
-  late final IstiqamDatabaseService databaseService;
+  late final DaisthDatabaseService databaseService;
   late final AppSettingsRepository appSettingsRepository;
   late final RoutineRecordRepository routineRecordRepository;
   late final ResolveRoutineStatusUseCase resolveRoutineStatus;

@@ -4,12 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
-import '../../../core/design_system/components/istiqam_notice_controller.dart';
-import '../../../core/design_system/components/istiqam_notice.dart';
-import '../../../core/design_system/components/istiqam_surface.dart';
-import '../../../core/design_system/theme/istiqam_theme_extension.dart';
-import '../../../core/design_system/tokens/istiqam_radius.dart';
-import '../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../core/design_system/components/daisth_notice_controller.dart';
+import '../../../core/design_system/components/daisth_notice.dart';
+import '../../../core/design_system/components/daisth_surface.dart';
+import '../../../core/design_system/theme/daisth_theme_extension.dart';
+import '../../../core/design_system/tokens/daisth_radius.dart';
+import '../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../core/location/domain/models/location_access_status.dart';
 import '../../prayer_times/presentation/prayer_schedule_session.dart';
 import '../../prayer_times/presentation/prayer_time_presentation.dart';
@@ -32,7 +32,7 @@ class SettingsPlaceholderScreen extends StatefulWidget {
   final ValueChanged<ThemeMode> onThemeModeChanged;
   final PrayerScheduleSession prayerScheduleSession;
   final ReminderSettingsViewModel reminderSettings;
-  final IstiqamNoticeController noticeController;
+  final DaisthNoticeController noticeController;
   final double bottomContentPadding;
 
   @override
@@ -72,7 +72,7 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
       if (success) {
         widget.noticeController.show(
           context,
-          type: IstiqamNoticeType.success,
+          type: DaisthNoticeType.success,
           title: 'Reminders scheduled',
           message:
               '${_reminders.lastSummary?.scheduledCount ?? 0} reminders updated.',
@@ -83,9 +83,9 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
       if (mounted) {
         widget.noticeController.show(
           context,
-          type: IstiqamNoticeType.info,
+          type: DaisthNoticeType.info,
           title: 'Reminders turned off',
-          message: 'All Istiqam reminders have been cancelled.',
+          message: 'All Daisth reminders have been cancelled.',
         );
       }
     }
@@ -116,7 +116,7 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
       if (mounted && _reminders.exactAlarmStatus == ExactAlarmStatus.enabled) {
         widget.noticeController.show(
           context,
-          type: IstiqamNoticeType.success,
+          type: DaisthNoticeType.success,
           title: 'Precise reminders enabled',
         );
       }
@@ -141,20 +141,20 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
           constraints: const BoxConstraints(maxWidth: 640),
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
-              IstiqamSpacing.screenHorizontal,
-              IstiqamSpacing.xl,
-              IstiqamSpacing.screenHorizontal,
-              widget.bottomContentPadding + IstiqamSpacing.xxl,
+              DaisthSpacing.screenHorizontal,
+              DaisthSpacing.xl,
+              DaisthSpacing.screenHorizontal,
+              widget.bottomContentPadding + DaisthSpacing.xxl,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text('Settings', style: theme.textTheme.headlineSmall),
-                const SizedBox(height: IstiqamSpacing.section),
+                const SizedBox(height: DaisthSpacing.section),
                 Text('Prayer & Location', style: theme.textTheme.titleMedium),
-                const SizedBox(height: IstiqamSpacing.md),
-                IstiqamSurface(
-                  padding: const EdgeInsets.all(IstiqamSpacing.lg),
+                const SizedBox(height: DaisthSpacing.md),
+                DaisthSurface(
+                  padding: const EdgeInsets.all(DaisthSpacing.lg),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -162,14 +162,14 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
                         label: 'Location',
                         value: locationValue,
                       ),
-                      const SizedBox(height: IstiqamSpacing.md),
+                      const SizedBox(height: DaisthSpacing.md),
                       const _SettingsValueRow(
                         label: 'Calculation',
                         value: 'Indonesia (KEMENAG)',
                       ),
-                      const SizedBox(height: IstiqamSpacing.md),
+                      const SizedBox(height: DaisthSpacing.md),
                       const _SettingsValueRow(label: 'Asar', value: 'Shafi'),
-                      const SizedBox(height: IstiqamSpacing.md),
+                      const SizedBox(height: DaisthSpacing.md),
                       _SettingsValueRow(
                         label: 'Last updated',
                         value: updatedAt == null
@@ -178,7 +178,7 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
                       ),
                       if (_session.calculationError != null ||
                           _session.isLocationUnavailable) ...[
-                        const SizedBox(height: IstiqamSpacing.md),
+                        const SizedBox(height: DaisthSpacing.md),
                         Text(
                           _session.accessStatus ==
                                   LocationAccessStatus.serviceDisabled
@@ -190,7 +190,7 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
                         ),
                       ],
                       if (schedule == null) ...[
-                        const SizedBox(height: IstiqamSpacing.md),
+                        const SizedBox(height: DaisthSpacing.md),
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton(
@@ -202,7 +202,7 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: IstiqamSpacing.sm),
+                      const SizedBox(height: DaisthSpacing.sm),
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton.icon(
@@ -225,7 +225,7 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
                               LocationAccessStatus.deniedForever ||
                           _session.accessStatus ==
                               LocationAccessStatus.serviceDisabled) ...[
-                        const SizedBox(height: IstiqamSpacing.xs),
+                        const SizedBox(height: DaisthSpacing.xs),
                         TextButton(
                           onPressed:
                               _session.accessStatus ==
@@ -243,19 +243,19 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: IstiqamSpacing.section),
+                const SizedBox(height: DaisthSpacing.section),
                 _NotificationsSettingsSection(
                   viewModel: _reminders,
                   onRemindersChanged: _onRemindersChanged,
                   onRequestPrecise: _requestPreciseReminders,
                   onOpenSettings: _reminders.openNotificationSettings,
                 ),
-                const SizedBox(height: IstiqamSpacing.section),
+                const SizedBox(height: DaisthSpacing.section),
                 _AppearanceSelector(
                   themeMode: widget.themeMode,
                   onChanged: widget.onThemeModeChanged,
                 ),
-                const SizedBox(height: IstiqamSpacing.lg),
+                const SizedBox(height: DaisthSpacing.lg),
                 Text(
                   'Waktu sholat dihitung di perangkat menggunakan lokasi saat ini. Lokasi tidak disimpan.',
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -302,9 +302,9 @@ class _NotificationsSettingsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text('Notifications', style: theme.textTheme.titleMedium),
-        const SizedBox(height: IstiqamSpacing.md),
-        IstiqamSurface(
-          padding: const EdgeInsets.all(IstiqamSpacing.lg),
+        const SizedBox(height: DaisthSpacing.md),
+        DaisthSurface(
+          padding: const EdgeInsets.all(DaisthSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -315,7 +315,7 @@ class _NotificationsSettingsSection extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Reminders', style: theme.textTheme.titleSmall),
-                        const SizedBox(height: IstiqamSpacing.xs),
+                        const SizedBox(height: DaisthSpacing.xs),
                         Text(
                           viewModel.remindersEnabled ? 'On' : 'Off',
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -331,7 +331,7 @@ class _NotificationsSettingsSection extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: IstiqamSpacing.md),
+              const SizedBox(height: DaisthSpacing.md),
               _SettingsValueRow(
                 label: 'Notification permission',
                 value: permission,
@@ -347,7 +347,7 @@ class _NotificationsSettingsSection extends StatelessWidget {
                 ),
               ],
               if (defaultTargetPlatform == TargetPlatform.android) ...[
-                const SizedBox(height: IstiqamSpacing.md),
+                const SizedBox(height: DaisthSpacing.md),
                 Row(
                   children: [
                     Expanded(
@@ -367,18 +367,18 @@ class _NotificationsSettingsSection extends StatelessWidget {
                   ],
                 ),
               ],
-              const SizedBox(height: IstiqamSpacing.md),
+              const SizedBox(height: DaisthSpacing.md),
               _SettingsValueRow(
                 label: 'Timezone',
                 value: viewModel.deviceTimezone?.ianaName ?? '—',
               ),
-              const SizedBox(height: IstiqamSpacing.md),
+              const SizedBox(height: DaisthSpacing.md),
               InkWell(
-                borderRadius: BorderRadius.circular(IstiqamRadius.medium),
+                borderRadius: BorderRadius.circular(DaisthRadius.medium),
                 onTap: () => _showPendingReminders(context),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    vertical: IstiqamSpacing.xs,
+                    vertical: DaisthSpacing.xs,
                   ),
                   child: Row(
                     children: [
@@ -394,14 +394,14 @@ class _NotificationsSettingsSection extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(width: IstiqamSpacing.xs),
+                      const SizedBox(width: DaisthSpacing.xs),
                       const Icon(Icons.chevron_right_rounded, size: 18),
                     ],
                   ),
                 ),
               ),
               if (viewModel.errorMessage != null) ...[
-                const SizedBox(height: IstiqamSpacing.sm),
+                const SizedBox(height: DaisthSpacing.sm),
                 Text(
                   viewModel.errorMessage!,
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -410,7 +410,7 @@ class _NotificationsSettingsSection extends StatelessWidget {
                 ),
               ],
               if (kDebugMode) ...[
-                const SizedBox(height: IstiqamSpacing.sm),
+                const SizedBox(height: DaisthSpacing.sm),
                 OutlinedButton.icon(
                   onPressed:
                       viewModel.isLoading ||
@@ -424,7 +424,7 @@ class _NotificationsSettingsSection extends StatelessWidget {
               ],
               if (!viewModel.remindersEnabled &&
                   viewModel.pendingReminders.isNotEmpty) ...[
-                const SizedBox(height: IstiqamSpacing.sm),
+                const SizedBox(height: DaisthSpacing.sm),
                 Text(
                   'Reminder preference is session-only. Scheduled notifications may remain after the app is restarted.',
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -448,10 +448,10 @@ class _NotificationsSettingsSection extends StatelessWidget {
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
-              IstiqamSpacing.screenHorizontal,
-              IstiqamSpacing.sm,
-              IstiqamSpacing.screenHorizontal,
-              IstiqamSpacing.xl,
+              DaisthSpacing.screenHorizontal,
+              DaisthSpacing.sm,
+              DaisthSpacing.screenHorizontal,
+              DaisthSpacing.xl,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -461,7 +461,7 @@ class _NotificationsSettingsSection extends StatelessWidget {
                   'Scheduled today',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: IstiqamSpacing.md),
+                const SizedBox(height: DaisthSpacing.md),
                 if (reminders.isEmpty)
                   const Text('No upcoming reminders today.')
                 else
@@ -503,7 +503,7 @@ class _SettingsValueRow extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: IstiqamSpacing.md),
+        const SizedBox(width: DaisthSpacing.md),
         Flexible(
           child: Text(
             value,
@@ -533,20 +533,20 @@ class _AppearanceSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final extension = theme.extension<IstiqamThemeExtension>()!;
+    final extension = theme.extension<DaisthThemeExtension>()!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text('Appearance', style: theme.textTheme.titleSmall),
-        const SizedBox(height: IstiqamSpacing.sm),
+        const SizedBox(height: DaisthSpacing.sm),
         Container(
           decoration: BoxDecoration(
             color: extension.softSurface,
-            borderRadius: BorderRadius.circular(IstiqamRadius.large),
+            borderRadius: BorderRadius.circular(DaisthRadius.large),
             border: Border.all(color: extension.border),
           ),
-          padding: const EdgeInsets.all(IstiqamSpacing.xs),
+          padding: const EdgeInsets.all(DaisthSpacing.xs),
           child: Row(
             children: [
               for (final option in _options)
@@ -594,7 +594,7 @@ class _AppearanceOption extends StatelessWidget {
         message: label,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(IstiqamRadius.medium),
+          borderRadius: BorderRadius.circular(DaisthRadius.medium),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
@@ -602,7 +602,7 @@ class _AppearanceOption extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             decoration: BoxDecoration(
               color: selected ? theme.colorScheme.surface : Colors.transparent,
-              borderRadius: BorderRadius.circular(IstiqamRadius.medium),
+              borderRadius: BorderRadius.circular(DaisthRadius.medium),
               boxShadow: selected
                   ? [
                       BoxShadow(

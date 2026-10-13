@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/app/router/reminder_notification_route_resolver.dart';
-import 'package:istiqam/features/reminders/data/mappers/reminder_mapper.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder_priority.dart';
+import 'package:daisth/app/router/reminder_notification_route_resolver.dart';
+import 'package:daisth/features/reminders/data/mappers/reminder_mapper.dart';
+import 'package:daisth/features/reminders/domain/models/reminder.dart';
+import 'package:daisth/features/reminders/domain/models/reminder_priority.dart';
 
 void main() {
   final mapper = ReminderMapper();
@@ -54,7 +54,7 @@ void main() {
     expect(resolver.resolve('{not json'), '/today');
     expect(
       resolver.resolve(
-        '{"v":1,"app":"istiqam","type":"routine","routineId":"unknown"}',
+        '{"v":1,"app":"daisth","type":"routine","routineId":"unknown"}',
       ),
       '/today',
     );

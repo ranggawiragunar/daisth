@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_calculation_settings.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_day_schedule.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_name.dart';
-import 'package:istiqam/features/prayer_times/domain/use_cases/resolve_current_prayer_period_use_case.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_calculation_settings.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_day_schedule.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_name.dart';
+import 'package:daisth/features/prayer_times/domain/use_cases/resolve_current_prayer_period_use_case.dart';
 
 void main() {
   const resolver = ResolveCurrentPrayerPeriodUseCase();

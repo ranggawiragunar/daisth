@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/design_system/components/istiqam_segmented_progress.dart';
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/components/daisth_segmented_progress.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 
 class DailyProgress extends StatelessWidget {
   const DailyProgress({required this.recordedCount, super.key});
@@ -17,13 +17,13 @@ class DailyProgress extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Today', style: theme.textTheme.titleMedium),
-        const SizedBox(height: IstiqamSpacing.xs),
+        const SizedBox(height: DaisthSpacing.xs),
         Text(
           '$recordedCount of $total routines recorded',
           style: theme.textTheme.bodySmall?.copyWith(color: secondary),
         ),
-        const SizedBox(height: IstiqamSpacing.md),
-        IstiqamSegmentedProgress(completed: recordedCount, total: total),
+        const SizedBox(height: DaisthSpacing.md),
+        DaisthSegmentedProgress(completed: recordedCount, total: total),
       ],
     );
   }

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
-import '../core/design_system/components/istiqam_notice_controller.dart';
-import '../core/design_system/tokens/istiqam_radius.dart';
-import '../core/design_system/tokens/istiqam_spacing.dart';
-import '../core/design_system/theme/istiqam_theme_extension.dart';
+import '../core/design_system/components/daisth_notice_controller.dart';
+import '../core/design_system/tokens/daisth_radius.dart';
+import '../core/design_system/tokens/daisth_spacing.dart';
+import '../core/design_system/theme/daisth_theme_extension.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
@@ -31,7 +31,7 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final extension = theme.extension<IstiqamThemeExtension>()!;
+    final extension = theme.extension<DaisthThemeExtension>()!;
     const dockHeight = 68.0;
     const dockBottomGap = 8.0;
     const dockHorizontalMargin = 14.0;
@@ -42,7 +42,7 @@ class AppShell extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          IstiqamNoticeAnchor(
+          DaisthNoticeAnchor(
             bottomInset: noticeBottomInset,
             child: navigationShell,
           ),
@@ -66,7 +66,7 @@ class AppShell extends StatelessWidget {
                         ? extension.softSurface
                         : theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(
-                      IstiqamRadius.xLarge + 4,
+                      DaisthRadius.xLarge + 4,
                     ),
                     border: Border.all(color: extension.border),
                     boxShadow: [
@@ -81,7 +81,7 @@ class AppShell extends StatelessWidget {
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.all(IstiqamSpacing.xs),
+                  padding: const EdgeInsets.all(DaisthSpacing.xs),
                   child: Row(
                     children: [
                       for (var index = 0; index < _destinations.length; index++)
@@ -143,7 +143,7 @@ class _NavigationItem extends StatelessWidget {
       label: destination.label,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(IstiqamRadius.large),
+        borderRadius: BorderRadius.circular(DaisthRadius.large),
         child: SizedBox(
           height: 60,
           child: Padding(
@@ -174,7 +174,7 @@ class _NavigationItem extends StatelessWidget {
                     color: selected
                         ? theme.colorScheme.primaryContainer
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(IstiqamRadius.pill),
+                    borderRadius: BorderRadius.circular(DaisthRadius.pill),
                   ),
                   child: Text(
                     destination.label,

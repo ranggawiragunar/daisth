@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/design_system/components/istiqam_status_indicator.dart';
-import '../../../../core/design_system/theme/istiqam_theme_extension.dart'
+import '../../../../core/design_system/components/daisth_status_indicator.dart';
+import '../../../../core/design_system/theme/daisth_theme_extension.dart'
     as design;
-import '../../../../core/design_system/tokens/istiqam_radius.dart';
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/tokens/daisth_radius.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../prayer_times/domain/models/prayer_day_schedule.dart';
 import '../../../prayer_times/domain/models/prayer_name.dart';
 import '../../../prayer_times/domain/models/prayer_period_state.dart';
@@ -114,7 +114,7 @@ class RoutineTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final extension = Theme.of(
       context,
-    ).extension<design.IstiqamThemeExtension>()!;
+    ).extension<design.DaisthThemeExtension>()!;
     final entries = _entries();
     return Column(
       children: [
@@ -167,7 +167,7 @@ class _TimelineRow extends StatelessWidget {
       children: [
         Text(entry.title, style: titleStyle),
         if (entry.detail != null) ...[
-          const SizedBox(height: IstiqamSpacing.xxs),
+          const SizedBox(height: DaisthSpacing.xxs),
           Text(
             entry.detail!,
             style: theme.textTheme.bodySmall?.copyWith(
@@ -179,17 +179,17 @@ class _TimelineRow extends StatelessWidget {
     );
 
     final row = Padding(
-      padding: EdgeInsets.only(top: entry.isEvening ? IstiqamSpacing.md : 0),
+      padding: EdgeInsets.only(top: entry.isEvening ? DaisthSpacing.md : 0),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
           color: entry.isCurrent ? currentFill : Colors.transparent,
-          borderRadius: BorderRadius.circular(IstiqamRadius.medium),
+          borderRadius: BorderRadius.circular(DaisthRadius.medium),
         ),
         padding: EdgeInsets.symmetric(
-          horizontal: IstiqamSpacing.xs,
-          vertical: entry.isCurrent ? IstiqamSpacing.xs : 0,
+          horizontal: DaisthSpacing.xs,
+          vertical: entry.isCurrent ? DaisthSpacing.xs : 0,
         ),
         child: IntrinsicHeight(
           child: Row(
@@ -215,7 +215,7 @@ class _TimelineRow extends StatelessWidget {
                 child: Column(
                   children: [
                     const SizedBox(height: 8),
-                    IstiqamStatusIndicator(
+                    DaisthStatusIndicator(
                       status: entry.status,
                       size: entry.isCurrent ? 22 : 18,
                       isCurrent: entry.isCurrent,
@@ -231,15 +231,15 @@ class _TimelineRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: IstiqamSpacing.sm),
+              const SizedBox(width: DaisthSpacing.sm),
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(bottom: entry.isCurrent ? 0 : 13),
                   child: entry.isCurrent
                       ? Padding(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: IstiqamSpacing.md,
-                            vertical: IstiqamSpacing.sm,
+                            horizontal: DaisthSpacing.md,
+                            vertical: DaisthSpacing.sm,
                           ),
                           child: content,
                         )
@@ -262,7 +262,7 @@ class _TimelineRow extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(IstiqamRadius.medium),
+          borderRadius: BorderRadius.circular(DaisthRadius.medium),
           child: row,
         ),
       ),

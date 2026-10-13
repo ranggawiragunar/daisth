@@ -1,27 +1,33 @@
-# Istiqam Asset Guide — v2 Complete
+# Daisth Asset Guide — Asset Pack v3
 
-This folder is the visual source of truth for the Flutter project.
+`assets/README_ASSETS.md` inventories the user-provided Daisth Asset Pack v3.
+Use its supplied files as the source for brand treatments; do not recreate the
+mark or launcher artwork.
 
-## Rules
-- Do not use old v1 illustration files after migrating to this pack.
-- Do not substitute approved artwork with emoji, stock imagery, random network assets, or temporary placeholders.
-- Raster illustrations must be kept at source resolution in the repository.
-- Use `today_hero_light.png` and `today_hero_dark.png` according to the active theme.
-- Brand masters and motifs are SVG/vector sources.
-- Empty-state illustrations include both SVG source and 2048×1536 PNG fallback.
-- Functional UI icons remain a consistent icon-library concern (currently Phosphor), not bitmap assets.
+## Brand assets
 
-## Main illustration mapping
-- Today hero: `assets/illustrations/today_hero_light.png` / `today_hero_dark.png`
-- Routine/progress: `assets/illustrations/routine_progress.png`
-- Reflection: `assets/illustrations/reflection.png`
-- Reader: `assets/illustrations/reader.png`
-- Onboarding: `assets/illustrations/onboarding_scene.png`
+- Mark: `assets/brand/daisth_mark.png` / `.svg`
+- Wordmark: `assets/brand/daisth_wordmark.png` / `.svg`
+- Lockup and tagline: `assets/brand/daisth_lockup.png` / `.svg`
+- App asset paths: `DaisthAssets` in `lib/core/design_system/assets/`
 
-## Empty states
-- Routines
-- History
-- Settings
-- No location
-- Error state
-- Feature coming soon
+## Platform assets
+
+- Launcher masters and Android monochrome/notification sources: `assets/launcher/`
+- Light and dark launch screens: `assets/splash/`
+- Mosque brand hero references: `assets/illustrations/daisth_mosque_hero_light.png` and `daisth_mosque_hero_dark.png`
+
+The launcher icon uses the supplied light master, the adaptive foreground uses
+the supplied transparent foreground, and Android uses the provided
+monochrome-vector rendering for themed icons plus the separate transparent
+notification symbol for its small icon.
+
+## Feature artwork
+
+Keep the existing Today hero, routine progress, reflection, Reader, onboarding,
+empty-state, and motif assets. They support feature content and do not need to
+change with the product name. Today continues to use its current light/dark
+hero; the mosque hero artwork remains available without changing Mosque Finder.
+
+Functional interface icons use Phosphor. Do not substitute them with bitmap
+brand artwork.

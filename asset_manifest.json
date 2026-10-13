@@ -1,21 +1,16 @@
 {
   "illustrations": {
-    "today_hero_light.png": {
-      "width": 1672,
-      "height": 941,
+    "daisth_mosque_hero_dark.png": {
+      "width": 1920,
+      "height": 1080,
       "format": "PNG"
     },
-    "today_hero_dark.png": {
-      "width": 1672,
-      "height": 941,
+    "daisth_mosque_hero_light.png": {
+      "width": 1920,
+      "height": 1080,
       "format": "PNG"
     },
-    "routine_progress.png": {
-      "width": 1448,
-      "height": 1086,
-      "format": "PNG"
-    },
-    "reflection.png": {
+    "onboarding_scene.png": {
       "width": 1448,
       "height": 1086,
       "format": "PNG"
@@ -25,103 +20,182 @@
       "height": 1086,
       "format": "PNG"
     },
-    "onboarding_scene.png": {
+    "reflection.png": {
       "width": 1448,
       "height": 1086,
+      "format": "PNG"
+    },
+    "routine_progress.png": {
+      "width": 1448,
+      "height": 1086,
+      "format": "PNG"
+    },
+    "today_hero_dark.png": {
+      "width": 1672,
+      "height": 941,
+      "format": "PNG"
+    },
+    "today_hero_light.png": {
+      "width": 1672,
+      "height": 941,
       "format": "PNG"
     }
   },
   "empty_states": {
-    "empty_routines.svg": {
-      "type": "vector",
-      "viewBox": "0 0 2048 1536"
-    },
-    "empty_routines_2048.png": {
-      "width": 2048,
-      "height": 1536,
-      "type": "raster-preview"
-    },
     "empty_history.svg": {
-      "type": "vector",
-      "viewBox": "0 0 2048 1536"
+      "type": "vector"
     },
     "empty_history_2048.png": {
       "width": 2048,
       "height": 1536,
-      "type": "raster-preview"
+      "format": "PNG"
+    },
+    "empty_routines.svg": {
+      "type": "vector"
+    },
+    "empty_routines_2048.png": {
+      "width": 2048,
+      "height": 1536,
+      "format": "PNG"
     },
     "empty_settings.svg": {
-      "type": "vector",
-      "viewBox": "0 0 2048 1536"
+      "type": "vector"
     },
     "empty_settings_2048.png": {
       "width": 2048,
       "height": 1536,
-      "type": "raster-preview"
-    },
-    "no_location.svg": {
-      "type": "vector",
-      "viewBox": "0 0 2048 1536"
-    },
-    "no_location_2048.png": {
-      "width": 2048,
-      "height": 1536,
-      "type": "raster-preview"
+      "format": "PNG"
     },
     "error_state.svg": {
-      "type": "vector",
-      "viewBox": "0 0 2048 1536"
+      "type": "vector"
     },
     "error_state_2048.png": {
       "width": 2048,
       "height": 1536,
-      "type": "raster-preview"
+      "format": "PNG"
     },
     "feature_coming_soon.svg": {
-      "type": "vector",
-      "viewBox": "0 0 2048 1536"
+      "type": "vector"
     },
     "feature_coming_soon_2048.png": {
       "width": 2048,
       "height": 1536,
-      "type": "raster-preview"
+      "format": "PNG"
+    },
+    "no_location.svg": {
+      "type": "vector"
+    },
+    "no_location_2048.png": {
+      "width": 2048,
+      "height": 1536,
+      "format": "PNG"
     }
   },
   "brand": {
-    "istiqam_adaptive_foreground.svg": {
+    "daisth_lockup.png": {
+      "width": 2048,
+      "height": 1024,
+      "format": "PNG"
+    },
+    "daisth_lockup.svg": {
       "type": "vector"
     },
-    "istiqam_adaptive_background.svg": {
+    "daisth_mark.png": {
+      "width": 2048,
+      "height": 2048,
+      "format": "PNG"
+    },
+    "daisth_mark.svg": {
       "type": "vector"
     },
-    "istiqam_mark.svg": {
-      "type": "vector"
+    "daisth_wordmark.png": {
+      "width": 2048,
+      "height": 512,
+      "format": "PNG"
     },
-    "istiqam_app_icon_master.svg": {
+    "daisth_wordmark.svg": {
       "type": "vector"
-    },
-    "istiqam_app_icon_master_1024.png": {
+    }
+  },
+  "launcher": {
+    "app_icon_dark.png": {
       "width": 1024,
-      "height": 1024
+      "height": 1024,
+      "format": "PNG"
     },
-    "istiqam_adaptive_foreground_1024.png": {
+    "app_icon_light.png": {
       "width": 1024,
-      "height": 1024
+      "height": 1024,
+      "format": "PNG"
     },
-    "istiqam_mark_1024.png": {
+    "app_icon_monochrome.png": {
       "width": 1024,
-      "height": 1024
+      "height": 1024,
+      "format": "PNG"
+    },
+    "daisth_foreground.png": {
+      "width": 1080,
+      "height": 1080,
+      "format": "PNG"
+    },
+    "daisth_monochrome.svg": {
+      "type": "vector"
+    },
+    "daisth_monochrome_android.png": {
+      "width": 1024,
+      "height": 1024,
+      "format": "PNG"
+    },
+    "daisth_notification_small.png": {
+      "width": 96,
+      "height": 96,
+      "format": "PNG"
+    },
+    "daisth_notification_small.svg": {
+      "type": "vector"
+    }
+  },
+  "splash": {
+    "splash_dark.png": {
+      "width": 1242,
+      "height": 2688,
+      "format": "PNG"
+    },
+    "splash_light.png": {
+      "width": 1242,
+      "height": 2688,
+      "format": "PNG"
     }
   },
   "motifs": {
-    "istiqam_line_motif.svg": {
+    "daisth_geometric_pattern.svg": {
       "type": "vector"
     },
-    "istiqam_geometric_pattern.svg": {
+    "daisth_line_motif.svg": {
       "type": "vector"
     },
-    "istiqam_soft_arch_background.svg": {
+    "daisth_soft_arch_background.svg": {
       "type": "vector"
+    }
+  },
+  "references": {
+    "daisth_asset_pack_preview.jpg": {
+      "width": 1200,
+      "height": 1040,
+      "format": "JPG"
+    },
+    "daisth_brand_board.png": {
+      "width": 1536,
+      "height": 1024,
+      "format": "PNG"
+    },
+    "palette.txt": {
+      "type": "reference"
+    },
+    "tagline_reference.png": {
+      "width": 2048,
+      "height": 512,
+      "format": "PNG"
     }
   }
 }

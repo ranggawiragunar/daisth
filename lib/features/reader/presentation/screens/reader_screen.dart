@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../../app/router/route_paths.dart';
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../domain/models/reader_content.dart';
 import '../view_models/reader_view_model.dart';
 import '../widgets/reader_display_controls.dart';
@@ -76,16 +76,16 @@ class _ReaderScreenState extends State<ReaderScreen> {
               ),
             ),
           ),
-          const SizedBox(width: IstiqamSpacing.xs),
+          const SizedBox(width: DaisthSpacing.xs),
         ],
       ),
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
-            IstiqamSpacing.xl,
-            IstiqamSpacing.lg,
-            IstiqamSpacing.xl,
+            DaisthSpacing.xl,
+            DaisthSpacing.lg,
+            DaisthSpacing.xl,
             88,
           ),
           child: Center(
@@ -100,7 +100,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: IstiqamSpacing.xs),
+                  const SizedBox(height: DaisthSpacing.xs),
                   Text(
                     content.context,
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -108,7 +108,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     ),
                   ),
                   if (content.subtitle != null) ...[
-                    const SizedBox(height: IstiqamSpacing.xs),
+                    const SizedBox(height: DaisthSpacing.xs),
                     Text(
                       content.subtitle!,
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -116,13 +116,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: IstiqamSpacing.massive),
+                  const SizedBox(height: DaisthSpacing.massive),
                   for (var index = 0; index < content.sections.length; index++)
                     Padding(
                       padding: EdgeInsets.only(
                         bottom: index == content.sections.length - 1
                             ? 0
-                            : IstiqamSpacing.section,
+                            : DaisthSpacing.section,
                       ),
                       child: ReaderTextSection(
                         section: content.sections[index],
@@ -131,7 +131,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                         showTranslation: _viewModel.translationVisible,
                       ),
                     ),
-                  const SizedBox(height: IstiqamSpacing.section),
+                  const SizedBox(height: DaisthSpacing.section),
                   Text(
                     content.sourceLabel,
                     textAlign: TextAlign.center,
@@ -175,7 +175,7 @@ class ReaderUnavailableScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(IstiqamSpacing.xl),
+            padding: const EdgeInsets.all(DaisthSpacing.xl),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -184,13 +184,13 @@ class ReaderUnavailableScreen extends StatelessWidget {
                   size: 40,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: IstiqamSpacing.lg),
+                const SizedBox(height: DaisthSpacing.lg),
                 Text(
                   'Bacaan tidak tersedia',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleLarge,
                 ),
-                const SizedBox(height: IstiqamSpacing.sm),
+                const SizedBox(height: DaisthSpacing.sm),
                 Text(
                   'Bacaan ini belum tersedia untuk routine ini.',
                   textAlign: TextAlign.center,

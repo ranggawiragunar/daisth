@@ -1,5 +1,5 @@
-name: istiqam
-description: "A calm Muslim routine companion."
+name: daisth
+description: "Daisth — Stay consistent in what matters."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -71,6 +71,9 @@ flutter:
     - assets/brand/
     - assets/illustrations/
     - assets/empty_states/
+    - assets/launcher/
+    - assets/motifs/
+    - assets/splash/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -98,10 +101,11 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/brand/istiqam_app_icon_master_1024.png
+  image_path: assets/launcher/app_icon_light.png
   remove_alpha_ios: true
-  adaptive_icon_background: '#1E3A34'
-  adaptive_icon_foreground: assets/brand/istiqam_adaptive_foreground_1024.png
+  adaptive_icon_background: '#FAF7F0'
+  adaptive_icon_foreground: assets/launcher/daisth_foreground.png
+  adaptive_icon_monochrome: assets/launcher/daisth_monochrome_android.png
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/features/routines/data/demo/routine_demo_data.dart';
-import 'package:istiqam/features/routines/domain/models/routine.dart';
-import 'package:istiqam/features/routines/domain/models/routine_status.dart';
-import 'package:istiqam/features/routines/domain/use_cases/mark_routine_complete_use_case.dart';
-import 'package:istiqam/features/routines/domain/use_cases/mark_routine_not_today_use_case.dart';
-import 'package:istiqam/features/routines/domain/use_cases/resolve_routine_status_use_case.dart';
-import 'package:istiqam/features/routines/domain/use_cases/set_routine_step_completion_use_case.dart';
-import 'package:istiqam/features/routines/presentation/view_models/routine_detail_view_model.dart';
+import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
+import 'package:daisth/features/routines/domain/models/routine.dart';
+import 'package:daisth/features/routines/domain/models/routine_status.dart';
+import 'package:daisth/features/routines/domain/use_cases/mark_routine_complete_use_case.dart';
+import 'package:daisth/features/routines/domain/use_cases/mark_routine_not_today_use_case.dart';
+import 'package:daisth/features/routines/domain/use_cases/resolve_routine_status_use_case.dart';
+import 'package:daisth/features/routines/domain/use_cases/set_routine_step_completion_use_case.dart';
+import 'package:daisth/features/routines/presentation/view_models/routine_detail_view_model.dart';
 
 import '../support/test_persistence.dart';
 

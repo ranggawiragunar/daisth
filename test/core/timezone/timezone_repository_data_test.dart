@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/timezone/data/repositories/timezone_repository_data.dart';
-import 'package:istiqam/core/timezone/data/services/timezone_flutter_service.dart';
+import 'package:daisth/core/timezone/data/repositories/timezone_repository_data.dart';
+import 'package:daisth/core/timezone/data/services/timezone_flutter_service.dart';
 import 'package:timezone/timezone.dart' as timezone;
 
 void main() {

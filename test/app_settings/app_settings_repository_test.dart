@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/app_settings/domain/models/app_settings.dart';
-import 'package:istiqam/core/app_settings/data/repositories/app_settings_repository_data.dart';
-import 'package:istiqam/core/app_settings/data/services/app_settings_sqlite_service.dart';
+import 'package:daisth/core/app_settings/domain/models/app_settings.dart';
+import 'package:daisth/core/app_settings/data/repositories/app_settings_repository_data.dart';
+import 'package:daisth/core/app_settings/data/services/app_settings_sqlite_service.dart';
 
 import '../support/test_persistence.dart';
 

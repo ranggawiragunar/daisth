@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/core/maps/services/map_navigation_service.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/core/maps/services/map_navigation_service.dart';
 
 void main() {
   test('builds encoded walking directions URL', () {

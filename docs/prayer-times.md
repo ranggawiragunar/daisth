@@ -1,6 +1,6 @@
 # Prayer times
 
-Istiqam calculates the daily schedule on device with `adhan_dart` and the
+Daisth calculates the daily schedule on device with `adhan_dart` and the
 Indonesia (KEMENAG) calculation preset. Shafi is the default Asr method. The
 calculation includes Sunrise for future daytime-window logic, but Sunrise is
 not a mandatory prayer routine.

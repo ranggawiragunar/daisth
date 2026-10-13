@@ -1,14 +1,14 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/features/reminders/data/mappers/reminder_mapper.dart';
-import 'package:istiqam/features/reminders/data/models/reminder_schedule_data.dart';
-import 'package:istiqam/features/reminders/data/repositories/reminder_repository_data.dart';
-import 'package:istiqam/features/reminders/data/services/reminder_notification_gateway.dart';
-import 'package:istiqam/features/reminders/domain/models/exact_alarm_status.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder_permission_status.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder_priority.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder_scheduling_mode.dart';
+import 'package:daisth/features/reminders/data/mappers/reminder_mapper.dart';
+import 'package:daisth/features/reminders/data/models/reminder_schedule_data.dart';
+import 'package:daisth/features/reminders/data/repositories/reminder_repository_data.dart';
+import 'package:daisth/features/reminders/data/services/reminder_notification_gateway.dart';
+import 'package:daisth/features/reminders/domain/models/exact_alarm_status.dart';
+import 'package:daisth/features/reminders/domain/models/reminder.dart';
+import 'package:daisth/features/reminders/domain/models/reminder_permission_status.dart';
+import 'package:daisth/features/reminders/domain/models/reminder_priority.dart';
+import 'package:daisth/features/reminders/domain/models/reminder_scheduling_mode.dart';
 
 void main() {
   test('initializes gateway and maps notification permissions', () async {
@@ -82,7 +82,7 @@ void main() {
   );
 
   test(
-    'cancels one reminder, reminders for one date, and Istiqam only',
+    'cancels one reminder, reminders for one date, and Daisth only',
     () async {
       final gateway = _Gateway();
       final repository = _repository(gateway);
@@ -113,7 +113,7 @@ void main() {
         ),
         isTrue,
       );
-      await repository.cancelAllIstiqamReminders();
+      await repository.cancelAllDaisthReminders();
 
       expect(gateway.pending.map((request) => request.id), [9000]);
       expect(gateway.cancelled, hasLength(3));

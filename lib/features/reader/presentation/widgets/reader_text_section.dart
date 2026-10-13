@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../domain/models/reader_section.dart';
 import 'reader_typography.dart';
 
@@ -29,7 +29,7 @@ class ReaderTextSection extends StatelessWidget {
       children: [
         if (section.heading != null) ...[
           Text(section.heading!, style: theme.textTheme.titleSmall),
-          const SizedBox(height: IstiqamSpacing.lg),
+          const SizedBox(height: DaisthSpacing.lg),
         ],
         if (hasArabic)
           SelectableText(
@@ -40,7 +40,7 @@ class ReaderTextSection extends StatelessWidget {
             style: ReaderTypography.arabic(context, textScale),
           ),
         if (showTransliteration && section.transliteration != null) ...[
-          const SizedBox(height: IstiqamSpacing.xl),
+          const SizedBox(height: DaisthSpacing.xl),
           SelectableText(
             section.transliteration!,
             key: const ValueKey('reader-transliteration'),
@@ -55,7 +55,7 @@ class ReaderTextSection extends StatelessWidget {
           ),
         ],
         if (showTranslation && section.translation != null) ...[
-          const SizedBox(height: IstiqamSpacing.lg),
+          const SizedBox(height: DaisthSpacing.lg),
           SelectableText(
             section.translation!,
             key: const ValueKey('reader-translation'),
@@ -69,7 +69,7 @@ class ReaderTextSection extends StatelessWidget {
           ),
         ],
         if (section.note != null) ...[
-          const SizedBox(height: IstiqamSpacing.md),
+          const SizedBox(height: DaisthSpacing.md),
           SelectableText(
             section.note!,
             textDirection: TextDirection.ltr,

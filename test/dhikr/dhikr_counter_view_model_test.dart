@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/features/dhikr/data/demo/dhikr_demo_data.dart';
-import 'package:istiqam/features/dhikr/presentation/view_models/dhikr_counter_view_model.dart';
+import 'package:daisth/features/dhikr/data/demo/dhikr_demo_data.dart';
+import 'package:daisth/features/dhikr/presentation/view_models/dhikr_counter_view_model.dart';
 
 void main() {
   test('starts with Subhanallah at zero', () {

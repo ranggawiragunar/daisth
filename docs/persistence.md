@@ -1,7 +1,7 @@
 # Local persistence
 
-Istiqam stores local app state in `istiqam.db`, managed by
-`IstiqamDatabaseService`. The database currently uses schema version 1 and
+Daisth stores local app state in `daisth.db`, managed by
+`DaisthDatabaseService`. The database currently uses schema version 1 and
 SQLite migrations through `onCreate` and `onUpgrade`.
 
 ## Stored data
@@ -28,6 +28,11 @@ Schema changes must increment the database version and apply additive
 migrations. Do not drop user data as part of an upgrade. The SQLite database
 is the source of truth for daily routine progress and the two persisted app
 preferences.
+
+The development rebrand changed the database filename and application
+identifier before release. No copy or migration from the previous development
+database is included; a rebranded development install starts with a fresh local
+database while retaining schema version 1.
 
 This phase does not persist Dhikr counter position, location coordinates,
 mosque results or cache entries, Reader presentation state, or remote account

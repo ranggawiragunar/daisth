@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 
 class DhikrSequenceProgress extends StatelessWidget {
   const DhikrSequenceProgress({
@@ -30,7 +30,7 @@ class DhikrSequenceProgress extends StatelessWidget {
             context,
           ).textTheme.labelMedium?.copyWith(color: colors.onSurfaceVariant),
         ),
-        const SizedBox(height: IstiqamSpacing.sm),
+        const SizedBox(height: DaisthSpacing.sm),
         Row(
           children: [
             for (var index = 0; index < itemCount; index++) ...[
@@ -49,7 +49,7 @@ class DhikrSequenceProgress extends StatelessWidget {
                 ),
               ),
               if (index < itemCount - 1)
-                const SizedBox(width: IstiqamSpacing.xs),
+                const SizedBox(width: DaisthSpacing.xs),
             ],
           ],
         ),

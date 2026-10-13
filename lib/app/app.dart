@@ -4,17 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/app_settings/domain/models/app_settings.dart';
-import '../core/design_system/components/istiqam_notice.dart';
-import '../core/design_system/components/istiqam_notice_controller.dart';
-import '../core/design_system/theme/istiqam_theme.dart';
+import '../core/design_system/components/daisth_notice.dart';
+import '../core/design_system/components/daisth_notice_controller.dart';
+import '../core/design_system/theme/daisth_theme.dart';
 import '../core/location/domain/repositories/location_repository.dart';
 import 'app_preferences_scope.dart';
 import 'dependencies/app_dependencies.dart';
 import 'router/app_router.dart';
 import 'router/reminder_notification_route_resolver.dart';
 
-class IstiqamApp extends StatefulWidget {
-  const IstiqamApp({
+class DaisthApp extends StatefulWidget {
+  const DaisthApp({
     this.startTodayClock = true,
     this.locationRepository,
     this.dependencies,
@@ -26,12 +26,12 @@ class IstiqamApp extends StatefulWidget {
   final AppDependencies? dependencies;
 
   @override
-  State<IstiqamApp> createState() => _IstiqamAppState();
+  State<DaisthApp> createState() => _DaisthAppState();
 }
 
-class _IstiqamAppState extends State<IstiqamApp> with WidgetsBindingObserver {
+class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
   ThemeMode _themeMode = ThemeMode.system;
-  late final IstiqamNoticeController _noticeController;
+  late final DaisthNoticeController _noticeController;
   late final GoRouter _router;
   late final AppDependencies _dependencies;
 
@@ -39,7 +39,7 @@ class _IstiqamAppState extends State<IstiqamApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _noticeController = IstiqamNoticeController();
+    _noticeController = DaisthNoticeController();
     _dependencies =
         widget.dependencies ??
         AppDependencies(
@@ -98,7 +98,7 @@ class _IstiqamAppState extends State<IstiqamApp> with WidgetsBindingObserver {
       if (mounted) {
         _noticeController.show(
           context,
-          type: IstiqamNoticeType.error,
+          type: DaisthNoticeType.error,
           title: 'Tema belum dapat disimpan.',
         );
       }
@@ -123,16 +123,16 @@ class _IstiqamAppState extends State<IstiqamApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Istiqam',
+      title: 'Daisth',
       debugShowCheckedModeBanner: false,
-      theme: IstiqamTheme.light,
-      darkTheme: IstiqamTheme.dark,
+      theme: DaisthTheme.light,
+      darkTheme: DaisthTheme.dark,
       themeMode: _themeMode,
       routerConfig: _router,
       builder: (context, child) => AppPreferencesScope(
         themeMode: _themeMode,
         onThemeModeChanged: _setThemeMode,
-        child: IstiqamNoticeScope(
+        child: DaisthNoticeScope(
           controller: _noticeController,
           child: child ?? const SizedBox.shrink(),
         ),

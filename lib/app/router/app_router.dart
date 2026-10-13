@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/design_system/components/istiqam_notice_controller.dart';
+import '../../core/design_system/components/daisth_notice_controller.dart';
 import '../../app/dependencies/app_dependencies.dart';
 import '../../features/history/presentation/history_placeholder_screen.dart';
 import '../../features/dhikr/data/demo/dhikr_demo_data.dart';
@@ -23,7 +23,7 @@ import 'route_paths.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'app-root');
 
 GoRouter createAppRouter({
-  required IstiqamNoticeController noticeController,
+  required DaisthNoticeController noticeController,
   required AppDependencies dependencies,
   String initialLocation = RoutePaths.today,
 }) => GoRouter(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
-import '../../../../core/design_system/tokens/istiqam_radius.dart';
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/tokens/daisth_radius.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../view_models/reader_view_model.dart';
 
 Future<void> showReaderDisplayControls(
@@ -30,20 +30,20 @@ class _ReaderControlsSheet extends StatelessWidget {
       builder: (context, _) => Material(
         color: colors.surface,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(IstiqamRadius.xLarge + 4),
+          top: Radius.circular(DaisthRadius.xLarge + 4),
         ),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(IstiqamRadius.xLarge + 4),
+              top: Radius.circular(DaisthRadius.xLarge + 4),
             ),
             border: Border.all(color: colors.outlineVariant),
           ),
           padding: EdgeInsets.fromLTRB(
-            IstiqamSpacing.xl,
-            IstiqamSpacing.md,
-            IstiqamSpacing.xl,
-            IstiqamSpacing.xl + MediaQuery.viewInsetsOf(context).bottom,
+            DaisthSpacing.xl,
+            DaisthSpacing.md,
+            DaisthSpacing.xl,
+            DaisthSpacing.xl + MediaQuery.viewInsetsOf(context).bottom,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -55,11 +55,11 @@ class _ReaderControlsSheet extends StatelessWidget {
                   height: 4,
                   decoration: BoxDecoration(
                     color: colors.outlineVariant,
-                    borderRadius: BorderRadius.circular(IstiqamRadius.pill),
+                    borderRadius: BorderRadius.circular(DaisthRadius.pill),
                   ),
                 ),
               ),
-              const SizedBox(height: IstiqamSpacing.lg),
+              const SizedBox(height: DaisthSpacing.lg),
               Row(
                 children: [
                   Expanded(
@@ -75,7 +75,7 @@ class _ReaderControlsSheet extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: IstiqamSpacing.md),
+              const SizedBox(height: DaisthSpacing.md),
               SwitchListTile.adaptive(
                 key: const ValueKey('reader-transliteration-toggle'),
                 contentPadding: EdgeInsets.zero,
@@ -90,12 +90,12 @@ class _ReaderControlsSheet extends StatelessWidget {
                 value: viewModel.translationVisible,
                 onChanged: viewModel.setTranslationVisible,
               ),
-              const SizedBox(height: IstiqamSpacing.sm),
+              const SizedBox(height: DaisthSpacing.sm),
               Text('Ukuran teks', style: theme.textTheme.titleSmall),
-              const SizedBox(height: IstiqamSpacing.sm),
+              const SizedBox(height: DaisthSpacing.sm),
               Wrap(
-                spacing: IstiqamSpacing.sm,
-                runSpacing: IstiqamSpacing.sm,
+                spacing: DaisthSpacing.sm,
+                runSpacing: DaisthSpacing.sm,
                 children: [
                   for (final scale in ReaderViewModel.supportedTextScales)
                     ChoiceChip(

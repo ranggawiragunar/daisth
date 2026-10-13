@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/features/prayer_times/data/mappers/prayer_time_mapper.dart';
-import 'package:istiqam/features/prayer_times/data/models/prayer_day_schedule_data.dart';
-import 'package:istiqam/features/prayer_times/data/repositories/prayer_time_repository_data.dart';
-import 'package:istiqam/features/prayer_times/data/services/prayer_time_adhan_service.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_calculation_settings.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_day_schedule.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/features/prayer_times/data/mappers/prayer_time_mapper.dart';
+import 'package:daisth/features/prayer_times/data/models/prayer_day_schedule_data.dart';
+import 'package:daisth/features/prayer_times/data/repositories/prayer_time_repository_data.dart';
+import 'package:daisth/features/prayer_times/data/services/prayer_time_adhan_service.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_calculation_settings.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_day_schedule.dart';
 
 void main() {
   test('repository maps service data into a domain schedule', () async {

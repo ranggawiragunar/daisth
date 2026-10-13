@@ -6,14 +6,14 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../app/router/route_paths.dart';
-import '../../../core/design_system/components/istiqam_button.dart';
-import '../../../core/design_system/components/istiqam_notice.dart';
-import '../../../core/design_system/components/istiqam_notice_controller.dart';
-import '../../../core/design_system/components/istiqam_progress_bar.dart';
-import '../../../core/design_system/components/istiqam_surface.dart';
-import '../../../core/design_system/theme/istiqam_theme_extension.dart';
-import '../../../core/design_system/tokens/istiqam_radius.dart';
-import '../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../core/design_system/components/daisth_button.dart';
+import '../../../core/design_system/components/daisth_notice.dart';
+import '../../../core/design_system/components/daisth_notice_controller.dart';
+import '../../../core/design_system/components/daisth_progress_bar.dart';
+import '../../../core/design_system/components/daisth_surface.dart';
+import '../../../core/design_system/theme/daisth_theme_extension.dart';
+import '../../../core/design_system/tokens/daisth_radius.dart';
+import '../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../prayer_times/domain/models/prayer_name.dart';
 import '../../prayer_times/presentation/prayer_schedule_session.dart';
 import '../../prayer_times/presentation/prayer_time_presentation.dart';
@@ -42,7 +42,7 @@ class RoutineDetailScreen extends StatefulWidget {
   });
 
   final Routine routine;
-  final IstiqamNoticeController noticeController;
+  final DaisthNoticeController noticeController;
   final RoutineRecordRepository routineRecordRepository;
   final SetRoutineStepCompletionUseCase setRoutineStepCompletion;
   final MarkRoutineCompleteUseCase markRoutineComplete;
@@ -88,7 +88,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
       _lastDisplayedError = error;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _showNotice(type: IstiqamNoticeType.error, title: error);
+          _showNotice(type: DaisthNoticeType.error, title: error);
         }
       });
     } else if (error == null) {
@@ -142,7 +142,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   }
 
   void _showNotice({
-    required IstiqamNoticeType type,
+    required DaisthNoticeType type,
     required String title,
     String? message,
   }) {
@@ -162,7 +162,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   void _announceCompletion() {
     HapticFeedback.mediumImpact();
     _showNotice(
-      type: IstiqamNoticeType.success,
+      type: DaisthNoticeType.success,
       title: '${_routine.title.replaceFirst('Sholat ', '')} recorded',
     );
   }
@@ -171,7 +171,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     if (!await _viewModel.markAllRemaining()) return;
     HapticFeedback.mediumImpact();
     _showNotice(
-      type: IstiqamNoticeType.success,
+      type: DaisthNoticeType.success,
       title: '${_routine.title} recorded',
     );
   }
@@ -180,7 +180,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     if (!await _viewModel.markRequiredStepsDone()) return;
     HapticFeedback.mediumImpact();
     _showNotice(
-      type: IstiqamNoticeType.success,
+      type: DaisthNoticeType.success,
       title: '${_routine.title.replaceFirst('Sholat ', '')} recorded',
     );
   }
@@ -191,7 +191,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     final didSave = await _viewModel.markNotToday(reason: result.reason);
     if (!didSave) return;
     _showNotice(
-      type: IstiqamNoticeType.neutral,
+      type: DaisthNoticeType.neutral,
       title: 'Status routine diperbarui',
       message: result.reason,
     );
@@ -202,15 +202,15 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     step: step,
     onToggle: () => unawaited(_toggleStep(step.id)),
     onOpenReading: () =>
-        _showNotice(type: IstiqamNoticeType.info, title: 'Reader segera hadir'),
+        _showNotice(type: DaisthNoticeType.info, title: 'Reader segera hadir'),
   );
 
   void _openReader() =>
-      _showNotice(type: IstiqamNoticeType.info, title: 'Reader segera hadir');
+      _showNotice(type: DaisthNoticeType.info, title: 'Reader segera hadir');
 
   void _onMenuSelected(String value) {
     _showNotice(
-      type: IstiqamNoticeType.info,
+      type: DaisthNoticeType.info,
       title: 'Feature coming soon',
       message: value == 'edit' ? 'Edit Routine akan tersedia nanti.' : null,
     );
@@ -219,7 +219,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final extension = theme.extension<IstiqamThemeExtension>()!;
+    final extension = theme.extension<DaisthThemeExtension>()!;
     final hasIllustration = _routine.illustrationAsset != null;
     final metadata = [
       _scheduledPrayerTime ?? _routine.preferredTime,
@@ -239,10 +239,10 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.fromLTRB(
-                        IstiqamSpacing.xl,
-                        IstiqamSpacing.md,
-                        IstiqamSpacing.xl,
-                        IstiqamSpacing.xxl,
+                        DaisthSpacing.xl,
+                        DaisthSpacing.md,
+                        DaisthSpacing.xl,
+                        DaisthSpacing.xxl,
                       ),
                       child: Center(
                         child: ConstrainedBox(
@@ -267,7 +267,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                         ),
                                         if (metadata.isNotEmpty) ...[
                                           const SizedBox(
-                                            height: IstiqamSpacing.xs,
+                                            height: DaisthSpacing.xs,
                                           ),
                                           Text(
                                             metadata,
@@ -283,21 +283,21 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                     ),
                                   ),
                                   if (hasIllustration) ...[
-                                    const SizedBox(width: IstiqamSpacing.md),
+                                    const SizedBox(width: DaisthSpacing.md),
                                     _RoutineIllustration(
                                       asset: _routine.illustrationAsset!,
                                     ),
                                   ],
                                 ],
                               ),
-                              const SizedBox(height: IstiqamSpacing.md),
+                              const SizedBox(height: DaisthSpacing.md),
                               Text(
                                 _routine.description,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              const SizedBox(height: IstiqamSpacing.xl),
+                              const SizedBox(height: DaisthSpacing.xl),
                               _RoutineProgressSummary(
                                 status: _statusLabel,
                                 completedRequired: _completedRequiredCount,
@@ -307,26 +307,26 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                     : _completedRequiredCount / _requiredCount,
                                 notTodayReason: _notTodayReason,
                               ),
-                              const SizedBox(height: IstiqamSpacing.section),
+                              const SizedBox(height: DaisthSpacing.section),
                               Text(
                                 'Rangkaian',
                                 style: theme.textTheme.titleMedium,
                               ),
-                              const SizedBox(height: IstiqamSpacing.md),
+                              const SizedBox(height: DaisthSpacing.md),
                               RoutineStepsCard(
                                 steps: _steps,
                                 onToggle: _toggleStep,
                                 onOpenStep: _openStep,
                               ),
                               if (_guidanceItems.isNotEmpty) ...[
-                                const SizedBox(height: IstiqamSpacing.section),
+                                const SizedBox(height: DaisthSpacing.section),
                                 RoutineGuidanceSection(
                                   items: _guidanceItems,
                                   onTap: _onGuidanceTap,
                                 ),
                               ],
                               if (_isMandatoryPrayer) ...[
-                                const SizedBox(height: IstiqamSpacing.section),
+                                const SizedBox(height: DaisthSpacing.section),
                                 RoutineHelpfulActions(
                                   onTap: _openHelpfulAction,
                                   prayerCompleted: _allRequiredDone,
@@ -403,7 +403,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     }
     if (!_allRequiredDone) {
       _showNotice(
-        type: IstiqamNoticeType.info,
+        type: DaisthNoticeType.info,
         title: 'Selesaikan sholat terlebih dahulu',
       );
       return;
@@ -411,7 +411,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     if (_steps.any(
       (step) => step.id == 'post-prayer-dhikr' && step.completed,
     )) {
-      _showNotice(type: IstiqamNoticeType.info, title: 'Dzikir sudah tercatat');
+      _showNotice(type: DaisthNoticeType.info, title: 'Dzikir sudah tercatat');
       return;
     }
     final completed = await context.push<bool>(
@@ -421,7 +421,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     await _viewModel.completeOptionalStep('post-prayer-dhikr');
   }
 
-  Widget _buildBottomActions(ThemeData theme, IstiqamThemeExtension extension) {
+  Widget _buildBottomActions(ThemeData theme, DaisthThemeExtension extension) {
     final isSimplePrayer = _isMandatoryPrayer;
     final showPrimary =
         _completionState != routine_domain.RoutineStatus.notToday &&
@@ -446,10 +446,10 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
           border: Border(top: BorderSide(color: extension.divider)),
         ),
         padding: const EdgeInsets.fromLTRB(
-          IstiqamSpacing.xl,
-          IstiqamSpacing.md,
-          IstiqamSpacing.xl,
-          IstiqamSpacing.sm,
+          DaisthSpacing.xl,
+          DaisthSpacing.md,
+          DaisthSpacing.xl,
+          DaisthSpacing.sm,
         ),
         child: Center(
           child: ConstrainedBox(
@@ -460,7 +460,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                 if (showPrimary)
                   SizedBox(
                     width: double.infinity,
-                    child: IstiqamButton(
+                    child: DaisthButton(
                       label: label,
                       onPressed: _viewModel.isLoading
                           ? null
@@ -470,7 +470,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                     ),
                   ),
                 if (showNotToday) ...[
-                  if (showPrimary) const SizedBox(height: IstiqamSpacing.xs),
+                  if (showPrimary) const SizedBox(height: DaisthSpacing.xs),
                   TextButton(
                     onPressed: _viewModel.isLoading ? null : _markNotToday,
                     style: TextButton.styleFrom(
@@ -541,15 +541,15 @@ class _RoutineIllustration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final extension = Theme.of(context).extension<IstiqamThemeExtension>()!;
+    final extension = Theme.of(context).extension<DaisthThemeExtension>()!;
     return Container(
       width: 76,
       height: 76,
       decoration: BoxDecoration(
         color: extension.artMatte,
-        borderRadius: BorderRadius.circular(IstiqamRadius.large),
+        borderRadius: BorderRadius.circular(DaisthRadius.large),
       ),
-      padding: const EdgeInsets.all(IstiqamSpacing.xs),
+      padding: const EdgeInsets.all(DaisthSpacing.xs),
       child: Image.asset(
         asset,
         fit: BoxFit.contain,
@@ -573,7 +573,7 @@ class RoutineUnavailableScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(IstiqamSpacing.xl),
+            padding: const EdgeInsets.all(DaisthSpacing.xl),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 360),
               child: Column(
@@ -584,13 +584,13 @@ class RoutineUnavailableScreen extends StatelessWidget {
                     size: 42,
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(height: IstiqamSpacing.lg),
+                  const SizedBox(height: DaisthSpacing.lg),
                   Text(
                     'Routine tidak tersedia',
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleLarge,
                   ),
-                  const SizedBox(height: IstiqamSpacing.sm),
+                  const SizedBox(height: DaisthSpacing.sm),
                   Text(
                     'Routine "$routineId" tidak dapat ditemukan.',
                     textAlign: TextAlign.center,
@@ -598,8 +598,8 @@ class RoutineUnavailableScreen extends StatelessWidget {
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: IstiqamSpacing.xl),
-                  IstiqamButton(
+                  const SizedBox(height: DaisthSpacing.xl),
+                  DaisthButton(
                     label: 'Kembali',
                     onPressed: () {
                       if (context.canPop()) {
@@ -637,9 +637,9 @@ class _RoutineProgressSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return IstiqamSurface(
-      style: IstiqamSurfaceStyle.softPrimary,
-      padding: const EdgeInsets.all(IstiqamSpacing.md),
+    return DaisthSurface(
+      style: DaisthSurfaceStyle.softPrimary,
+      padding: const EdgeInsets.all(DaisthSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -654,10 +654,10 @@ class _RoutineProgressSummary extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: IstiqamSpacing.sm),
-          IstiqamProgressBar(value: progress, height: 5),
+          const SizedBox(height: DaisthSpacing.sm),
+          DaisthProgressBar(value: progress, height: 5),
           if (notTodayReason != null) ...[
-            const SizedBox(height: IstiqamSpacing.sm),
+            const SizedBox(height: DaisthSpacing.sm),
             Text(
               'Alasan: $notTodayReason',
               style: theme.textTheme.bodySmall?.copyWith(

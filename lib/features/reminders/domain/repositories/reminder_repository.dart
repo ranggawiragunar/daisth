@@ -25,7 +25,7 @@ abstract interface class ReminderRepository {
 
   Future<void> cancelRemindersForDate(DateTime date);
 
-  Future<void> cancelAllIstiqamReminders();
+  Future<void> cancelAllDaisthReminders();
 
   Future<List<Reminder>> getPendingReminders();
 

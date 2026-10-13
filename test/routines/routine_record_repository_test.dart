@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/persistence/data/schema/database_schema.dart';
-import 'package:istiqam/core/time/domain/models/calendar_day.dart';
-import 'package:istiqam/features/routines/data/demo/routine_demo_data.dart';
-import 'package:istiqam/features/routines/data/mappers/routine_record_mapper.dart';
-import 'package:istiqam/features/routines/data/repositories/routine_record_repository_data.dart'
+import 'package:daisth/core/persistence/data/schema/database_schema.dart';
+import 'package:daisth/core/time/domain/models/calendar_day.dart';
+import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
+import 'package:daisth/features/routines/data/mappers/routine_record_mapper.dart';
+import 'package:daisth/features/routines/data/repositories/routine_record_repository_data.dart'
     show RoutineRecordRuleException;
-import 'package:istiqam/features/routines/data/repositories/routine_record_repository_data.dart'
+import 'package:daisth/features/routines/data/repositories/routine_record_repository_data.dart'
     show RoutineRecordRepositoryData;
-import 'package:istiqam/features/routines/data/services/routine_record_sqlite_service.dart';
-import 'package:istiqam/features/routines/domain/models/routine_status.dart';
+import 'package:daisth/features/routines/data/services/routine_record_sqlite_service.dart';
+import 'package:daisth/features/routines/domain/models/routine_status.dart';
 
 import '../support/test_persistence.dart';
 

@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/core/timezone/domain/models/device_timezone.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_calculation_settings.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_day_schedule.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder_priority.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder_plan.dart';
-import 'package:istiqam/features/reminders/domain/use_cases/build_today_reminder_plan_use_case.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/core/timezone/domain/models/device_timezone.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_calculation_settings.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_day_schedule.dart';
+import 'package:daisth/features/reminders/domain/models/reminder_priority.dart';
+import 'package:daisth/features/reminders/domain/models/reminder_plan.dart';
+import 'package:daisth/features/reminders/domain/use_cases/build_today_reminder_plan_use_case.dart';
 
 void main() {
   final builder = BuildTodayReminderPlanUseCase();

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/design_system/theme/istiqam_theme_extension.dart';
-import '../../../../core/design_system/tokens/istiqam_radius.dart';
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/theme/daisth_theme_extension.dart';
+import '../../../../core/design_system/tokens/daisth_radius.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../domain/models/dhikr_item.dart';
 
 class DhikrCountSurface extends StatelessWidget {
@@ -20,7 +20,7 @@ class DhikrCountSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final extension = theme.extension<IstiqamThemeExtension>()!;
+    final extension = theme.extension<DaisthThemeExtension>()!;
     return Semantics(
       button: true,
       onTap: onTap,
@@ -30,7 +30,7 @@ class DhikrCountSurface extends StatelessWidget {
         child: Material(
           color: extension.softSurface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(IstiqamRadius.xLarge),
+            borderRadius: BorderRadius.circular(DaisthRadius.xLarge),
             side: BorderSide(color: extension.border),
           ),
           clipBehavior: Clip.antiAlias,
@@ -40,7 +40,7 @@ class DhikrCountSurface extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 188),
               child: Padding(
-                padding: const EdgeInsets.all(IstiqamSpacing.lg),
+                padding: const EdgeInsets.all(DaisthSpacing.lg),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -68,14 +68,14 @@ class DhikrCountSurface extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: IstiqamSpacing.xxs),
+                    const SizedBox(height: DaisthSpacing.xxs),
                     Text(
                       'dari ${item.targetCount}',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    const SizedBox(height: IstiqamSpacing.md),
+                    const SizedBox(height: DaisthSpacing.md),
                     Text(
                       'Tap untuk menghitung',
                       style: theme.textTheme.labelMedium?.copyWith(

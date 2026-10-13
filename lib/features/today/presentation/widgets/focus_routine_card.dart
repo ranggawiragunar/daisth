@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
-import '../../../../core/design_system/components/istiqam_button.dart';
-import '../../../../core/design_system/theme/istiqam_theme_extension.dart';
-import '../../../../core/design_system/tokens/istiqam_colors.dart';
-import '../../../../core/design_system/tokens/istiqam_radius.dart';
-import '../../../../core/design_system/tokens/istiqam_spacing.dart';
+import '../../../../core/design_system/components/daisth_button.dart';
+import '../../../../core/design_system/theme/daisth_theme_extension.dart';
+import '../../../../core/design_system/tokens/daisth_colors.dart';
+import '../../../../core/design_system/tokens/daisth_radius.dart';
+import '../../../../core/design_system/tokens/daisth_spacing.dart';
 
 class FocusRoutineCard extends StatelessWidget {
   const FocusRoutineCard({
@@ -26,7 +26,7 @@ class FocusRoutineCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final extension = theme.extension<IstiqamThemeExtension>()!;
+    final extension = theme.extension<DaisthThemeExtension>()!;
     final cardColor = extension.softSurface;
     final heroAsset = isDark
         ? 'assets/illustrations/today_hero_dark.png'
@@ -47,7 +47,7 @@ class FocusRoutineCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(IstiqamRadius.xLarge),
+          borderRadius: BorderRadius.circular(DaisthRadius.xLarge),
           border: Border.all(color: extension.border),
           boxShadow: [
             BoxShadow(
@@ -83,16 +83,16 @@ class FocusRoutineCard extends StatelessWidget {
                             cardColor.withValues(alpha: 0.08),
                           ]
                         : [
-                            IstiqamColors.primary50.withValues(alpha: 0.99),
-                            IstiqamColors.primary50.withValues(alpha: 0.84),
-                            IstiqamColors.primary50.withValues(alpha: 0.04),
+                            DaisthColors.primary50.withValues(alpha: 0.99),
+                            DaisthColors.primary50.withValues(alpha: 0.84),
+                            DaisthColors.primary50.withValues(alpha: 0.04),
                           ],
                   ),
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(IstiqamSpacing.xl),
+              padding: const EdgeInsets.all(DaisthSpacing.xl),
               child: FractionallySizedBox(
                 widthFactor: 0.84,
                 alignment: Alignment.centerLeft,
@@ -106,7 +106,7 @@ class FocusRoutineCard extends StatelessWidget {
                           size: 16,
                           color: colors.primary,
                         ),
-                        const SizedBox(width: IstiqamSpacing.sm),
+                        const SizedBox(width: DaisthSpacing.sm),
                         Text(
                           'PRAYER FOCUS',
                           style: theme.textTheme.labelSmall?.copyWith(
@@ -117,12 +117,12 @@ class FocusRoutineCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: IstiqamSpacing.lg),
+                    const SizedBox(height: DaisthSpacing.lg),
                     Text(
                       title,
                       style: theme.textTheme.titleLarge?.copyWith(fontSize: 19),
                     ),
-                    const SizedBox(height: IstiqamSpacing.xs),
+                    const SizedBox(height: DaisthSpacing.xs),
                     Text(
                       status,
                       style: theme.textTheme.bodyMedium?.copyWith(
@@ -130,7 +130,7 @@ class FocusRoutineCard extends StatelessWidget {
                         color: colors.onSurfaceVariant,
                       ),
                     ),
-                    const SizedBox(height: IstiqamSpacing.md),
+                    const SizedBox(height: DaisthSpacing.md),
                     Row(
                       children: [
                         Icon(
@@ -138,7 +138,7 @@ class FocusRoutineCard extends StatelessWidget {
                           size: 16,
                           color: colors.primary,
                         ),
-                        const SizedBox(width: IstiqamSpacing.sm),
+                        const SizedBox(width: DaisthSpacing.sm),
                         Text(
                           time,
                           style: theme.textTheme.labelLarge?.copyWith(
@@ -149,8 +149,8 @@ class FocusRoutineCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: IstiqamSpacing.lg),
-                    IstiqamButton(
+                    const SizedBox(height: DaisthSpacing.lg),
+                    DaisthButton(
                       label: 'Open Routine',
                       onPressed: onOpenRoutine,
                       compact: true,

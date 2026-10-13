@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:istiqam/core/time/domain/models/calendar_day.dart';
-import 'package:istiqam/features/routines/domain/models/routine.dart';
-import 'package:istiqam/features/routines/domain/models/routine_record.dart';
-import 'package:istiqam/features/routines/domain/models/routine_status.dart';
-import 'package:istiqam/features/routines/domain/models/routine_step_record.dart';
-import 'package:istiqam/features/routines/domain/repositories/routine_record_repository.dart';
-import 'package:istiqam/features/routines/domain/use_cases/resolve_routine_status_use_case.dart';
+import 'package:daisth/core/time/domain/models/calendar_day.dart';
+import 'package:daisth/features/routines/domain/models/routine.dart';
+import 'package:daisth/features/routines/domain/models/routine_record.dart';
+import 'package:daisth/features/routines/domain/models/routine_status.dart';
+import 'package:daisth/features/routines/domain/models/routine_step_record.dart';
+import 'package:daisth/features/routines/domain/repositories/routine_record_repository.dart';
+import 'package:daisth/features/routines/domain/use_cases/resolve_routine_status_use_case.dart';
 
 class FakeRoutineRecordRepository implements RoutineRecordRepository {
   final Map<String, RoutineRecord> _records = {};

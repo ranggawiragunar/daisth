@@ -1,24 +1,24 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/app_settings/domain/repositories/app_settings_repository.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/core/location/domain/models/location_access_status.dart';
-import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
-import 'package:istiqam/core/location/domain/use_cases/resolve_current_location_use_case.dart';
-import 'package:istiqam/core/timezone/domain/models/device_timezone.dart';
-import 'package:istiqam/core/timezone/domain/repositories/timezone_repository.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_calculation_settings.dart';
-import 'package:istiqam/features/prayer_times/domain/models/prayer_day_schedule.dart';
-import 'package:istiqam/features/prayer_times/domain/repositories/prayer_time_repository.dart';
-import 'package:istiqam/features/prayer_times/domain/use_cases/load_today_prayer_schedule_use_case.dart';
-import 'package:istiqam/features/prayer_times/presentation/prayer_schedule_session.dart';
-import 'package:istiqam/features/reminders/domain/models/exact_alarm_status.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder_permission_status.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder_scheduling_mode.dart';
-import 'package:istiqam/features/reminders/domain/repositories/reminder_repository.dart';
-import 'package:istiqam/features/reminders/domain/use_cases/build_today_reminder_plan_use_case.dart';
-import 'package:istiqam/features/reminders/domain/use_cases/schedule_today_reminders_use_case.dart';
-import 'package:istiqam/features/reminders/presentation/view_models/reminder_settings_view_model.dart';
+import 'package:daisth/core/app_settings/domain/repositories/app_settings_repository.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/core/location/domain/models/location_access_status.dart';
+import 'package:daisth/core/location/domain/repositories/location_repository.dart';
+import 'package:daisth/core/location/domain/use_cases/resolve_current_location_use_case.dart';
+import 'package:daisth/core/timezone/domain/models/device_timezone.dart';
+import 'package:daisth/core/timezone/domain/repositories/timezone_repository.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_calculation_settings.dart';
+import 'package:daisth/features/prayer_times/domain/models/prayer_day_schedule.dart';
+import 'package:daisth/features/prayer_times/domain/repositories/prayer_time_repository.dart';
+import 'package:daisth/features/prayer_times/domain/use_cases/load_today_prayer_schedule_use_case.dart';
+import 'package:daisth/features/prayer_times/presentation/prayer_schedule_session.dart';
+import 'package:daisth/features/reminders/domain/models/exact_alarm_status.dart';
+import 'package:daisth/features/reminders/domain/models/reminder.dart';
+import 'package:daisth/features/reminders/domain/models/reminder_permission_status.dart';
+import 'package:daisth/features/reminders/domain/models/reminder_scheduling_mode.dart';
+import 'package:daisth/features/reminders/domain/repositories/reminder_repository.dart';
+import 'package:daisth/features/reminders/domain/use_cases/build_today_reminder_plan_use_case.dart';
+import 'package:daisth/features/reminders/domain/use_cases/schedule_today_reminders_use_case.dart';
+import 'package:daisth/features/reminders/presentation/view_models/reminder_settings_view_model.dart';
 
 import '../support/test_persistence.dart';
 
@@ -253,7 +253,7 @@ class _ReminderRepository implements ReminderRepository {
   }
 
   @override
-  Future<void> cancelAllIstiqamReminders() async {
+  Future<void> cancelAllDaisthReminders() async {
     cancelAllCount++;
     scheduled.clear();
   }

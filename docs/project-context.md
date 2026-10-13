@@ -1,6 +1,6 @@
 # Project context
 
-Istiqam is a calm Muslim routine companion that supports consistency in daily
+Daisth is a calm Muslim routine companion that supports consistency in daily
 worship through a loop of routine, reminder, action, completion, reflection,
 and insight. Its visual direction is warm minimal: quiet, supportive, and
 grounded, with spiritually subtle details.

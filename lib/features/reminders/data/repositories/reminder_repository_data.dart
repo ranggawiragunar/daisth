@@ -85,10 +85,10 @@ class ReminderRepositoryData implements ReminderRepository {
   }
 
   @override
-  Future<void> cancelAllIstiqamReminders() async {
+  Future<void> cancelAllDaisthReminders() async {
     final pending = List.of(await service.getPendingRequests());
     for (final request in pending) {
-      if (_isIstiqamPayload(request.payload)) await service.cancel(request.id);
+      if (_isDaisthPayload(request.payload)) await service.cancel(request.id);
     }
   }
 
@@ -113,11 +113,11 @@ class ReminderRepositoryData implements ReminderRepository {
         payload: request.payload,
       );
 
-  bool _isIstiqamPayload(String? payload) {
+  bool _isDaisthPayload(String? payload) {
     if (payload == null) return false;
     try {
       final decoded = jsonDecode(payload);
-      return decoded is Map<String, dynamic> && decoded['app'] == 'istiqam';
+      return decoded is Map<String, dynamic> && decoded['app'] == 'daisth';
     } on FormatException {
       return false;
     }

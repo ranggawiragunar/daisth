@@ -1,12 +1,12 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../../../../core/persistence/data/schema/database_schema.dart';
-import '../../../../core/persistence/data/services/istiqam_database_service.dart';
+import '../../../../core/persistence/data/services/daisth_database_service.dart';
 
 class RoutineRecordSqliteService {
   const RoutineRecordSqliteService(this.databaseService);
 
-  final IstiqamDatabaseService databaseService;
+  final DaisthDatabaseService databaseService;
 
   Future<T> transaction<T>(
     Future<T> Function(Transaction transaction) action,

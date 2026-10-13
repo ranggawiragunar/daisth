@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/timezone/domain/models/device_timezone.dart';
-import 'package:istiqam/core/timezone/domain/repositories/timezone_repository.dart';
-import 'package:istiqam/features/reminders/domain/models/exact_alarm_status.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder_permission_status.dart';
-import 'package:istiqam/features/reminders/domain/models/reminder_scheduling_mode.dart';
-import 'package:istiqam/features/reminders/domain/repositories/reminder_repository.dart';
-import 'package:istiqam/app/dependencies/app_dependencies.dart';
+import 'package:daisth/core/timezone/domain/models/device_timezone.dart';
+import 'package:daisth/core/timezone/domain/repositories/timezone_repository.dart';
+import 'package:daisth/features/reminders/domain/models/exact_alarm_status.dart';
+import 'package:daisth/features/reminders/domain/models/reminder.dart';
+import 'package:daisth/features/reminders/domain/models/reminder_permission_status.dart';
+import 'package:daisth/features/reminders/domain/models/reminder_scheduling_mode.dart';
+import 'package:daisth/features/reminders/domain/repositories/reminder_repository.dart';
+import 'package:daisth/app/dependencies/app_dependencies.dart';
 import '../support/test_persistence.dart';
 
 void main() {
@@ -54,7 +54,7 @@ class _ReminderRepository implements ReminderRepository {
   _ReminderRepository(this.order);
   final List<String> order;
   final String launchPayload =
-      '{"app":"istiqam","v":1,"type":"routine","routineId":"zuhur"}';
+      '{"app":"daisth","v":1,"type":"routine","routineId":"zuhur"}';
 
   @override
   Future<void> initialize({
@@ -91,7 +91,7 @@ class _ReminderRepository implements ReminderRepository {
   @override
   Future<void> cancelRemindersForDate(DateTime date) async {}
   @override
-  Future<void> cancelAllIstiqamReminders() async {}
+  Future<void> cancelAllDaisthReminders() async {}
   @override
   Future<List<Reminder>> getPendingReminders() async => const [];
   @override

@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/core/location/domain/models/location_access_status.dart';
-import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
-import 'package:istiqam/features/mosque/domain/models/mosque_place.dart';
-import 'package:istiqam/features/mosque/domain/models/mosque_place_type.dart';
-import 'package:istiqam/features/mosque/domain/models/cached_mosque_places.dart';
-import 'package:istiqam/features/mosque/domain/repositories/mosque_repository.dart';
-import 'package:istiqam/features/mosque/domain/use_cases/find_nearby_mosques_use_case.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/core/location/domain/models/location_access_status.dart';
+import 'package:daisth/core/location/domain/repositories/location_repository.dart';
+import 'package:daisth/features/mosque/domain/models/mosque_place.dart';
+import 'package:daisth/features/mosque/domain/models/mosque_place_type.dart';
+import 'package:daisth/features/mosque/domain/models/cached_mosque_places.dart';
+import 'package:daisth/features/mosque/domain/repositories/mosque_repository.dart';
+import 'package:daisth/features/mosque/domain/use_cases/find_nearby_mosques_use_case.dart';
 
 void main() {
   test(

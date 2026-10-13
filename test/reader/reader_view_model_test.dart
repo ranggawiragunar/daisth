@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/features/reader/data/demo/reader_demo_data.dart';
-import 'package:istiqam/features/reader/presentation/view_models/reader_view_model.dart';
+import 'package:daisth/features/reader/data/demo/reader_demo_data.dart';
+import 'package:daisth/features/reader/presentation/view_models/reader_view_model.dart';
 
 void main() {
   test('transliteration and translation are visible by default', () {

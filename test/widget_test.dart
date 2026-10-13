@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:istiqam/app/app.dart';
-import 'package:istiqam/app/dependencies/app_dependencies.dart';
-import 'package:istiqam/core/design_system/components/istiqam_notice.dart';
-import 'package:istiqam/features/routines/presentation/routine_detail_screen.dart';
-import 'package:istiqam/core/location/domain/models/geo_coordinate.dart';
-import 'package:istiqam/core/location/domain/models/location_access_status.dart';
-import 'package:istiqam/core/location/domain/repositories/location_repository.dart';
+import 'package:daisth/app/app.dart';
+import 'package:daisth/app/dependencies/app_dependencies.dart';
+import 'package:daisth/core/design_system/components/daisth_notice.dart';
+import 'package:daisth/features/routines/presentation/routine_detail_screen.dart';
+import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
+import 'package:daisth/core/location/domain/models/location_access_status.dart';
+import 'package:daisth/core/location/domain/repositories/location_repository.dart';
 
 import 'support/test_persistence.dart';
 import 'support/fake_routine_record_repository.dart';
@@ -42,13 +42,13 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Zuhur recorded'), findsOneWidget);
-    expect(find.byType(IstiqamNotice), findsOneWidget);
+    expect(find.byType(DaisthNotice), findsOneWidget);
     expect(find.byType(SnackBar), findsNothing);
 
     await tester.pump(const Duration(seconds: 4));
     await tester.pumpAndSettle();
     await tester.pumpAndSettle();
-    expect(find.byType(IstiqamNotice), findsNothing);
+    expect(find.byType(DaisthNotice), findsNothing);
     await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
 
@@ -213,7 +213,7 @@ void main() {
   });
 }
 
-Widget _testApp() => IstiqamApp(
+Widget _testApp() => DaisthApp(
   dependencies: AppDependencies(
     startTodayClock: false,
     locationRepository: _DeniedLocation(),
