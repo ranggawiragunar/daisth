@@ -6,6 +6,7 @@ import '../../domain/models/reflection_rhythm.dart';
 import '../../domain/repositories/reflection_repository.dart';
 import '../mappers/reflection_mapper.dart';
 import '../services/reflection_sqlite_service.dart';
+import '../../../sync/data/services/sync_outbox_sqlite_helper.dart';
 
 class ReflectionRepositoryData implements ReflectionRepository {
   ReflectionRepositoryData({required this.service, required this.mapper});
@@ -56,15 +57,21 @@ class ReflectionRepositoryData implements ReflectionRepository {
     );
     final reflection = mapper.fromData(row);
     _changes.add(ReflectionChange(day));
+    SyncOutboxSqliteHelper.notifyLocalMutation();
     return reflection;
   }
 
   @override
   Future<bool> deleteReflection(CalendarDay day) async {
     final deleted = await service.delete(day.toDateKey());
-    if (deleted) _changes.add(ReflectionChange(day));
+    if (deleted) {
+      _changes.add(ReflectionChange(day));
+      SyncOutboxSqliteHelper.notifyLocalMutation();
+    }
     return deleted;
   }
 
   Future<void> closeChanges() => _changes.close();
+  void notifyRemoteChanged(CalendarDay day) =>
+      _changes.add(ReflectionChange(day, isRemoteSync: true));
 }

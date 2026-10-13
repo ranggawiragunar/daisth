@@ -1,1 +1,32 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"daisthapp","appId":"1:563438128973:android:c8453221d952847596b104","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"daisthapp","appId":"1:563438128973:ios:a18c9b1f2ffb1cb596b104","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"daisthapp","configurations":{"android":"1:563438128973:android:c8453221d952847596b104"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "daisthapp",
+          "appId": "1:563438128973:android:c8453221d952847596b104",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "daisthapp",
+          "appId": "1:563438128973:ios:a18c9b1f2ffb1cb596b104",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "daisthapp",
+          "configurations": {
+            "android": "1:563438128973:android:c8453221d952847596b104"
+          }
+        }
+      }
+    }
+  }
+}

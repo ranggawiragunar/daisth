@@ -69,6 +69,15 @@ import '../../features/auth/data/services/firebase_bootstrap_service.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/auth_view_model.dart';
 import '../../features/onboarding/domain/current_onboarding_version.dart';
+import '../../features/sync/data/mappers/firestore_document_ids.dart';
+import '../../features/sync/data/repositories/sync_local_repository_data.dart';
+import '../../features/sync/data/services/daisth_firestore_service.dart';
+import '../../features/sync/data/services/sync_sqlite_service.dart';
+import '../../features/sync/data/services/sync_outbox_sqlite_helper.dart';
+import '../../features/sync/domain/models/sync_entity.dart';
+import '../../features/sync/domain/repositories/cloud_data_repository.dart';
+import '../../features/sync/domain/sync_coordinator.dart';
+import '../../features/sync/presentation/sync_view_model.dart';
 
 class AppDependencies {
   AppDependencies({
@@ -86,6 +95,7 @@ class AppDependencies {
     RoutineRepository? routineRepository,
     ReflectionRepository? reflectionRepository,
     AuthRepository? authRepository,
+    CloudDataRepository? cloudDataRepository,
     this.startTodayClock = true,
   }) : httpClient = httpClient ?? http.Client(),
        _ownsHttpClient = httpClient == null {
@@ -96,6 +106,17 @@ class AppDependencies {
         authRepository ??
         AuthRepositoryData(firebaseAuthService, firebaseBootstrapService);
     authViewModel = AuthViewModel(this.authRepository);
+    syncLocalRepository = SyncLocalRepositoryData(
+      SyncSqliteService(this.databaseService),
+    );
+    this.cloudDataRepository = cloudDataRepository ?? DaisthFirestoreService();
+    syncCoordinator = SyncCoordinator(
+      authRepository: this.authRepository,
+      localRepository: syncLocalRepository,
+      cloudRepository: this.cloudDataRepository,
+      onRemoteChanges: _notifyRemoteChanges,
+    );
+    syncViewModel = SyncViewModel(syncCoordinator);
     this.appSettingsRepository =
         appSettingsRepository ??
         AppSettingsRepositoryData(
@@ -214,6 +235,10 @@ class AppDependencies {
   late final FirebaseBootstrapService firebaseBootstrapService;
   late final AuthRepository authRepository;
   late final AuthViewModel authViewModel;
+  late final SyncLocalRepositoryData syncLocalRepository;
+  late final CloudDataRepository cloudDataRepository;
+  late final SyncCoordinator syncCoordinator;
+  late final SyncViewModel syncViewModel;
   late final AppSettingsRepository appSettingsRepository;
   late final RoutineRecordRepository routineRecordRepository;
   late final RoutineRepository routineRepository;
@@ -248,6 +273,7 @@ class AppDependencies {
   StreamSubscription<RoutineRecordChange>? _routineReminderChangeSubscription;
   StreamSubscription<void>? _routineDefinitionChangeSubscription;
   StreamSubscription<ReflectionChange>? _reflectionChangeSubscription;
+  StreamSubscription<void>? _syncMutationSubscription;
 
   Future<void> initialize({void Function(String? payload)? onNotificationTap}) {
     return _initialization ??= _initialize(onNotificationTap);
@@ -260,13 +286,25 @@ class AppDependencies {
       await ensureRoutineDefinitionsReady();
       appSettings = await appSettingsRepository.getSettings();
       _routineReminderChangeSubscription ??= routineRecordRepository.changes
-          .listen((change) => unawaited(_reconcileRoutineChange(change)));
-      _routineDefinitionChangeSubscription ??= routineRepository.changes.listen(
+          .listen((change) {
+            if (!change.isRemoteSync) {
+              unawaited(_reconcileRoutineChange(change));
+            }
+          });
+      final routineLocalChanges = switch (routineRepository) {
+        RoutineRepositoryData data => data.localChanges,
+        _ => routineRepository.changes,
+      };
+      _routineDefinitionChangeSubscription ??= routineLocalChanges.listen(
         (_) => unawaited(_reconcileRoutineDefinitionChange()),
       );
-      _reflectionChangeSubscription ??= reflectionRepository.changes.listen(
-        (change) => unawaited(_reconcileReflectionChange(change)),
-      );
+      _reflectionChangeSubscription ??= reflectionRepository.changes.listen((
+        change,
+      ) {
+        if (!change.isRemoteSync) {
+          unawaited(_reconcileReflectionChange(change));
+        }
+      });
     } catch (error) {
       initializationError = error;
     }
@@ -281,12 +319,87 @@ class AppDependencies {
     }
     try {
       if (await firebaseBootstrapService.initialize()) {
+        if (cloudDataRepository case final DaisthFirestoreService service) {
+          service.configureTransport();
+        }
         firebaseAuthService.attachDefault();
         await authViewModel.refreshSession();
       }
     } catch (_) {
       // Optional account setup must not prevent local Daisth startup.
     }
+    try {
+      await syncCoordinator.initialize();
+      _syncMutationSubscription ??= SyncOutboxSqliteHelper.localMutations
+          .listen((_) => unawaited(syncCoordinator.onLocalDataChanged()));
+    } catch (_) {
+      // Sync initialization never blocks local app startup.
+    }
+  }
+
+  Future<void> _notifyRemoteChanges(List<SyncEntity> entities) async {
+    var routineDefinitionsChanged = false;
+    var reconcileToday = false;
+    final today = CalendarDay.fromDateTime(DateTime.now());
+    final changedDefinitionIds = <String>{};
+    final affectedRecords = <String, (CalendarDay, String)>{};
+    for (final entity in entities) {
+      switch (entity.type) {
+        case SyncEntityType.routineDefinition:
+          routineDefinitionsChanged = true;
+          changedDefinitionIds.add(Uri.decodeComponent(entity.id));
+        case SyncEntityType.routineStepDefinition:
+          routineDefinitionsChanged = true;
+          changedDefinitionIds.add(
+            FirestoreDocumentIds.splitPair(entity.id).$1,
+          );
+        case SyncEntityType.routineRecord:
+          final pair = FirestoreDocumentIds.splitPair(entity.id);
+          final day = CalendarDay.parseDateKey(pair.$1);
+          reconcileToday |= day == today;
+          final key = '${pair.$1}|${pair.$2}';
+          affectedRecords[key] = (day, pair.$2);
+        case SyncEntityType.routineStepRecord:
+          final parts = FirestoreDocumentIds.splitTriple(entity.id);
+          final day = CalendarDay.parseDateKey(parts.$1);
+          reconcileToday |= day == today;
+          final key = '${parts.$1}|${parts.$2}';
+          affectedRecords[key] = (day, parts.$2);
+        case SyncEntityType.dailyReflection:
+          reconcileToday |= CalendarDay.parseDateKey(entity.id) == today;
+          if (reflectionRepository case final ReflectionRepositoryData data) {
+            data.notifyRemoteChanged(CalendarDay.parseDateKey(entity.id));
+          }
+      }
+    }
+    if (routineRecordRepository case final RoutineRecordRepositoryData data) {
+      for (final routineId in changedDefinitionIds) {
+        for (final record in await data.getRecordsForRoutine(routineId)) {
+          affectedRecords['${record.calendarDay.toDateKey()}|$routineId'] = (
+            record.calendarDay,
+            routineId,
+          );
+        }
+      }
+      for (final (day, routineId) in affectedRecords.values) {
+        final resolved = await routineResolver.resolve(routineId);
+        final reconciled = resolved == null
+            ? false
+            : await data.reconcileCompositeStatus(
+                routine: resolved.routine,
+                day: day,
+                now: DateTime.now().toUtc(),
+              );
+        if (!reconciled) data.notifyRemoteChanged(day, routineId);
+      }
+    }
+    if (routineDefinitionsChanged) {
+      reconcileToday = true;
+      if (routineRepository case final RoutineRepositoryData data) {
+        data.notifyRemoteChanged();
+      }
+    }
+    if (reconcileToday) await _reconcileRoutineDefinitionChange();
   }
 
   Future<int?> getOnboardingVersion() =>
@@ -395,7 +508,10 @@ class AppDependencies {
     unawaited(_routineReminderChangeSubscription?.cancel());
     unawaited(_routineDefinitionChangeSubscription?.cancel());
     unawaited(_reflectionChangeSubscription?.cancel());
+    unawaited(_syncMutationSubscription?.cancel());
     reminderSettings.dispose();
+    syncViewModel.dispose();
+    unawaited(syncCoordinator.dispose());
     authViewModel.dispose();
     unawaited(firebaseAuthService.dispose());
     if (routineRecordRepository case final RoutineRecordRepositoryData data) {
@@ -410,5 +526,10 @@ class AppDependencies {
     unawaited(databaseService.close());
     prayerScheduleSession.dispose();
     if (_ownsHttpClient) httpClient.close();
+  }
+
+  Future<void> onAppResumed() async {
+    await reminderSettings.onAppResumed();
+    unawaited(syncCoordinator.onAppResumed());
   }
 }

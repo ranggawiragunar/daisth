@@ -310,3 +310,15 @@ passes the current local day and `/history/:date/reflection` passes the selected
 historical day. Repository changes refresh Today and History. Only current-day
 reflection changes can reconcile reminders. Reflection uses
 `daily_reflections` and never participates in routine status or progress.
+
+Account sync remains an asynchronous edge around the local repositories:
+
+```text
+Feature UI → domain repository → SQLite
+                         ↘ transactional outbox → SyncCoordinator → Firestore
+```
+
+The Account feature explicitly links a signed-in UID before sync. The sync
+coordinator owns pull/merge/push work and remote writes re-enter SQLite without
+creating outbox feedback. See [sync.md](sync.md) for entity scope, conflicts,
+account mismatch behavior, and private Firestore paths.

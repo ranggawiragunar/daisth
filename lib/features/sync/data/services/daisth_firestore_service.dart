@@ -1,0 +1,82 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../domain/models/sync_entity.dart';
+import '../../domain/repositories/cloud_data_repository.dart';
+import '../mappers/sync_entity_firestore_mapper.dart';
+
+class DaisthFirestoreService implements CloudDataRepository {
+  DaisthFirestoreService() : _firestore = null;
+
+  FirebaseFirestore? _firestore;
+  final _mapper = SyncEntityFirestoreMapper();
+  bool _configured = false;
+
+  FirebaseFirestore get firestore => _firestore ??= FirebaseFirestore.instance;
+
+  void configureTransport() {
+    if (_configured) return;
+    firestore.settings = const Settings(persistenceEnabled: false);
+    _configured = true;
+  }
+
+  @override
+  Future<CloudDataset> fetchAccountDataset(String uid) async {
+    configureTransport();
+    final root = firestore.collection('users').doc(uid);
+    await root.get(const GetOptions(source: Source.server));
+    final entities = <SyncEntity>[];
+    var invalid = 0;
+    for (final type in SyncEntityType.values) {
+      final snapshot = await root
+          .collection(_mapper.collectionFor(type))
+          .get(const GetOptions(source: Source.server));
+      for (final document in snapshot.docs) {
+        try {
+          entities.add(
+            _mapper.fromFirestore(
+              type: type,
+              documentId: document.id,
+              data: document.data(),
+            ),
+          );
+        } on SyncDocumentException catch (error) {
+          if (error.failureCode == SyncFailureCode.unsupportedSchema) rethrow;
+          invalid++;
+        } on FormatException {
+          invalid++;
+        } catch (_) {
+          invalid++;
+        }
+      }
+    }
+    return CloudDataset(entities: entities, invalidDocumentCount: invalid);
+  }
+
+  @override
+  Future<void> writeEntities(String uid, List<SyncEntity> entities) async {
+    configureTransport();
+    final root = firestore.collection('users').doc(uid);
+    for (var offset = 0; offset < entities.length; offset += 450) {
+      final batch = firestore.batch();
+      final group = entities.skip(offset).take(450);
+      for (final entity in group) {
+        final ref = root
+            .collection(_mapper.collectionFor(entity.type))
+            .doc(entity.id);
+        final data = _mapper.toFirestore(entity)
+          ..['serverUpdatedAt'] = FieldValue.serverTimestamp();
+        batch.set(ref, data, SetOptions(merge: true));
+      }
+      await batch.commit();
+    }
+  }
+
+  @override
+  Future<void> updateUserSyncMetadata(String uid, DateTime nowUtc) async {
+    configureTransport();
+    await firestore.collection('users').doc(uid).set({
+      'dataSchemaVersion': 1,
+      'lastSyncAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+}

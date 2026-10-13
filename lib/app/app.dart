@@ -103,7 +103,7 @@ class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      unawaited(_dependencies.reminderSettings.onAppResumed());
+      unawaited(_dependencies.onAppResumed());
     }
   }
 

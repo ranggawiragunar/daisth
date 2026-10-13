@@ -15,6 +15,8 @@ import '../mappers/routine_record_mapper.dart';
 import '../models/routine_record_data.dart';
 import '../models/routine_step_record_data.dart';
 import '../services/routine_record_sqlite_service.dart';
+import '../../../sync/data/mappers/firestore_document_ids.dart';
+import '../../../sync/data/services/sync_outbox_sqlite_helper.dart';
 
 class RoutineRecordRuleException implements Exception {
   const RoutineRecordRuleException(this.message);
@@ -33,6 +35,8 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
       StreamController<RoutineRecordChange>.broadcast();
 
   Future<void> closeChanges() => _changes.close();
+  void notifyRemoteChanged(CalendarDay day, String routineId) =>
+      _changes.add(RoutineRecordChange(day, routineId, isRemoteSync: true));
 
   @override
   Stream<RoutineRecordChange> get changes => _changes.stream;
@@ -57,6 +61,11 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
   @override
   Future<List<RoutineRecord>> getRecordsForDay(CalendarDay day) async =>
       (await service.getRecordsForDay(day.toDateKey()))
+          .map((row) => mapper.fromData(RoutineRecordData.fromMap(row)))
+          .toList(growable: false);
+
+  Future<List<RoutineRecord>> getRecordsForRoutine(String routineId) async =>
+      (await service.getRecordsForRoutine(routineId))
           .map((row) => mapper.fromData(RoutineRecordData.fromMap(row)))
           .toList(growable: false);
 
@@ -130,6 +139,7 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
       );
     });
     _changes.add(RoutineRecordChange(day, routine.id));
+    SyncOutboxSqliteHelper.notifyLocalMutation();
   }
 
   @override
@@ -178,6 +188,7 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
       );
     });
     _changes.add(RoutineRecordChange(day, routine.id));
+    SyncOutboxSqliteHelper.notifyLocalMutation();
   }
 
   @override
@@ -211,11 +222,49 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
       );
     });
     _changes.add(RoutineRecordChange(day, routine.id));
+    SyncOutboxSqliteHelper.notifyLocalMutation();
   }
 
   @override
   Future<void> clearRoutineRecord(CalendarDay day, String routineId) async {
     await service.transaction((transaction) async {
+      final existingRoutine = await transaction.query(
+        DatabaseSchema.routineRecords,
+        columns: ['routine_id'],
+        where: 'date_key = ? AND routine_id = ?',
+        whereArgs: [day.toDateKey(), routineId],
+        limit: 1,
+      );
+      final existingSteps = await transaction.query(
+        DatabaseSchema.routineStepRecords,
+        columns: ['step_id'],
+        where: 'date_key = ? AND routine_id = ?',
+        whereArgs: [day.toDateKey(), routineId],
+      );
+      final changedAt = DateTime.now().toUtc();
+      final dateKey = day.toDateKey();
+      for (final row in existingSteps) {
+        await SyncOutboxSqliteHelper.enqueueLocalMutation(
+          transaction,
+          entityType: 'routineStepRecord',
+          entityKey: FirestoreDocumentIds.routineStepRecord(
+            dateKey,
+            routineId,
+            row['step_id'] as String,
+          ),
+          operation: 'delete',
+          changedAtUtc: changedAt,
+        );
+      }
+      if (existingRoutine.isNotEmpty) {
+        await SyncOutboxSqliteHelper.enqueueLocalMutation(
+          transaction,
+          entityType: 'routineRecord',
+          entityKey: FirestoreDocumentIds.routineRecord(dateKey, routineId),
+          operation: 'delete',
+          changedAtUtc: changedAt,
+        );
+      }
       await transaction.delete(
         DatabaseSchema.routineStepRecords,
         where: 'date_key = ? AND routine_id = ?',
@@ -233,6 +282,109 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
       );
     });
     _changes.add(RoutineRecordChange(day, routineId));
+    SyncOutboxSqliteHelper.notifyLocalMutation();
+  }
+
+  Future<bool> reconcileCompositeStatus({
+    required Routine routine,
+    required CalendarDay day,
+    required DateTime now,
+  }) async {
+    if (routine.steps.isEmpty) return false;
+    var changed = false;
+    await service.transaction((transaction) async {
+      final recordRows = await transaction.query(
+        DatabaseSchema.routineRecords,
+        where: 'date_key = ? AND routine_id = ?',
+        whereArgs: [day.toDateKey(), routine.id],
+        limit: 1,
+      );
+      final old = recordRows.firstOrNull;
+      if (old == null || old['status'] == RoutineStatus.notToday.name) return;
+      final stepRows = await transaction.query(
+        DatabaseSchema.routineStepRecords,
+        where: 'date_key = ? AND routine_id = ?',
+        whereArgs: [day.toDateKey(), routine.id],
+      );
+      final completed = {
+        for (final row in stepRows)
+          if (row['is_completed'] == 1) row['step_id'] as String,
+      };
+      final resolved = resolveStatus(
+        routine: routine,
+        completedStepIds: completed,
+      );
+      if (resolved.name == old['status']) return;
+      final dateKey = day.toDateKey();
+      if (resolved == RoutineStatus.pending) {
+        await transaction.delete(
+          DatabaseSchema.routineRecords,
+          where: 'date_key = ? AND routine_id = ?',
+          whereArgs: [dateKey, routine.id],
+        );
+        await SyncOutboxSqliteHelper.enqueueLocalMutation(
+          transaction,
+          entityType: 'routineRecord',
+          entityKey: FirestoreDocumentIds.routineRecord(dateKey, routine.id),
+          operation: 'delete',
+          changedAtUtc: now,
+        );
+      } else {
+        DateTime? completedAt;
+        if (resolved == RoutineStatus.completed) {
+          if (old['status'] == RoutineStatus.completed.name) {
+            final value = old['completed_at_utc'] as String?;
+            completedAt = value == null ? null : DateTime.parse(value).toUtc();
+          } else {
+            final requiredIds = routine.steps
+                .where((step) => step.isRequired)
+                .map((step) => step.id)
+                .toSet();
+            final timestamps = stepRows
+                .where(
+                  (row) =>
+                      requiredIds.contains(row['step_id']) &&
+                      row['is_completed'] == 1 &&
+                      row['completed_at_utc'] is String,
+                )
+                .map(
+                  (row) =>
+                      DateTime.parse(row['completed_at_utc'] as String).toUtc(),
+                )
+                .toList();
+            completedAt = timestamps.isEmpty
+                ? now.toUtc()
+                : timestamps.reduce((a, b) => a.isAfter(b) ? a : b);
+          }
+        }
+        final row = RoutineRecordData(
+          dateKey: dateKey,
+          routineId: routine.id,
+          status: resolved.name,
+          completedAtUtc: completedAt?.toIso8601String(),
+          recordedAtUtc: old['recorded_at_utc'] as String,
+          updatedAtUtc: now.toUtc().toIso8601String(),
+        );
+        await transaction.insert(
+          DatabaseSchema.routineRecords,
+          row.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+        await SyncOutboxSqliteHelper.enqueueLocalMutation(
+          transaction,
+          entityType: 'routineRecord',
+          entityKey: FirestoreDocumentIds.routineRecord(dateKey, routine.id),
+          operation: 'upsert',
+          changedAtUtc: now,
+        );
+      }
+      changed = true;
+    });
+    if (changed) {
+      _changes.add(RoutineRecordChange(day, routine.id, isRemoteSync: true));
+      SyncOutboxSqliteHelper.notifyLocalMutation();
+    }
+    return changed;
   }
 
   @override
@@ -261,6 +413,7 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
       ),
     );
     _changes.add(RoutineRecordChange(day, routine.id));
+    SyncOutboxSqliteHelper.notifyLocalMutation();
   }
 
   Future<void> _saveInTransaction(
@@ -308,6 +461,19 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
         row.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
+      if (changed) {
+        await SyncOutboxSqliteHelper.enqueueLocalMutation(
+          transaction,
+          entityType: 'routineStepRecord',
+          entityKey: FirestoreDocumentIds.routineStepRecord(
+            dateKey,
+            routine.id,
+            step.id,
+          ),
+          operation: 'upsert',
+          changedAtUtc: DateTime.parse(row.updatedAtUtc),
+        );
+      }
     }
 
     final oldRows = await transaction.query(
@@ -323,6 +489,15 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
         where: 'date_key = ? AND routine_id = ?',
         whereArgs: [dateKey, routine.id],
       );
+      if (old != null) {
+        await SyncOutboxSqliteHelper.enqueueLocalMutation(
+          transaction,
+          entityType: 'routineRecord',
+          entityKey: FirestoreDocumentIds.routineRecord(dateKey, routine.id),
+          operation: 'delete',
+          changedAtUtc: now,
+        );
+      }
     } else {
       String? completedAt;
       if (status == RoutineStatus.completed) {
@@ -345,6 +520,13 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
         DatabaseSchema.routineRecords,
         row.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await SyncOutboxSqliteHelper.enqueueLocalMutation(
+        transaction,
+        entityType: 'routineRecord',
+        entityKey: FirestoreDocumentIds.routineRecord(dateKey, routine.id),
+        operation: 'upsert',
+        changedAtUtc: now,
       );
     }
   }

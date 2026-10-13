@@ -5,10 +5,15 @@ import '../models/routine_status.dart';
 import '../models/routine_step_record.dart';
 
 class RoutineRecordChange {
-  const RoutineRecordChange(this.calendarDay, this.routineId);
+  const RoutineRecordChange(
+    this.calendarDay,
+    this.routineId, {
+    this.isRemoteSync = false,
+  });
 
   final CalendarDay calendarDay;
   final String routineId;
+  final bool isRemoteSync;
 }
 
 abstract interface class RoutineRecordRepository {

@@ -1,5 +1,7 @@
 import '../../../../core/persistence/data/schema/database_schema.dart';
 import '../../../../core/persistence/data/services/daisth_database_service.dart';
+import '../../../sync/data/mappers/firestore_document_ids.dart';
+import '../../../sync/data/services/sync_outbox_sqlite_helper.dart';
 
 class ReflectionSqliteService {
   const ReflectionSqliteService(this.databaseService);
@@ -71,6 +73,13 @@ class ReflectionSqliteService {
           whereArgs: [dateKey],
         );
       }
+      await SyncOutboxSqliteHelper.enqueueLocalMutation(
+        transaction,
+        entityType: 'dailyReflection',
+        entityKey: FirestoreDocumentIds.dailyReflection(dateKey),
+        operation: 'upsert',
+        changedAtUtc: now,
+      );
       return (await transaction.query(
         DatabaseSchema.dailyReflections,
         where: 'date_key = ?',
@@ -82,11 +91,29 @@ class ReflectionSqliteService {
 
   Future<bool> delete(String dateKey) async {
     final db = await databaseService.open();
-    final deleted = await db.delete(
-      DatabaseSchema.dailyReflections,
-      where: 'date_key = ?',
-      whereArgs: [dateKey],
-    );
-    return deleted > 0;
+    return db.transaction((transaction) async {
+      final rows = await transaction.query(
+        DatabaseSchema.dailyReflections,
+        columns: ['date_key'],
+        where: 'date_key = ?',
+        whereArgs: [dateKey],
+        limit: 1,
+      );
+      if (rows.isEmpty) return false;
+      final now = DateTime.now().toUtc();
+      await transaction.delete(
+        DatabaseSchema.dailyReflections,
+        where: 'date_key = ?',
+        whereArgs: [dateKey],
+      );
+      await SyncOutboxSqliteHelper.enqueueLocalMutation(
+        transaction,
+        entityType: 'dailyReflection',
+        entityKey: FirestoreDocumentIds.dailyReflection(dateKey),
+        operation: 'delete',
+        changedAtUtc: now,
+      );
+      return true;
+    });
   }
 }

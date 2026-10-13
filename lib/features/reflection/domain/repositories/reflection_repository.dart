@@ -3,9 +3,10 @@ import '../models/daily_reflection.dart';
 import '../models/reflection_rhythm.dart';
 
 class ReflectionChange {
-  const ReflectionChange(this.day);
+  const ReflectionChange(this.day, {this.isRemoteSync = false});
 
   final CalendarDay day;
+  final bool isRemoteSync;
 }
 
 abstract interface class ReflectionRepository {

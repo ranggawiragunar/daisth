@@ -62,6 +62,7 @@ GoRouter createAppRouter({
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => AccountScreen(
         viewModel: dependencies.authViewModel,
+        syncViewModel: dependencies.syncViewModel,
         notices: noticeController,
       ),
     ),

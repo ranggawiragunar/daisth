@@ -6,15 +6,19 @@ import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
 import '../domain/models/auth_session.dart';
 import 'auth_view_model.dart';
+import '../../sync/domain/models/sync_entity.dart';
+import '../../sync/presentation/sync_view_model.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({
     required this.viewModel,
+    this.syncViewModel,
     required this.notices,
     super.key,
   });
 
   final AuthViewModel viewModel;
+  final SyncViewModel? syncViewModel;
   final DaisthNoticeController notices;
 
   @override
@@ -26,11 +30,13 @@ class _AccountScreenState extends State<AccountScreen> {
   void initState() {
     super.initState();
     widget.viewModel.addListener(_changed);
+    widget.syncViewModel?.addListener(_changed);
   }
 
   @override
   void dispose() {
     widget.viewModel.removeListener(_changed);
+    widget.syncViewModel?.removeListener(_changed);
     super.dispose();
   }
 
@@ -72,6 +78,115 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<void> _retryAvailability() async {
     final success = await widget.viewModel.retryAvailability();
     if (mounted) _notice(success);
+  }
+
+  Future<void> _activateSync(AuthSignedIn session) async {
+    final syncViewModel = widget.syncViewModel;
+    if (syncViewModel == null) return;
+    final email = session.user.email ?? 'akun Google ini';
+    final activate = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Aktifkan sinkronisasi?'),
+        content: Text(
+          'Data Daisth di perangkat ini akan ditautkan ke $email dan digabungkan dengan data Daisth yang sudah tersimpan pada akun tersebut. Data lokal tidak akan dihapus.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Aktifkan'),
+          ),
+        ],
+      ),
+    );
+    if (activate != true || !mounted) return;
+    try {
+      await syncViewModel.activate(session.user.uid);
+      if (mounted) _notice(syncViewModel.status == SyncStatus.synced);
+    } catch (_) {
+      if (mounted) _notice(false);
+    }
+  }
+
+  Future<void> _syncNow() async {
+    final syncViewModel = widget.syncViewModel;
+    if (syncViewModel == null) return;
+    await syncViewModel.syncNow();
+    if (mounted) _notice(syncViewModel.status == SyncStatus.synced);
+  }
+
+  Widget _syncCard(BuildContext context, AuthSignedIn session) {
+    final vm = widget.syncViewModel!;
+    final state = vm.state;
+    final theme = Theme.of(context);
+    final linkedUid = state?.linkedUid;
+    final mismatch = linkedUid != null && linkedUid != session.user.uid;
+    final linked = linkedUid == session.user.uid;
+    final busy = vm.status == SyncStatus.syncing;
+    String title;
+    String body;
+    if (mismatch || vm.status == SyncStatus.accountMismatch) {
+      title = 'Akun Daisth berbeda';
+      body =
+          'Data di perangkat ini ditautkan ke akun Daisth lain. Tidak ada data yang dipindahkan ke akun ini. Sinkronisasi dihentikan agar data tidak tercampur. Masuk dengan akun yang sebelumnya ditautkan untuk melanjutkan.';
+    } else if (!linked) {
+      title = 'Sinkronisasi belum diaktifkan';
+      body =
+          'Data tetap tersimpan di perangkat. Tautkan ke akun Google untuk menggabungkan data dengan aman.';
+    } else {
+      title = switch (vm.status) {
+        SyncStatus.syncing => 'Menyinkronkan data…',
+        SyncStatus.error ||
+        SyncStatus.offline ||
+        SyncStatus.unavailable => 'Sinkronisasi tertunda',
+        _ => 'Sinkronisasi aktif',
+      };
+      body = state?.lastErrorCode != null
+          ? 'Data lokal tetap aman. Periksa koneksi atau coba sinkronkan lagi.'
+          : '${state?.pendingCount ?? 0} perubahan menunggu sinkronisasi.';
+      if (state?.lastSuccessfulSyncAtUtc case final time?) {
+        final localTime = time.toLocal();
+        final clock = MaterialLocalizations.of(
+          context,
+        ).formatTimeOfDay(TimeOfDay.fromDateTime(localTime));
+        body +=
+            '\nTerakhir disinkronkan ${MaterialLocalizations.of(context).formatMediumDate(localTime)}, $clock.';
+      }
+    }
+    return DaisthSurface(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(title, style: theme.textTheme.titleMedium),
+          const SizedBox(height: DaisthSpacing.sm),
+          Text(body, style: theme.textTheme.bodyMedium),
+          const SizedBox(height: DaisthSpacing.md),
+          if (mismatch || vm.status == SyncStatus.accountMismatch)
+            const SizedBox.shrink()
+          else if (!linked)
+            FilledButton.icon(
+              onPressed: busy ? null : () => _activateSync(session),
+              icon: const Icon(Icons.cloud_sync_outlined),
+              label: const Text('Aktifkan sinkronisasi'),
+            )
+          else
+            OutlinedButton.icon(
+              onPressed: busy ? null : _syncNow,
+              icon: busy
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.sync_rounded),
+              label: const Text('Sinkronkan sekarang'),
+            ),
+        ],
+      ),
+    );
   }
 
   void _notice(bool success) {
@@ -196,6 +311,11 @@ class _AccountScreenState extends State<AccountScreen> {
                       ],
                     ),
                   ),
+                if (session is AuthSignedIn &&
+                    widget.syncViewModel != null) ...[
+                  const SizedBox(height: DaisthSpacing.md),
+                  _syncCard(context, session),
+                ],
               ],
             ),
           ),

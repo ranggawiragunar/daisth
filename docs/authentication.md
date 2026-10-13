@@ -3,17 +3,18 @@
 Daisth remains usable without an account. Onboarding does not request sign-in,
 and authentication does not gate Today, Prayer Times, Routines, Reader, Dhikr,
 Mosque Finder, History, Penutup Hari, Reflection, Reminders, or Settings. Google
-Sign-In is the only authentication provider. Account access does not currently
-enable cloud sync or backup; those semantics belong to the later sync phase.
+Sign-In is the only authentication provider. Account access can enable optional
+Firestore sync only after a separate explicit link confirmation.
 
 ## Local-first boundary
 
 SQLite remains the source of truth for routines, progress, History, Reflection,
-theme, and reminders. Signing in or out does not change local data. Daisth does
-not upload, download, merge, delete, or assign local records to an account.
-Firebase Auth owns session persistence. Credentials and tokens are not copied
-into SQLite. Reminder background actions remain local and do not initialize
-Firebase or Google Sign-In.
+theme, and reminders. Signing in alone does not assign local data to an account.
+After explicit activation, only routine definitions, routine step definitions,
+routine records, routine step records, and Daily Reflection synchronize beneath
+the linked UID. Firebase Auth owns session persistence. Credentials and tokens
+are not copied into SQLite. Reminder background actions remain local and do not
+initialize Firebase or Google Sign-In.
 
 ## Architecture and behavior
 
@@ -23,7 +24,9 @@ plain-Dart `AuthUser`, explicit signed-out/signed-in/unavailable session states,
 and safe `AuthFailure` values. Presentation never displays SDK exception text.
 Google account-picker cancellation returns quietly to the signed-out Account
 screen. Normal sign-out ends Firebase and Google sessions after confirmation,
-while preserving SQLite.
+while preserving SQLite, the linked UID, and pending sync outbox. A different
+Google UID cannot sync with that local dataset. See [sync.md](sync.md) for the
+merge and account-ownership rules.
 
 The Google Sign-In singleton is initialized once before its first operation.
 The flow obtains a Google ID token, exchanges it for a Firebase credential, and
@@ -55,6 +58,6 @@ rewrite Flutter Swift Package references to work around local `xcodeproj`
 tooling. iOS live sign-in remains unverified until that generated configuration
 is available.
 
-Firebase Auth session persistence is native. No Firestore or other cloud data
-product is included in this phase. Account deletion remains a production
-requirement after cloud-data deletion semantics are defined.
+Firebase Auth session persistence is native. Firestore is configured for
+private user-scoped sync; it is not a UI repository. Account deletion remains
+a production requirement after cloud-data deletion semantics are defined.

@@ -78,7 +78,17 @@ This phase does not persist Dhikr counter position, location coordinates,
 mosque results or cache entries, Reader presentation state, or remote account
 data. Mosque and prayer-time behavior continue to use their existing services.
 
-History and Reflection use schema v5. `RoutineRecordRepository` provides
+History and Reflection were introduced on schema v5. Schema v6 adds the
+singleton `sync_metadata` row and composite-keyed `sync_outbox` without
+rewriting existing product data. The metadata contains a random per-install
+device ID, linked Firebase UID, initial-sync flag, and sync timestamps/error
+code. The outbox stores only the latest upsert/delete per entity. Feature writes
+add outbox rows in the same SQLite transaction before and after account
+linking; the coordinator gates cloud work until explicit linking. Keeping
+pre-link deletions allows first sync to merge tombstones.
+`routine_reminder_states` and `app_settings` remain local.
+
+`RoutineRecordRepository` provides
 indexed `date_key` day/range reads for routine records and step records, plus
 an earliest-record query. `RoutineRepository` reads all routine definitions
 and archived steps for historical resolution and finds the earliest definition

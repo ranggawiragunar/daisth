@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 abstract final class DatabaseSchema {
-  static const version = 5;
+  static const version = 6;
   static const routineRecords = 'routine_records';
   static const routineStepRecords = 'routine_step_records';
   static const appSettings = 'app_settings';
@@ -9,6 +9,8 @@ abstract final class DatabaseSchema {
   static const routineDefinitions = 'routine_definitions';
   static const routineStepDefinitions = 'routine_step_definitions';
   static const dailyReflections = 'daily_reflections';
+  static const syncMetadata = 'sync_metadata';
+  static const syncOutbox = 'sync_outbox';
 
   static Future<void> create(DatabaseExecutor db) async {
     await db.execute('''
@@ -53,6 +55,7 @@ abstract final class DatabaseSchema {
     await createReminderStates(db);
     await createRoutineDefinitions(db);
     await createDailyReflections(db);
+    await createSyncTables(db);
   }
 
   static Future<void> upgrade(
@@ -79,6 +82,40 @@ abstract final class DatabaseSchema {
       );
       await db.update(appSettings, {'onboarding_version': 1}, where: 'id = 1');
     }
+    if (oldVersion < 6 && newVersion >= 6) {
+      await createSyncTables(db);
+    }
+  }
+
+  static Future<void> createSyncTables(DatabaseExecutor db) async {
+    await db.execute('''
+      CREATE TABLE $syncMetadata (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        device_id TEXT NOT NULL,
+        linked_uid TEXT,
+        initial_sync_completed INTEGER NOT NULL DEFAULT 0
+          CHECK (initial_sync_completed IN (0, 1)),
+        last_attempt_at_utc TEXT,
+        last_successful_sync_at_utc TEXT,
+        last_error_code TEXT,
+        created_at_utc TEXT NOT NULL,
+        updated_at_utc TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE $syncOutbox (
+        entity_type TEXT NOT NULL,
+        entity_key TEXT NOT NULL,
+        operation TEXT NOT NULL CHECK (operation IN ('upsert', 'delete')),
+        changed_at_utc TEXT NOT NULL,
+        attempt_count INTEGER NOT NULL DEFAULT 0,
+        last_error_code TEXT,
+        PRIMARY KEY (entity_type, entity_key)
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX sync_outbox_changed ON $syncOutbox(changed_at_utc)',
+    );
   }
 
   static Future<void> createDailyReflections(DatabaseExecutor db) async {

@@ -52,6 +52,18 @@ class RoutineRecordSqliteService {
     );
   }
 
+  Future<List<Map<String, Object?>>> getRecordsForRoutine(
+    String routineId,
+  ) async {
+    final db = await databaseService.open();
+    return db.query(
+      DatabaseSchema.routineRecords,
+      where: 'routine_id = ?',
+      whereArgs: [routineId],
+      orderBy: 'date_key',
+    );
+  }
+
   Future<List<Map<String, Object?>>> getRecordsBetween(
     String startDateKey,
     String endDateKey,

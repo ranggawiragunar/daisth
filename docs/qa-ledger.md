@@ -47,3 +47,22 @@ Firebase configuration. Device QA remains deferred to this ledger.
 Installation was attempted on the connected Android device, but Android
 returned `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`. Device
 verification remains pending. No iOS device was connected for this pass.
+
+## #016 Firestore Sync — live checks pending
+
+- [ ] Android explicit-link confirmation, first merge, same-account resume,
+  manual sync, sign-out retention, offline outbox retry, and account mismatch.
+- [ ] Verify routine definitions/progress and Reflection sync across two devices.
+- [ ] Verify archived routine and step data remain available after merge.
+- [ ] Verify record and Reflection tombstones prevent stale-device resurrection.
+- [ ] Verify per-device reminder state remains isolated after sync.
+- [ ] iOS Google sign-in and Firestore sync after refreshing generated OAuth
+  client IDs and reversed URL scheme in `GoogleService-Info.plist`.
+- [x] Firestore rules compiled and deployed to Firebase project `daisthapp`
+  on 13 October 2026. The deployed rules permit access only to the signed-in
+  matching UID's `users/{uid}` path and deny all other paths.
+- [ ] Confirm remote rules behavior with authenticated and mismatched accounts.
+
+The project currently supports one SQLite dataset linked to one Firebase UID
+per installation. Account profile switching and background sync are not
+implemented. This is a deliberate MVP boundary.
