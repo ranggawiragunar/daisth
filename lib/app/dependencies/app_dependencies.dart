@@ -63,6 +63,12 @@ import '../../features/reflection/data/mappers/reflection_mapper.dart';
 import '../../features/reflection/data/repositories/reflection_repository_data.dart';
 import '../../features/reflection/data/services/reflection_sqlite_service.dart';
 import '../../features/reflection/domain/repositories/reflection_repository.dart';
+import '../../features/auth/data/repositories/auth_repository_data.dart';
+import '../../features/auth/data/services/firebase_auth_service.dart';
+import '../../features/auth/data/services/firebase_bootstrap_service.dart';
+import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../features/auth/presentation/auth_view_model.dart';
+import '../../features/onboarding/domain/current_onboarding_version.dart';
 
 class AppDependencies {
   AppDependencies({
@@ -79,10 +85,17 @@ class AppDependencies {
     RoutineRecordRepository? routineRecordRepository,
     RoutineRepository? routineRepository,
     ReflectionRepository? reflectionRepository,
+    AuthRepository? authRepository,
     this.startTodayClock = true,
   }) : httpClient = httpClient ?? http.Client(),
        _ownsHttpClient = httpClient == null {
     this.databaseService = databaseService ?? DaisthDatabaseService();
+    firebaseAuthService = FirebaseAuthService();
+    firebaseBootstrapService = FirebaseBootstrapService();
+    this.authRepository =
+        authRepository ??
+        AuthRepositoryData(firebaseAuthService, firebaseBootstrapService);
+    authViewModel = AuthViewModel(this.authRepository);
     this.appSettingsRepository =
         appSettingsRepository ??
         AppSettingsRepositoryData(
@@ -197,6 +210,10 @@ class AppDependencies {
   final bool startTodayClock;
   final bool _ownsHttpClient;
   late final DaisthDatabaseService databaseService;
+  late final FirebaseAuthService firebaseAuthService;
+  late final FirebaseBootstrapService firebaseBootstrapService;
+  late final AuthRepository authRepository;
+  late final AuthViewModel authViewModel;
   late final AppSettingsRepository appSettingsRepository;
   late final RoutineRecordRepository routineRecordRepository;
   late final RoutineRepository routineRepository;
@@ -226,6 +243,7 @@ class AppDependencies {
   AppSettings appSettings = const AppSettings();
   Object? initializationError;
   Future<void>? _initialization;
+  Future<int?>? _onboardingVersionLoad;
   Future<void>? _routineDefinitionsInitialization;
   StreamSubscription<RoutineRecordChange>? _routineReminderChangeSubscription;
   StreamSubscription<void>? _routineDefinitionChangeSubscription;
@@ -261,6 +279,22 @@ class AppDependencies {
     } catch (error) {
       initializationError ??= error;
     }
+    try {
+      if (await firebaseBootstrapService.initialize()) {
+        firebaseAuthService.attachDefault();
+        await authViewModel.refreshSession();
+      }
+    } catch (_) {
+      // Optional account setup must not prevent local Daisth startup.
+    }
+  }
+
+  Future<int?> getOnboardingVersion() =>
+      _onboardingVersionLoad ??= appSettingsRepository.getOnboardingVersion();
+
+  Future<void> completeOnboarding() async {
+    await appSettingsRepository.setOnboardingVersion(currentOnboardingVersion);
+    _onboardingVersionLoad = Future.value(currentOnboardingVersion);
   }
 
   Future<void> ensureRoutineDefinitionsReady() =>
@@ -362,6 +396,8 @@ class AppDependencies {
     unawaited(_routineDefinitionChangeSubscription?.cancel());
     unawaited(_reflectionChangeSubscription?.cancel());
     reminderSettings.dispose();
+    authViewModel.dispose();
+    unawaited(firebaseAuthService.dispose());
     if (routineRecordRepository case final RoutineRecordRepositoryData data) {
       unawaited(data.closeChanges());
     }

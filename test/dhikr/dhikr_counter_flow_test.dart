@@ -221,6 +221,7 @@ class _DhikrRouterHarness {
       noticeController: noticeController,
       dependencies: dependencies,
       initialLocation: initialLocation,
+      enforceOnboarding: false,
     );
   }
 

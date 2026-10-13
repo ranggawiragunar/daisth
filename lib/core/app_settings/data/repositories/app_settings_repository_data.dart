@@ -14,6 +14,7 @@ class AppSettingsRepositoryData implements AppSettingsRepository {
     return AppSettings(
       themePreference: _parseTheme(row['theme_mode'] as String?),
       remindersEnabled: row['reminders_enabled'] == 1,
+      onboardingVersion: row['onboarding_version'] as int?,
       updatedAt:
           DateTime.tryParse(row['updated_at_utc'] as String? ?? '')?.toUtc() ??
           DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
@@ -28,6 +29,13 @@ class AppSettingsRepositoryData implements AppSettingsRepository {
         settings.updatedAt?.toUtc().toIso8601String() ??
         DateTime.now().toUtc().toIso8601String(),
   });
+
+  @override
+  Future<int?> getOnboardingVersion() => service.getOnboardingVersion();
+
+  @override
+  Future<void> setOnboardingVersion(int version) =>
+      service.setOnboardingVersion(version);
 
   AppThemePreference _parseTheme(String? value) => switch (value) {
     'light' => AppThemePreference.light,

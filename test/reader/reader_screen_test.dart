@@ -200,6 +200,7 @@ class _ReaderRouterHarness {
       noticeController: noticeController,
       dependencies: dependencies,
       initialLocation: initialLocation,
+      enforceOnboarding: false,
     );
   }
 

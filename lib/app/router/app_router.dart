@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/presentation/auth_screens.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/onboarding/domain/current_onboarding_version.dart';
 
 import '../../core/design_system/components/daisth_notice_controller.dart';
 import '../../core/time/domain/models/calendar_day.dart';
@@ -27,10 +30,71 @@ GoRouter createAppRouter({
   required DaisthNoticeController noticeController,
   required AppDependencies dependencies,
   String initialLocation = RoutePaths.today,
+  bool enforceOnboarding = true,
 }) => GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: initialLocation,
+  redirect: enforceOnboarding
+      ? (context, state) async {
+          final version = await dependencies.getOnboardingVersion();
+          final onboarding = state.uri.path == RoutePaths.onboarding;
+          if ((version ?? 0) < currentOnboardingVersion && !onboarding) {
+            return RoutePaths.onboarding;
+          }
+          if ((version ?? 0) >= currentOnboardingVersion && onboarding) {
+            return RoutePaths.today;
+          }
+          return null;
+        }
+      : null,
   routes: [
+    GoRoute(
+      path: RoutePaths.onboarding,
+      name: AppRoute.onboarding.name,
+      builder: (context, state) => OnboardingScreen(
+        completeOnboarding: dependencies.completeOnboarding,
+        notices: noticeController,
+      ),
+    ),
+    GoRoute(
+      path: RoutePaths.account,
+      name: AppRoute.account.name,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => AccountScreen(
+        viewModel: dependencies.authViewModel,
+        notices: noticeController,
+      ),
+    ),
+    GoRoute(
+      path: RoutePaths.signIn,
+      name: AppRoute.signIn.name,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => AuthFormScreen(
+        kind: AuthFormKind.signIn,
+        viewModel: dependencies.authViewModel,
+        notices: noticeController,
+      ),
+    ),
+    GoRoute(
+      path: RoutePaths.createAccount,
+      name: AppRoute.createAccount.name,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => AuthFormScreen(
+        kind: AuthFormKind.createAccount,
+        viewModel: dependencies.authViewModel,
+        notices: noticeController,
+      ),
+    ),
+    GoRoute(
+      path: RoutePaths.forgotPassword,
+      name: AppRoute.forgotPassword.name,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => AuthFormScreen(
+        kind: AuthFormKind.forgotPassword,
+        viewModel: dependencies.authViewModel,
+        notices: noticeController,
+      ),
+    ),
     GoRoute(
       path: RoutePaths.root,
       redirect: (context, state) => RoutePaths.today,
@@ -160,6 +224,7 @@ GoRouter createAppRouter({
                   onThemeModeChanged: preferences.onThemeModeChanged,
                   prayerScheduleSession: dependencies.prayerScheduleSession,
                   reminderSettings: dependencies.reminderSettings,
+                  authViewModel: dependencies.authViewModel,
                   noticeController: noticeController,
                   bottomContentPadding: AppShell.contentBottomPadding,
                 );

@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 abstract final class DatabaseSchema {
-  static const version = 4;
+  static const version = 5;
   static const routineRecords = 'routine_records';
   static const routineStepRecords = 'routine_step_records';
   static const appSettings = 'app_settings';
@@ -40,6 +40,7 @@ abstract final class DatabaseSchema {
         id INTEGER PRIMARY KEY CHECK (id = 1),
         theme_mode TEXT NOT NULL CHECK (theme_mode IN ('system', 'light', 'dark')),
         reminders_enabled INTEGER NOT NULL CHECK (reminders_enabled IN (0, 1)),
+        onboarding_version INTEGER,
         updated_at_utc TEXT NOT NULL
       )
     ''');
@@ -71,6 +72,12 @@ abstract final class DatabaseSchema {
     }
     if (oldVersion < 4 && newVersion >= 4) {
       await createDailyReflections(db);
+    }
+    if (oldVersion < 5 && newVersion >= 5) {
+      await db.execute(
+        'ALTER TABLE $appSettings ADD COLUMN onboarding_version INTEGER',
+      );
+      await db.update(appSettings, {'onboarding_version': 1}, where: 'id = 1');
     }
   }
 

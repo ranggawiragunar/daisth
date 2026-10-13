@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../core/design_system/components/daisth_notice_controller.dart';
@@ -17,6 +18,9 @@ import '../../reminders/domain/models/exact_alarm_status.dart';
 import '../../reminders/domain/models/reminder_permission_status.dart';
 import '../../reminders/domain/models/reminder.dart';
 import '../../reminders/presentation/view_models/reminder_settings_view_model.dart';
+import '../../../app/router/route_paths.dart';
+import '../../../features/auth/domain/models/auth_session.dart';
+import '../../../features/auth/presentation/auth_view_model.dart';
 
 class SettingsPlaceholderScreen extends StatefulWidget {
   const SettingsPlaceholderScreen({
@@ -25,6 +29,7 @@ class SettingsPlaceholderScreen extends StatefulWidget {
     required this.prayerScheduleSession,
     required this.reminderSettings,
     required this.noticeController,
+    this.authViewModel,
     this.bottomContentPadding = 0,
     super.key,
   });
@@ -34,6 +39,7 @@ class SettingsPlaceholderScreen extends StatefulWidget {
   final PrayerScheduleSession prayerScheduleSession;
   final ReminderSettingsViewModel reminderSettings;
   final DaisthNoticeController noticeController;
+  final AuthViewModel? authViewModel;
   final double bottomContentPadding;
 
   @override
@@ -50,6 +56,7 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
     super.initState();
     _session.addListener(_onChanged);
     _reminders.addListener(_onChanged);
+    widget.authViewModel?.addListener(_onChanged);
     unawaited(_reminders.initialize());
   }
 
@@ -57,6 +64,7 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
   void dispose() {
     _session.removeListener(_onChanged);
     _reminders.removeListener(_onChanged);
+    widget.authViewModel?.removeListener(_onChanged);
     super.dispose();
   }
 
@@ -151,6 +159,29 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text('Settings', style: theme.textTheme.headlineSmall),
+                const SizedBox(height: DaisthSpacing.section),
+                Text('Account', style: theme.textTheme.titleMedium),
+                const SizedBox(height: DaisthSpacing.md),
+                DaisthSurface(
+                  padding: EdgeInsets.zero,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: ListTile(
+                      leading: Icon(
+                        Icons.person_outline_rounded,
+                        color: theme.colorScheme.primary,
+                      ),
+                      title: const Text('Account'),
+                      subtitle: Text(switch (widget.authViewModel?.session) {
+                        AuthSignedIn(:final user) => user.email,
+                        AuthUnavailable() => 'Layanan akun tidak tersedia',
+                        _ => 'Opsional · Belum terhubung',
+                      }),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => context.push(RoutePaths.account),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: DaisthSpacing.section),
                 Text('Prayer & Location', style: theme.textTheme.titleMedium),
                 const SizedBox(height: DaisthSpacing.md),

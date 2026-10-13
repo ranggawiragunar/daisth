@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:daisth/app/app.dart';
 import 'package:daisth/app/dependencies/app_dependencies.dart';
 import 'package:daisth/core/design_system/components/daisth_notice.dart';
+import 'package:daisth/core/app_settings/domain/models/app_settings.dart';
+import 'package:daisth/core/app_settings/domain/repositories/app_settings_repository.dart';
 import 'package:daisth/features/routines/presentation/routine_detail_screen.dart';
 import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
 import 'package:daisth/core/location/domain/models/location_access_status.dart';
@@ -88,6 +90,7 @@ void main() {
 
   testWidgets('Appearance selector changes the app ThemeMode', (tester) async {
     await tester.pumpWidget(_testApp());
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('navigation-settings')));
     await tester.pumpAndSettle();
@@ -164,6 +167,7 @@ void main() {
 
   testWidgets('selected navigation treatment is a label pill', (tester) async {
     await tester.pumpWidget(_testApp());
+    await tester.pumpAndSettle();
 
     final todayLabel = tester.widget<AnimatedContainer>(
       find.byKey(const ValueKey('navigation-label-today')),
@@ -228,9 +232,22 @@ Widget _testApp() => DaisthApp(
     routineRecordRepository: FakeRoutineRecordRepository(),
     routineRepository: FakeRoutineRepository(),
     reflectionRepository: FakeReflectionRepository(),
+    appSettingsRepository: _CompletedSettings(),
     databaseService: TestPersistence.createDatabaseService(),
   ),
 );
+
+class _CompletedSettings implements AppSettingsRepository {
+  @override
+  Future<AppSettings> getSettings() async =>
+      const AppSettings(onboardingVersion: 1);
+  @override
+  Future<void> saveSettings(AppSettings settings) async {}
+  @override
+  Future<int?> getOnboardingVersion() async => 1;
+  @override
+  Future<void> setOnboardingVersion(int version) async {}
+}
 
 class _DeniedLocation implements LocationRepository {
   @override

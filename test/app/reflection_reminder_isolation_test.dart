@@ -65,12 +65,21 @@ void main() {
 }
 
 class _EnabledSettingsRepository implements AppSettingsRepository {
+  int? onboardingVersion = 1;
   @override
   Future<AppSettings> getSettings() async =>
       const AppSettings(remindersEnabled: true);
 
   @override
   Future<void> saveSettings(AppSettings settings) async {}
+
+  @override
+  Future<int?> getOnboardingVersion() async => onboardingVersion;
+
+  @override
+  Future<void> setOnboardingVersion(int version) async {
+    onboardingVersion = version;
+  }
 }
 
 class _UtcTimezoneRepository implements TimezoneRepository {

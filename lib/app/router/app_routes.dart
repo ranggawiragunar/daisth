@@ -8,4 +8,9 @@ enum AppRoute {
   reader,
   dhikrCounter,
   mosqueFinder,
+  onboarding,
+  account,
+  signIn,
+  createAccount,
+  forgotPassword,
 }

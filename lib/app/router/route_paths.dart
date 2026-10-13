@@ -4,6 +4,11 @@ abstract final class RoutePaths {
   static const history = '/history';
   static const routines = '/routines';
   static const settings = '/settings';
+  static const onboarding = '/onboarding';
+  static const account = '/settings/account';
+  static const signIn = '/auth/sign-in';
+  static const createAccount = '/auth/create-account';
+  static const forgotPassword = '/auth/forgot-password';
   static const routineDetailPattern = '/routines/:routineId';
   static const historyDayPattern = '/history/:date';
   static const reflection = '/reflection';

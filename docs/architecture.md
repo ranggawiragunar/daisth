@@ -70,6 +70,27 @@ RoutineRecordSqliteService
 DaisthDatabaseService → SQLite
 ```
 
+## Optional account foundation
+
+Firebase Core/Auth are optional remote infrastructure. Local repositories and
+the SQLite database initialize first; a missing Firebase configuration leaves
+the account capability unavailable without blocking Daisth. Auth state is
+explicitly signed out, signed in with a plain `AuthUser`, or unavailable.
+Firebase SDK types stay in the service layer:
+
+```text
+AuthRepository
+↑
+AuthRepositoryData
+↓
+FirebaseAuthService
+```
+
+The account feature currently supports email/password only. Firebase owns
+session persistence. Sign-in and sign-out do not read, write, merge, or clear
+local feature data. Authentication does not gate shell routes. Firestore sync
+and account ownership semantics are not part of this foundation.
+
 `RoutineDetailViewModel` loads the selected local calendar day's step and
 routine records when the route opens. Status is resolved from required steps;
 optional progress is stored separately. Dhikr counter state remains session

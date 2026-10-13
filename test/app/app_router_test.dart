@@ -497,6 +497,7 @@ class _RouterHarness {
       noticeController: noticeController,
       dependencies: this.dependencies,
       initialLocation: initialLocation,
+      enforceOnboarding: false,
     );
   }
 

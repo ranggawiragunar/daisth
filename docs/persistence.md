@@ -1,7 +1,7 @@
 # Local persistence
 
 Daisth stores local app state in `daisth.db`, managed by
-`DaisthDatabaseService`. The database currently uses schema version 4 and
+`DaisthDatabaseService`. The database currently uses schema version 5 and
 SQLite migrations through `onCreate` and `onUpgrade`.
 
 ## Stored data
@@ -9,7 +9,8 @@ SQLite migrations through `onCreate` and `onUpgrade`.
 - `routine_records` stores a routine's status, completion instant, first
   recorded instant, last updated instant, and optional Not Today reason.
 - `routine_step_records` stores each step's completion state and timestamps.
-- `app_settings` stores the theme preference and reminder enabled preference.
+- `app_settings` stores theme/reminder preferences and nullable
+  `onboarding_version`.
 - `routine_reminder_states` stores one row per routine and calendar day,
   including snooze time, follow-up schedule/suppression, and the last action.
 - `routine_definitions` stores user-owned default and custom routine
@@ -40,7 +41,7 @@ routines.
 
 Schema changes must increment the database version and apply additive
 migrations. Do not drop user data as part of an upgrade. The SQLite database
-is the source of truth for daily routine progress and the two persisted app
+is the source of truth for daily routine progress and persisted app
 preferences.
 
 The version 1 to 2 migration creates `routine_reminder_states` additively and
@@ -62,16 +63,22 @@ on edits; `updated_at_utc` records the latest edit instant. The `rhythm` column
 accepts only `steady`, `mixed`, or `heavy`; blank notes are stored as SQL
 `NULL`.
 
+The version 4 to 5 migration adds `app_settings.onboarding_version` and marks
+the existing singleton row as version 1. This preserves the first-run flow for
+existing installs. A fresh v5 database leaves the value `NULL`, so onboarding
+is shown until skipped or completed. Authentication credentials and Firebase
+session tokens are owned by Firebase Auth and are never stored in SQLite.
+
 The development rebrand changed the database filename and application
 identifier before release. No copy or migration from the previous development
 database is included; a rebranded development install starts with a fresh local
-database; existing Daisth installs upgrade in place to schema version 4.
+database; existing Daisth installs upgrade in place to schema version 5.
 
 This phase does not persist Dhikr counter position, location coordinates,
 mosque results or cache entries, Reader presentation state, or remote account
 data. Mosque and prayer-time behavior continue to use their existing services.
 
-History and Reflection use schema v4. `RoutineRecordRepository` provides
+History and Reflection use schema v5. `RoutineRecordRepository` provides
 indexed `date_key` day/range reads for routine records and step records, plus
 an earliest-record query. `RoutineRepository` reads all routine definitions
 and archived steps for historical resolution and finds the earliest definition
