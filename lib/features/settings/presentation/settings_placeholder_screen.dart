@@ -160,6 +160,11 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
               children: [
                 Text('Settings', style: theme.textTheme.headlineSmall),
                 const SizedBox(height: DaisthSpacing.section),
+                _AppearanceSelector(
+                  themeMode: widget.themeMode,
+                  onChanged: widget.onThemeModeChanged,
+                ),
+                const SizedBox(height: DaisthSpacing.section),
                 Text('Account', style: theme.textTheme.titleMedium),
                 const SizedBox(height: DaisthSpacing.md),
                 DaisthSurface(
@@ -282,11 +287,6 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
                   onRequestPrecise: _requestPreciseReminders,
                   onOpenSettings: _reminders.openNotificationSettings,
                 ),
-                const SizedBox(height: DaisthSpacing.section),
-                _AppearanceSelector(
-                  themeMode: widget.themeMode,
-                  onChanged: widget.onThemeModeChanged,
-                ),
                 const SizedBox(height: DaisthSpacing.lg),
                 Text(
                   'Waktu sholat dihitung di perangkat menggunakan lokasi saat ini. Lokasi tidak disimpan.',
@@ -368,36 +368,27 @@ class _NotificationsSettingsSection extends StatelessWidget {
                 label: 'Notification permission',
                 value: permission,
               ),
+              const SizedBox(height: DaisthSpacing.md),
               if (viewModel.permissionStatus ==
                   ReminderPermissionStatus.denied) ...[
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: onOpenSettings,
-                    child: const Text('Open Settings'),
-                  ),
+                OutlinedButton.icon(
+                  onPressed: onOpenSettings,
+                  icon: const Icon(Icons.settings_outlined),
+                  label: const Text('Open Settings'),
                 ),
               ],
               if (defaultTargetPlatform == TargetPlatform.android) ...[
                 const SizedBox(height: DaisthSpacing.md),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _SettingsValueRow(
-                        label: 'Precise reminders',
-                        value: precise,
-                      ),
-                    ),
-                    if (viewModel.exactAlarmStatus ==
-                        ExactAlarmStatus.needsPermission)
-                      TextButton(
-                        onPressed: viewModel.isLoading
-                            ? null
-                            : onRequestPrecise,
-                        child: const Text('Enable'),
-                      ),
-                  ],
-                ),
+                _SettingsValueRow(label: 'Precise reminders', value: precise),
+                if (viewModel.exactAlarmStatus ==
+                    ExactAlarmStatus.needsPermission) ...[
+                  const SizedBox(height: DaisthSpacing.md),
+                  OutlinedButton.icon(
+                    onPressed: viewModel.isLoading ? null : onRequestPrecise,
+                    icon: const Icon(Icons.schedule_outlined),
+                    label: const Text('Enable'),
+                  ),
+                ],
               ],
               const SizedBox(height: DaisthSpacing.md),
               _SettingsValueRow(
