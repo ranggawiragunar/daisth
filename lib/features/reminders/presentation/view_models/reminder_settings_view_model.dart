@@ -13,6 +13,8 @@ import '../../domain/models/reminder_priority.dart';
 import '../../domain/models/reminder_scheduling_mode.dart';
 import '../../domain/models/reminder_schedule_summary.dart';
 import '../../domain/repositories/reminder_repository.dart';
+import '../../domain/repositories/routine_reminder_state_repository.dart';
+import '../../../../core/time/domain/models/calendar_day.dart';
 import '../../domain/use_cases/reminder_reschedule_policy.dart';
 import '../../domain/use_cases/schedule_today_reminders_use_case.dart';
 
@@ -23,6 +25,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
     required this.scheduleTodayReminders,
     required this.prayerScheduleSession,
     this.appSettingsRepository,
+    this.reminderStateRepository,
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now {
     prayerScheduleSession.addListener(_onPrayerScheduleChanged);
@@ -33,6 +36,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
   final ScheduleTodayRemindersUseCase scheduleTodayReminders;
   final PrayerScheduleSession prayerScheduleSession;
   final AppSettingsRepository? appSettingsRepository;
+  final RoutineReminderStateRepository? reminderStateRepository;
   final DateTime Function() _clock;
   final ReminderReschedulePolicy _reschedulePolicy =
       const ReminderReschedulePolicy();
@@ -46,6 +50,8 @@ class ReminderSettingsViewModel extends ChangeNotifier {
   DeviceTimezone? deviceTimezone;
   ReminderScheduleSummary? lastSummary;
   List<Reminder> pendingReminders = const [];
+  String? lastReminderAction;
+  DateTime? lastReminderActionAt;
   DateTime? _lastPlanDate;
   String? _lastPlanTimezone;
   DateTime? _lastPrayerScheduleUpdatedAt;
@@ -188,15 +194,20 @@ class ReminderSettingsViewModel extends ChangeNotifier {
     }
     final now = _clock();
     final scheduledAt = now.add(const Duration(seconds: 7));
-    final dateKey = '${now.year}-${now.month}-${now.day}';
+    final dateKey =
+        '${now.year.toString().padLeft(4, '0')}-'
+        '${now.month.toString().padLeft(2, '0')}-'
+        '${now.day.toString().padLeft(2, '0')}';
     await reminderRepository.schedule(
       Reminder(
-        id: 'debug-test-primary-$dateKey',
-        routineId: 'debug-test',
-        title: 'Pengingat uji Daisth',
-        body: 'Notifikasi lokal berfungsi.',
+        id: 'dhuha-primary-test-$dateKey',
+        routineId: 'dhuha',
+        title: 'Uji aksi · Sholat Dhuha',
+        body: 'Notifikasi lokal dan aksi reminder berfungsi.',
         scheduledAt: scheduledAt,
         priority: ReminderPriority.medium,
+        dateKey: dateKey,
+        timezoneIdentifier: deviceTimezone?.ianaName ?? 'UTC',
       ),
       mode: exactAlarmStatus == ExactAlarmStatus.enabled
           ? ReminderSchedulingMode.exact
@@ -225,11 +236,11 @@ class ReminderSettingsViewModel extends ChangeNotifier {
         currentDate: current,
         currentTimezone: timezone.ianaName,
       )) {
+        await _reschedule(now: current);
         await _refreshPending();
         notifyListeners();
         return;
       }
-      await reminderRepository.cancelAllDaisthReminders();
       await prayerScheduleSession.refresh(now: current);
       await _reschedule(now: current);
     } catch (_) {
@@ -279,6 +290,21 @@ class ReminderSettingsViewModel extends ChangeNotifier {
 
   Future<void> _refreshPending() async {
     pendingReminders = await reminderRepository.getPendingReminders();
+    final repository = reminderStateRepository;
+    if (repository != null) {
+      final states = await repository.getStatesForDay(
+        CalendarDay.fromDateTime(_clock()),
+      );
+      states.sort(
+        (a, b) => (b.lastActionAt ?? DateTime.fromMillisecondsSinceEpoch(0))
+            .compareTo(
+              a.lastActionAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+            ),
+      );
+      final last = states.where((s) => s.lastAction != null).firstOrNull;
+      lastReminderAction = last?.lastAction;
+      lastReminderActionAt = last?.lastActionAt;
+    }
   }
 
   Future<void> _saveReminderPreference(bool enabled) async {

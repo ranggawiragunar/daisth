@@ -29,14 +29,23 @@ import '../../features/reminders/data/mappers/reminder_mapper.dart';
 import '../../features/reminders/data/repositories/reminder_repository_data.dart';
 import '../../features/reminders/data/services/reminder_local_notifications_service.dart';
 import '../../features/reminders/data/services/reminder_notification_gateway.dart';
+import '../../features/reminders/data/mappers/routine_reminder_state_mapper.dart';
+import '../../features/reminders/data/repositories/routine_reminder_state_repository_data.dart';
+import '../../features/reminders/data/services/routine_reminder_state_sqlite_service.dart';
 import '../../features/reminders/domain/repositories/reminder_repository.dart';
+import '../../features/reminders/domain/models/reminder_priority.dart';
+import '../../features/reminders/domain/models/reminder.dart';
 import '../../features/reminders/domain/use_cases/build_today_reminder_plan_use_case.dart';
 import '../../features/reminders/domain/use_cases/schedule_today_reminders_use_case.dart';
+import '../../features/reminders/domain/use_cases/handle_reminder_action_use_case.dart';
+import '../../features/reminders/domain/repositories/routine_reminder_state_repository.dart';
 import '../../features/reminders/presentation/view_models/reminder_settings_view_model.dart';
 import '../../features/routines/data/mappers/routine_record_mapper.dart';
+import '../../features/routines/data/demo/routine_demo_data.dart';
 import '../../features/routines/data/repositories/routine_record_repository_data.dart';
 import '../../features/routines/data/services/routine_record_sqlite_service.dart';
 import '../../features/routines/domain/repositories/routine_record_repository.dart';
+import '../../features/routines/domain/models/routine_status.dart';
 import '../../features/routines/domain/use_cases/mark_routine_complete_use_case.dart';
 import '../../features/routines/domain/use_cases/mark_routine_not_today_use_case.dart';
 import '../../features/routines/domain/use_cases/resolve_routine_status_use_case.dart';
@@ -70,6 +79,10 @@ class AppDependencies {
           service: RoutineRecordSqliteService(this.databaseService),
           mapper: RoutineRecordMapper(),
         );
+    routineReminderStateRepository = RoutineReminderStateRepositoryData(
+      service: RoutineReminderStateSqliteService(this.databaseService),
+      mapper: RoutineReminderStateMapper(),
+    );
     resolveRoutineStatus = const ResolveRoutineStatusUseCase();
     setRoutineStepCompletion = SetRoutineStepCompletionUseCase(
       repository: this.routineRecordRepository,
@@ -125,6 +138,14 @@ class AppDependencies {
       timezoneRepository: this.timezoneRepository,
       loadTodayPrayerSchedule: loadTodayPrayerSchedule,
       buildTodayReminderPlan: buildTodayReminderPlan,
+      routineRecordRepository: this.routineRecordRepository,
+      reminderStateRepository: routineReminderStateRepository,
+    );
+    handleReminderAction = HandleReminderActionUseCase(
+      routineRepository: this.routineRecordRepository,
+      reminderStateRepository: routineReminderStateRepository,
+      reminderRepository: this.reminderRepository,
+      markRoutineComplete: markRoutineComplete,
     );
     reminderSettings = ReminderSettingsViewModel(
       reminderRepository: this.reminderRepository,
@@ -132,6 +153,7 @@ class AppDependencies {
       scheduleTodayReminders: scheduleTodayReminders,
       prayerScheduleSession: prayerScheduleSession,
       appSettingsRepository: this.appSettingsRepository,
+      reminderStateRepository: routineReminderStateRepository,
     );
   }
 
@@ -141,6 +163,7 @@ class AppDependencies {
   late final DaisthDatabaseService databaseService;
   late final AppSettingsRepository appSettingsRepository;
   late final RoutineRecordRepository routineRecordRepository;
+  late final RoutineReminderStateRepository routineReminderStateRepository;
   late final ResolveRoutineStatusUseCase resolveRoutineStatus;
   late final SetRoutineStepCompletionUseCase setRoutineStepCompletion;
   late final MarkRoutineCompleteUseCase markRoutineComplete;
@@ -158,10 +181,12 @@ class AppDependencies {
   late final ReminderMapper reminderMapper = ReminderMapper();
   late final BuildTodayReminderPlanUseCase buildTodayReminderPlan;
   late final ScheduleTodayRemindersUseCase scheduleTodayReminders;
+  late final HandleReminderActionUseCase handleReminderAction;
   late final ReminderSettingsViewModel reminderSettings;
   AppSettings appSettings = const AppSettings();
   Object? initializationError;
   Future<void>? _initialization;
+  StreamSubscription<RoutineRecordChange>? _routineReminderChangeSubscription;
 
   Future<void> initialize({void Function(String? payload)? onNotificationTap}) {
     return _initialization ??= _initialize(onNotificationTap);
@@ -173,6 +198,8 @@ class AppDependencies {
     try {
       await databaseService.open();
       appSettings = await appSettingsRepository.getSettings();
+      _routineReminderChangeSubscription ??= routineRecordRepository.changes
+          .listen((change) => unawaited(_reconcileRoutineChange(change)));
     } catch (error) {
       initializationError = error;
     }
@@ -187,6 +214,51 @@ class AppDependencies {
     }
   }
 
+  Future<void> _reconcileRoutineChange(RoutineRecordChange change) async {
+    try {
+      final record = await routineRecordRepository.getRoutineRecord(
+        change.calendarDay,
+        change.routineId,
+      );
+      if (record?.status != RoutineStatus.completed &&
+          record?.status != RoutineStatus.notToday) {
+        return;
+      }
+      final title =
+          RoutineDemoData.byId(change.routineId)?.title ?? change.routineId;
+      final timezone = await timezoneRepository.getDeviceTimezone();
+      for (final type in [ReminderType.followUp, ReminderType.snooze]) {
+        final kind = type == ReminderType.followUp ? 'follow-up' : 'snooze';
+        await reminderRepository.cancel(
+          Reminder(
+            id: '${change.routineId}-$kind-${change.calendarDay.toDateKey()}',
+            routineId: change.routineId,
+            title: title,
+            body: '',
+            scheduledAt: DateTime.now(),
+            priority: ReminderPriority.medium,
+            type: type,
+            dateKey: change.calendarDay.toDateKey(),
+            timezoneIdentifier: timezone.ianaName,
+          ),
+        );
+      }
+      final now = DateTime.now().toUtc();
+      await routineReminderStateRepository.clearSnooze(
+        change.calendarDay,
+        change.routineId,
+        now: now,
+      );
+      await routineReminderStateRepository.clearFollowUp(
+        change.calendarDay,
+        change.routineId,
+        now: now,
+      );
+    } catch (error) {
+      initializationError ??= error;
+    }
+  }
+
   Future<void> setThemePreference(AppThemePreference preference) async {
     appSettings = (await appSettingsRepository.getSettings()).copyWith(
       themePreference: preference,
@@ -196,6 +268,7 @@ class AppDependencies {
   }
 
   void dispose() {
+    unawaited(_routineReminderChangeSubscription?.cancel());
     reminderSettings.dispose();
     if (routineRecordRepository case final RoutineRecordRepositoryData data) {
       unawaited(data.closeChanges());

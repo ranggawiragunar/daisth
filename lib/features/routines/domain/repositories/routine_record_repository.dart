@@ -37,6 +37,12 @@ abstract interface class RoutineRecordRepository {
     required DateTime now,
   });
 
+  Future<void> markRequiredCompleted({
+    required Routine routine,
+    required CalendarDay day,
+    required DateTime now,
+  });
+
   Future<void> markNotToday({
     required Routine routine,
     required CalendarDay day,

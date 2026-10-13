@@ -9,8 +9,12 @@ an explicit prayer-time refresh also rebuilds the remaining reminders.
 The five mandatory prayers use the existing `PrayerDaySchedule`, with the
 primary reminder ten minutes before Fajr, Dhuhr, Asr, Maghrib, and Isha. Sholat
 Malam is planned for 03:00, Dhuha for 07:00, Daily Reflection for 20:30, and
-Penutup Hari for 21:00. Past times are skipped. Only primary reminders are
-scheduled.
+Penutup Hari for 21:00. Past primary times are skipped. One automatic
+follow-up can be scheduled for each supported routine day. Zuhur, Asar, and
+Maghrib use the next same-day prayer boundary with a one-hour window-end target
+and a 45-minute minimum gap; Sholat Malam, Subuh, Dhuha, and Isya use one hour
+after the primary reminder. Follow-up is skipped when its time has passed, the
+routine is complete or Not Today, or the user has snoozed it.
 
 Android uses the `daisth_high` channel for mandatory prayers and Sholat Malam,
 and `daisth_standard` for Dhuha and evening reminders. If Android exact-alarm
@@ -22,12 +26,27 @@ full-screen intent, or critical-alert capabilities. iOS requests regular alert
 and sound permission only when the user enables reminders.
 
 Settings shows notification permission, precise-alarm availability, timezone,
-and pending reminders for today. The enabled preference is stored locally with
+Reminder Health, last action, and pending reminders for today. The enabled preference is stored locally with
 the app settings and restored on launch. OS permission remains controlled by
 the operating system and is checked again when the app resumes. Daisth does
 not request permission automatically during restoration.
 
-Notification taps open the matching Routine Detail through `go_router`.
-Reflection and Penutup Hari open Today. Done, Snooze, follow-up reminders,
-persistent routine completion, Firebase, and multi-device coordination are
-deferred until their required durable state exists.
+Actionable routine reminders offer Done, Snooze, and Open. Reflection and
+Penutup Hari offer Open only and route to Today. Done uses the existing routine
+completion use case and payload date. Snooze replaces one reminder ten minutes
+later and suppresses that day's automatic follow-up. Open and body taps route
+to the matching Routine Detail through `go_router` without changing progress.
+
+Android Done/Snooze actions run in the notification background engine. The
+top-level callback builds its own SQLite and reminder services and calls the
+same `HandleReminderActionUseCase` used by foreground dispatch. iOS registers
+routine and reference categories at initialization; the implicit Flutter
+engine's plugin registrant callback supports the action engine. Daisth stores
+the last action, snooze instant, follow-up instant, and suppression flag in
+`routine_reminder_states`. On startup/resume, schedule reconciliation restores
+future snoozes and eligible follow-ups while respecting persisted completion
+and suppression.
+
+Normal routine completion changes are observed through the routine repository
+change stream and cancel that day's follow-up and snooze notifications.
+Background Done performs cancellation after the SQLite completion commits.

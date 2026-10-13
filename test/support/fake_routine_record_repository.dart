@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:daisth/core/time/domain/models/calendar_day.dart';
 import 'package:daisth/features/routines/domain/models/routine.dart';
+import 'package:daisth/features/routines/domain/models/routine_requirement.dart';
 import 'package:daisth/features/routines/domain/models/routine_record.dart';
 import 'package:daisth/features/routines/domain/models/routine_status.dart';
 import 'package:daisth/features/routines/domain/models/routine_step_record.dart';
@@ -79,6 +80,28 @@ class FakeRoutineRecordRepository implements RoutineRecordRepository {
     notTodayReason: null,
     now: now,
   );
+
+  @override
+  Future<void> markRequiredCompleted({
+    required Routine routine,
+    required CalendarDay day,
+    required DateTime now,
+  }) async {
+    final completed = {
+      for (final step in await getStepRecords(day, routine.id))
+        step.stepId: step.isCompleted,
+      for (final step in routine.steps)
+        if (step.requirement == RoutineRequirement.required) step.id: true,
+    };
+    await saveResolvedProgress(
+      routine: routine,
+      day: day,
+      completedSteps: completed,
+      status: _status(routine, completed),
+      notTodayReason: null,
+      now: now,
+    );
+  }
 
   @override
   Future<void> markNotToday({

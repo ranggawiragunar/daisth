@@ -190,7 +190,36 @@ TimezoneFlutterService
 timezone database and device timezone before the local notification plugin.
 `ScheduleTodayRemindersUseCase` reuses the current prayer schedule when it is
 for today, otherwise it loads today's schedule through the existing prayer time
-use case. Reminder preferences are session-only until persistence is added.
+use case. Reminder preferences are restored from `app_settings`.
+
+Reminder action state uses its own domain repository and SQLite service:
+
+```text
+RoutineReminderStateRepository
+↑
+RoutineReminderStateRepositoryData
+↓
+RoutineReminderStateSqliteService
+↓
+DaisthDatabaseService → SQLite
+```
+
+Action handling coordinates durable routine progress, reminder state, and OS
+notifications in one use case:
+
+```text
+Notification action
+→ HandleReminderActionUseCase
+→ routine/reminder repositories
+```
+
+Android's top-level notification callback creates an independent background
+composition graph; it does not access `AppDependencies`, UI context, or router
+state. It opens `daisth.db` through a new `DaisthDatabaseService`. iOS uses the
+implicit Flutter engine lifecycle and registers plugins through
+`FlutterLocalNotificationsPlugin.setPluginRegistrantCallback` for its action
+engine. Open is dispatched to app navigation, while Done and Snooze share the
+same action use case in foreground and background.
 
 Prayer times are calculated locally with the Indonesia (KEMENAG) preset and
 Shafi Asr by default. The app uses foreground current-device location and

@@ -8,6 +8,7 @@ class ReminderScheduleData {
     required this.scheduledAt,
     required this.channelId,
     required this.payload,
+    this.actionable = true,
   });
 
   final int notificationId;
@@ -18,4 +19,5 @@ class ReminderScheduleData {
   final DateTime scheduledAt;
   final String channelId;
   final String payload;
+  final bool actionable;
 }

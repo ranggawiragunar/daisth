@@ -17,8 +17,19 @@ class MarkRoutineCompleteUseCase {
     required Routine routine,
     required CalendarDay day,
     DateTime? now,
+    bool includeOptional = true,
   }) async {
-    final completed = {for (final step in routine.steps) step.id: true};
+    if (!includeOptional) {
+      await repository.markRequiredCompleted(
+        routine: routine,
+        day: day,
+        now: (now ?? DateTime.now()).toUtc(),
+      );
+      return;
+    }
+    final completed = <String, bool>{
+      for (final step in routine.steps) step.id: true,
+    };
     final status = resolveStatus(
       routine: routine,
       completedStepIds: completed.keys.toSet(),

@@ -1,7 +1,7 @@
 # Local persistence
 
 Daisth stores local app state in `daisth.db`, managed by
-`DaisthDatabaseService`. The database currently uses schema version 1 and
+`DaisthDatabaseService`. The database currently uses schema version 2 and
 SQLite migrations through `onCreate` and `onUpgrade`.
 
 ## Stored data
@@ -10,6 +10,8 @@ SQLite migrations through `onCreate` and `onUpgrade`.
   recorded instant, last updated instant, and optional Not Today reason.
 - `routine_step_records` stores each step's completion state and timestamps.
 - `app_settings` stores the theme preference and reminder enabled preference.
+- `routine_reminder_states` stores one row per routine and calendar day,
+  including snooze time, follow-up schedule/suppression, and the last action.
 
 Routine keys use the device's local calendar date in `YYYY-MM-DD` form. Event
 timestamps are stored as UTC ISO 8601 instants. This keeps records associated
@@ -29,10 +31,14 @@ migrations. Do not drop user data as part of an upgrade. The SQLite database
 is the source of truth for daily routine progress and the two persisted app
 preferences.
 
+The version 1 to 2 migration creates `routine_reminder_states` additively and
+leaves routine records, step records, and app settings intact. Its composite
+key is `(date_key, routine_id)`; instants are stored as UTC ISO 8601 values.
+
 The development rebrand changed the database filename and application
 identifier before release. No copy or migration from the previous development
 database is included; a rebranded development install starts with a fresh local
-database while retaining schema version 1.
+database; existing Daisth installs upgrade in place to schema version 2.
 
 This phase does not persist Dhikr counter position, location coordinates,
 mosque results or cache entries, Reader presentation state, or remote account

@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import '../../../../core/persistence/data/schema/database_schema.dart';
 import '../../../../core/time/domain/models/calendar_day.dart';
 import '../../domain/models/routine.dart';
+import '../../domain/models/routine_requirement.dart';
 import '../../domain/models/routine_record.dart';
 import '../../domain/models/routine_status.dart';
 import '../../domain/models/routine_step_record.dart';
@@ -136,6 +137,37 @@ class RoutineRecordRepositoryData implements RoutineRecordRepository {
         },
         status: RoutineStatus.notToday,
         notTodayReason: reason,
+        now: now,
+      );
+    });
+    _changes.add(RoutineRecordChange(day, routine.id));
+  }
+
+  @override
+  Future<void> markRequiredCompleted({
+    required Routine routine,
+    required CalendarDay day,
+    required DateTime now,
+  }) async {
+    await service.transaction((transaction) async {
+      final rows = await transaction.query(
+        DatabaseSchema.routineStepRecords,
+        where: 'date_key = ? AND routine_id = ?',
+        whereArgs: [day.toDateKey(), routine.id],
+      );
+      final completed = {
+        for (final row in rows)
+          row['step_id'] as String: row['is_completed'] == 1,
+        for (final step in routine.steps)
+          if (step.requirement == RoutineRequirement.required) step.id: true,
+      };
+      await _saveInTransaction(
+        transaction,
+        routine: routine,
+        day: day,
+        completedSteps: completed,
+        status: _resolveStatus(routine, completed),
+        notTodayReason: null,
         now: now,
       );
     });

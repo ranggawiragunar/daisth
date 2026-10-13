@@ -1,6 +1,6 @@
 import 'reminder_priority.dart';
 
-enum ReminderType { primary, followUp }
+enum ReminderType { primary, followUp, snooze }
 
 class Reminder {
   const Reminder({
@@ -11,6 +11,9 @@ class Reminder {
     required this.scheduledAt,
     required this.priority,
     this.type = ReminderType.primary,
+    this.dateKey,
+    this.timezoneIdentifier = 'UTC',
+    this.actionable = true,
   });
 
   final String id;
@@ -20,4 +23,7 @@ class Reminder {
   final DateTime scheduledAt;
   final ReminderPriority priority;
   final ReminderType type;
+  final String? dateKey;
+  final String timezoneIdentifier;
+  final bool actionable;
 }

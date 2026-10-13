@@ -8,6 +8,8 @@ import '../core/design_system/components/daisth_notice.dart';
 import '../core/design_system/components/daisth_notice_controller.dart';
 import '../core/design_system/theme/daisth_theme.dart';
 import '../core/location/domain/repositories/location_repository.dart';
+import '../features/reminders/domain/models/reminder_action.dart';
+import '../features/reminders/domain/models/reminder_payload.dart';
 import 'app_preferences_scope.dart';
 import 'dependencies/app_dependencies.dart';
 import 'router/app_router.dart';
@@ -64,12 +66,38 @@ class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
   }
 
   void _onReminderNotificationTap(String? payload) {
+    if (payload == null) return;
+    final separator = payload.indexOf('|');
+    if (separator > 0) {
+      final action = ReminderActionIds.parse(payload.substring(0, separator));
+      final encoded = payload.substring(separator + 1);
+      final parsed = ReminderPayload.tryParse(encoded);
+      if (parsed != null && action != null && action != ReminderAction.open) {
+        unawaited(_dispatchForegroundReminderAction(action, parsed));
+        return;
+      }
+      payload = encoded;
+    }
     final destination = ReminderNotificationRouteResolver(
       _dependencies.reminderMapper,
     ).resolve(payload);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _router.go(destination);
     });
+  }
+
+  Future<void> _dispatchForegroundReminderAction(
+    ReminderAction action,
+    ReminderPayload payload,
+  ) async {
+    try {
+      await _dependencies.handleReminderAction(
+        action: action,
+        payload: payload,
+      );
+    } catch (error) {
+      _dependencies.initializationError ??= error;
+    }
   }
 
   @override

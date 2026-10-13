@@ -77,7 +77,11 @@ class ReminderRepositoryData implements ReminderRepository {
     final pending = List.of(await service.getPendingRequests());
     for (final request in pending) {
       final reminder = _mapPending(request);
-      if (reminder == null || !_isSameDate(reminder.scheduledAt, date)) {
+      final dateKey =
+          '${date.year.toString().padLeft(4, '0')}-'
+          '${date.month.toString().padLeft(2, '0')}-'
+          '${date.day.toString().padLeft(2, '0')}';
+      if (reminder == null || reminder.dateKey != dateKey) {
         continue;
       }
       await service.cancel(request.id);
@@ -122,11 +126,6 @@ class ReminderRepositoryData implements ReminderRepository {
       return false;
     }
   }
-
-  bool _isSameDate(DateTime first, DateTime second) =>
-      first.year == second.year &&
-      first.month == second.month &&
-      first.day == second.day;
 
   @override
   Future<bool> openNotificationSettings() => service.openNotificationSettings();

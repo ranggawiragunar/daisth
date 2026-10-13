@@ -4,6 +4,7 @@ import 'package:daisth/core/location/domain/models/location_access_status.dart';
 import 'package:daisth/core/location/domain/repositories/location_repository.dart';
 import 'package:daisth/core/location/domain/use_cases/resolve_current_location_use_case.dart';
 import 'package:daisth/core/timezone/domain/models/device_timezone.dart';
+import 'package:daisth/core/time/domain/models/calendar_day.dart';
 import 'package:daisth/core/timezone/domain/repositories/timezone_repository.dart';
 import 'package:daisth/features/prayer_times/domain/models/prayer_calculation_settings.dart';
 import 'package:daisth/features/prayer_times/domain/models/prayer_day_schedule.dart';
@@ -16,6 +17,13 @@ import 'package:daisth/features/reminders/domain/models/reminder_scheduling_mode
 import 'package:daisth/features/reminders/domain/repositories/reminder_repository.dart';
 import 'package:daisth/features/reminders/domain/use_cases/build_today_reminder_plan_use_case.dart';
 import 'package:daisth/features/reminders/domain/use_cases/schedule_today_reminders_use_case.dart';
+import 'package:daisth/features/reminders/domain/repositories/routine_reminder_state_repository.dart';
+import 'package:daisth/features/reminders/data/mappers/routine_reminder_state_mapper.dart';
+import 'package:daisth/features/reminders/data/repositories/routine_reminder_state_repository_data.dart';
+import 'package:daisth/features/reminders/data/services/routine_reminder_state_sqlite_service.dart';
+import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
+import 'package:daisth/features/routines/domain/repositories/routine_record_repository.dart';
+import '../support/test_persistence.dart';
 
 void main() {
   test(
@@ -54,20 +62,88 @@ void main() {
       isTrue,
     );
   });
+
+  test(
+    'startup reconciliation restores future snooze and skips suppressed/completed follow-up',
+    () async {
+      final persistence = await TestPersistence.create();
+      addTearDown(persistence.dispose);
+      final states = RoutineReminderStateRepositoryData(
+        service: RoutineReminderStateSqliteService(persistence.database),
+        mapper: RoutineReminderStateMapper(),
+      );
+      final now = DateTime(2026, 10, 13, 3, 15);
+      final day = CalendarDay(year: 2026, month: 10, day: 13);
+      await states.recordSnooze(
+        day: day,
+        routineId: 'dhuha',
+        snoozedUntil: now.add(const Duration(minutes: 10)),
+        now: now,
+      );
+      await states.suppressFollowUp(day: day, routineId: 'zuhur', now: now);
+      await persistence.routineRecords.markCompleted(
+        routine: RoutineDemoData.asar,
+        day: day,
+        now: now,
+      );
+      await persistence.routineRecords.setStepCompletion(
+        routine: RoutineDemoData.sholatMalam,
+        day: day,
+        stepId: 'tahajud',
+        isCompleted: true,
+        now: now,
+      );
+      final reminders = _Reminders(ExactAlarmStatus.enabled);
+      await _useCase(
+        reminders,
+        routineRepository: persistence.routineRecords,
+        reminderStateRepository: states,
+      )(schedule: _schedule(), now: now);
+      expect(
+        reminders.scheduled
+            .where((r) => r.type == ReminderType.snooze)
+            .map((r) => r.routineId),
+        ['dhuha'],
+      );
+      expect(
+        reminders.scheduled
+            .where((r) => r.type == ReminderType.followUp)
+            .map((r) => r.routineId),
+        isNot(contains('zuhur')),
+      );
+      expect(
+        reminders.scheduled
+            .where((r) => r.type == ReminderType.followUp)
+            .map((r) => r.routineId),
+        isNot(contains('asar')),
+      );
+      expect(
+        reminders.scheduled
+            .where((r) => r.type == ReminderType.followUp)
+            .map((r) => r.routineId),
+        contains('sholat-malam'),
+      );
+    },
+  );
 }
 
-ScheduleTodayRemindersUseCase _useCase(_Reminders reminders) =>
-    ScheduleTodayRemindersUseCase(
-      reminderRepository: reminders,
-      timezoneRepository: _Timezones(),
-      loadTodayPrayerSchedule: LoadTodayPrayerScheduleUseCase(
-        resolveCurrentLocation: ResolveCurrentLocationUseCase(
-          locationRepository: _Location(),
-        ),
-        prayerTimeRepository: _PrayerRepository(),
-      ),
-      buildTodayReminderPlan: BuildTodayReminderPlanUseCase(),
-    );
+ScheduleTodayRemindersUseCase _useCase(
+  _Reminders reminders, {
+  RoutineRecordRepository? routineRepository,
+  RoutineReminderStateRepository? reminderStateRepository,
+}) => ScheduleTodayRemindersUseCase(
+  reminderRepository: reminders,
+  timezoneRepository: _Timezones(),
+  loadTodayPrayerSchedule: LoadTodayPrayerScheduleUseCase(
+    resolveCurrentLocation: ResolveCurrentLocationUseCase(
+      locationRepository: _Location(),
+    ),
+    prayerTimeRepository: _PrayerRepository(),
+  ),
+  buildTodayReminderPlan: BuildTodayReminderPlanUseCase(),
+  routineRecordRepository: routineRepository,
+  reminderStateRepository: reminderStateRepository,
+);
 
 PrayerDaySchedule _schedule() => PrayerDaySchedule(
   date: DateTime(2026, 10, 13),

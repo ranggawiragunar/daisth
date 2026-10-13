@@ -15,6 +15,7 @@ import '../../prayer_times/presentation/prayer_schedule_session.dart';
 import '../../prayer_times/presentation/prayer_time_presentation.dart';
 import '../../reminders/domain/models/exact_alarm_status.dart';
 import '../../reminders/domain/models/reminder_permission_status.dart';
+import '../../reminders/domain/models/reminder.dart';
 import '../../reminders/presentation/view_models/reminder_settings_view_model.dart';
 
 class SettingsPlaceholderScreen extends StatefulWidget {
@@ -373,6 +374,31 @@ class _NotificationsSettingsSection extends StatelessWidget {
                 value: viewModel.deviceTimezone?.ianaName ?? '—',
               ),
               const SizedBox(height: DaisthSpacing.md),
+              _SettingsValueRow(
+                label: 'Reminder health',
+                value: !viewModel.remindersEnabled
+                    ? 'Off'
+                    : viewModel.permissionStatus ==
+                          ReminderPermissionStatus.denied
+                    ? 'Permission needed'
+                    : viewModel.exactAlarmStatus == ExactAlarmStatus.enabled
+                    ? 'Precise timing'
+                    : 'Standard timing',
+              ),
+              const SizedBox(height: DaisthSpacing.md),
+              _SettingsValueRow(
+                label: 'Pending reminders',
+                value: '${viewModel.pendingReminders.length}',
+              ),
+              if (viewModel.lastReminderAction != null) ...[
+                const SizedBox(height: DaisthSpacing.md),
+                _SettingsValueRow(
+                  label: 'Last action',
+                  value:
+                      '${_actionLabel(viewModel.lastReminderAction!)}${viewModel.lastReminderActionAt == null ? '' : ' · ${_formatActionTime(viewModel.lastReminderActionAt!)}'}',
+                ),
+              ],
+              const SizedBox(height: DaisthSpacing.md),
               InkWell(
                 borderRadius: BorderRadius.circular(DaisthRadius.medium),
                 onTap: () => _showPendingReminders(context),
@@ -422,16 +448,6 @@ class _NotificationsSettingsSection extends StatelessWidget {
                   label: const Text('Send test reminder'),
                 ),
               ],
-              if (!viewModel.remindersEnabled &&
-                  viewModel.pendingReminders.isNotEmpty) ...[
-                const SizedBox(height: DaisthSpacing.sm),
-                Text(
-                  'Reminder preference is session-only. Scheduled notifications may remain after the app is restarted.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -469,7 +485,11 @@ class _NotificationsSettingsSection extends StatelessWidget {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(reminder.title),
-                      subtitle: Text(reminder.routineId),
+                      subtitle: Text(switch (reminder.type) {
+                        ReminderType.primary => 'Pengingat utama',
+                        ReminderType.followUp => 'Pengingat lanjutan',
+                        ReminderType.snooze => 'Pengingat tunda',
+                      }),
                       trailing: Text(
                         '${reminder.scheduledAt.hour.toString().padLeft(2, '0')}:${reminder.scheduledAt.minute.toString().padLeft(2, '0')}',
                       ),
@@ -482,6 +502,16 @@ class _NotificationsSettingsSection extends StatelessWidget {
     );
   }
 }
+
+String _actionLabel(String action) => switch (action) {
+  'done' => 'Selesai',
+  'snooze' => 'Ditunda',
+  'open' => 'Dibuka',
+  _ => action,
+};
+
+String _formatActionTime(DateTime value) =>
+    '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
 
 class _SettingsValueRow extends StatelessWidget {
   const _SettingsValueRow({required this.label, required this.value});

@@ -10,6 +10,7 @@ class BuildTodayReminderPlanUseCase {
     required PrayerDaySchedule schedule,
     required DeviceTimezone timezone,
     required DateTime now,
+    bool includePast = false,
   }) {
     final date = DateTime(
       schedule.date.year,
@@ -24,7 +25,7 @@ class BuildTodayReminderPlanUseCase {
       required DateTime scheduledAt,
       required ReminderPriority priority,
     }) {
-      if (!scheduledAt.isAfter(now)) return;
+      if (!includePast && !scheduledAt.isAfter(now)) return;
       reminders.add(
         Reminder(
           id: '$routineId-primary-${_dateKey(date)}',
@@ -33,6 +34,9 @@ class BuildTodayReminderPlanUseCase {
           body: body,
           scheduledAt: scheduledAt,
           priority: priority,
+          dateKey: _dateKey(date),
+          timezoneIdentifier: timezone.ianaName,
+          actionable: !{'reflection', 'penutup-hari'}.contains(routineId),
         ),
       );
     }

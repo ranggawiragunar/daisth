@@ -6,6 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../mappers/reminder_mapper.dart';
 import '../models/reminder_schedule_data.dart';
 import 'reminder_notification_gateway.dart';
+import 'reminder_background_action.dart';
+import '../../domain/models/reminder_action.dart';
 
 class ReminderLocalNotificationsService implements ReminderNotificationGateway {
   ReminderLocalNotificationsService({FlutterLocalNotificationsPlugin? plugin})
@@ -20,17 +22,55 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
   }) async {
     _onNotificationTap = onNotificationTap;
     final initialized = await _plugin.initialize(
-      settings: const InitializationSettings(
+      settings: InitializationSettings(
         android: AndroidInitializationSettings('ic_daisth_notification'),
         iOS: DarwinInitializationSettings(
           requestAlertPermission: false,
           requestBadgePermission: false,
           requestSoundPermission: false,
+          notificationCategories: [
+            DarwinNotificationCategory(
+              'daisth_routine_reminder',
+              actions: [
+                DarwinNotificationAction.plain(
+                  ReminderActionIds.done,
+                  'Selesai',
+                ),
+                DarwinNotificationAction.plain(
+                  ReminderActionIds.snooze,
+                  'Ingatkan 10 menit lagi',
+                ),
+                DarwinNotificationAction.plain(
+                  ReminderActionIds.open,
+                  'Buka',
+                  options: {DarwinNotificationActionOption.foreground},
+                ),
+              ],
+            ),
+            DarwinNotificationCategory(
+              'daisth_reference_reminder',
+              actions: [
+                DarwinNotificationAction.plain(
+                  ReminderActionIds.open,
+                  'Buka',
+                  options: {DarwinNotificationActionOption.foreground},
+                ),
+              ],
+            ),
+          ],
         ),
       ),
       onDidReceiveNotificationResponse: (response) {
-        _onNotificationTap?.call(response.payload);
+        if (response.actionId?.isNotEmpty == true) {
+          _onNotificationTap?.call(
+            '${response.actionId}|${response.payload ?? ''}',
+          );
+        } else {
+          _onNotificationTap?.call(response.payload);
+        }
       },
+      onDidReceiveBackgroundNotificationResponse:
+          daisthBackgroundNotificationResponse,
     );
     if (initialized == false) {
       throw StateError('Local notification plugin initialization failed.');
@@ -107,15 +147,7 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
   }) {
     final local = timezone.local;
     final scheduledAt = reminder.scheduledAt;
-    final scheduledDate = timezone.TZDateTime(
-      local,
-      scheduledAt.year,
-      scheduledAt.month,
-      scheduledAt.day,
-      scheduledAt.hour,
-      scheduledAt.minute,
-      scheduledAt.second,
-    );
+    final scheduledDate = timezone.TZDateTime.from(scheduledAt, local);
     final highPriority = reminder.channelId == ReminderMapper.highChannelId;
     return _plugin.zonedSchedule(
       id: reminder.notificationId,
@@ -140,10 +172,42 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
           enableVibration: true,
           playSound: true,
           icon: 'ic_daisth_notification',
+          actions: reminder.actionable
+              ? const [
+                  AndroidNotificationAction(
+                    ReminderActionIds.done,
+                    'Selesai',
+                    showsUserInterface: false,
+                    cancelNotification: true,
+                  ),
+                  AndroidNotificationAction(
+                    ReminderActionIds.snooze,
+                    'Ingatkan 10 menit lagi',
+                    showsUserInterface: false,
+                    cancelNotification: true,
+                  ),
+                  AndroidNotificationAction(
+                    ReminderActionIds.open,
+                    'Buka',
+                    showsUserInterface: true,
+                    cancelNotification: true,
+                  ),
+                ]
+              : const [
+                  AndroidNotificationAction(
+                    ReminderActionIds.open,
+                    'Buka',
+                    showsUserInterface: true,
+                    cancelNotification: true,
+                  ),
+                ],
         ),
-        iOS: const DarwinNotificationDetails(
+        iOS: DarwinNotificationDetails(
           presentAlert: true,
           presentSound: true,
+          categoryIdentifier: reminder.actionable
+              ? 'daisth_routine_reminder'
+              : 'daisth_reference_reminder',
         ),
       ),
     );
