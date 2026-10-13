@@ -66,36 +66,6 @@ GoRouter createAppRouter({
       ),
     ),
     GoRoute(
-      path: RoutePaths.signIn,
-      name: AppRoute.signIn.name,
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => AuthFormScreen(
-        kind: AuthFormKind.signIn,
-        viewModel: dependencies.authViewModel,
-        notices: noticeController,
-      ),
-    ),
-    GoRoute(
-      path: RoutePaths.createAccount,
-      name: AppRoute.createAccount.name,
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => AuthFormScreen(
-        kind: AuthFormKind.createAccount,
-        viewModel: dependencies.authViewModel,
-        notices: noticeController,
-      ),
-    ),
-    GoRoute(
-      path: RoutePaths.forgotPassword,
-      name: AppRoute.forgotPassword.name,
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => AuthFormScreen(
-        kind: AuthFormKind.forgotPassword,
-        viewModel: dependencies.authViewModel,
-        notices: noticeController,
-      ),
-    ),
-    GoRoute(
       path: RoutePaths.root,
       redirect: (context, state) => RoutePaths.today,
     ),

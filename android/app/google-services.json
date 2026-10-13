@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "563438128973",
+    "project_id": "daisthapp",
+    "storage_bucket": "daisthapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:563438128973:android:c8453221d952847596b104",
+        "android_client_info": {
+          "package_name": "com.rendev.daisth"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "563438128973-307kh7e25svgf963rqot0qb32r0bbb3r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rendev.daisth",
+            "certificate_hash": "d284e53722692b4294a5a2e20c5db11de608e44d"
+          }
+        },
+        {
+          "client_id": "563438128973-2rdl213uqosj3sp12vh1hu9g4hr81t9i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmX2jN3eSbaps1cpOLWB5RCKJKDDqzDHE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "563438128973-2rdl213uqosj3sp12vh1hu9g4hr81t9i.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "563438128973-9b6k6rtappnf2c1phoavfetgpo7cssa7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.rendev.daisth"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

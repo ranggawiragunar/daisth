@@ -14,20 +14,7 @@ class AuthRepositoryData implements AuthRepository {
   @override
   Future<AuthSession> currentSession() async => service.currentSession();
   @override
-  Future<AuthUser> signInWithEmailPassword(String email, String password) =>
-      service.signIn(email, password);
-  @override
-  Future<AuthUser> createAccountWithEmailPassword(
-    String email,
-    String password,
-  ) => service.createAccount(email, password);
-  @override
-  Future<void> sendPasswordResetEmail(String email) =>
-      service.sendPasswordReset(email);
-  @override
-  Future<void> sendVerificationEmail() => service.sendVerification();
-  @override
-  Future<AuthUser?> reloadCurrentUser() => service.reloadCurrentUser();
+  Future<AuthUser> signInWithGoogle() => service.signInWithGoogle();
   @override
   Future<void> signOut() => service.signOut();
   @override

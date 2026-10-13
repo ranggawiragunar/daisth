@@ -86,10 +86,10 @@ AuthRepositoryData
 FirebaseAuthService
 ```
 
-The account feature currently supports email/password only. Firebase owns
-session persistence. Sign-in and sign-out do not read, write, merge, or clear
-local feature data. Authentication does not gate shell routes. Firestore sync
-and account ownership semantics are not part of this foundation.
+The account feature supports Google Sign-In only and remains optional. Firebase
+owns session persistence. Sign-in and sign-out do not read, write, merge, or
+clear local feature data. Authentication does not gate shell routes. Firestore
+sync and account ownership semantics are not part of this foundation.
 
 `RoutineDetailViewModel` loads the selected local calendar day's step and
 routine records when the route opens. Status is resolved from required steps;

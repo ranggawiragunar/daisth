@@ -10,7 +10,4 @@ enum AppRoute {
   mosqueFinder,
   onboarding,
   account,
-  signIn,
-  createAccount,
-  forgotPassword,
 }

@@ -8,8 +8,7 @@ class FakeAuthRepository implements AuthRepository {
   final controller = StreamController<AuthSession>.broadcast();
   AuthSession session = const AuthSignedOut();
   AuthFailure? nextFailure;
-  AuthFailure? verificationFailure;
-  int verificationRequests = 0;
+  int googleSignInRequests = 0;
   int signOutRequests = 0;
 
   void _emit(AuthSession value) {
@@ -22,51 +21,19 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<AuthSession> currentSession() async => session;
   @override
-  Future<AuthUser> signInWithEmailPassword(
-    String email,
-    String password,
-  ) async {
+  Future<AuthUser> signInWithGoogle() async {
+    googleSignInRequests++;
     _failIfNeeded();
     const user = AuthUser(
       uid: 'test-uid',
       email: 'person@example.com',
-      emailVerified: false,
+      displayName: 'Test User',
+      photoUrl: null,
     );
     _emit(const AuthSignedIn(user));
     return user;
   }
 
-  @override
-  Future<AuthUser> createAccountWithEmailPassword(
-    String email,
-    String password,
-  ) async {
-    _failIfNeeded();
-    const user = AuthUser(
-      uid: 'test-uid',
-      email: 'person@example.com',
-      emailVerified: false,
-    );
-    _emit(const AuthSignedIn(user));
-    return user;
-  }
-
-  @override
-  Future<void> sendPasswordResetEmail(String email) async => _failIfNeeded();
-  @override
-  Future<void> sendVerificationEmail() async {
-    verificationRequests++;
-    final failure = verificationFailure;
-    verificationFailure = null;
-    if (failure != null) throw AuthOperationException(failure);
-  }
-
-  @override
-  Future<AuthUser?> reloadCurrentUser() async => const AuthUser(
-    uid: 'test-uid',
-    email: 'person@example.com',
-    emailVerified: true,
-  );
   @override
   Future<void> signOut() async {
     signOutRequests++;

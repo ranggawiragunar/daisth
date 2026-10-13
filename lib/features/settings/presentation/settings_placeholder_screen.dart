@@ -178,7 +178,8 @@ class _SettingsPlaceholderScreenState extends State<SettingsPlaceholderScreen> {
                       ),
                       title: const Text('Account'),
                       subtitle: Text(switch (widget.authViewModel?.session) {
-                        AuthSignedIn(:final user) => user.email,
+                        AuthSignedIn(:final user) =>
+                          user.email ?? user.displayName ?? 'Akun Google',
                         AuthUnavailable() => 'Layanan akun tidak tersedia',
                         _ => 'Opsional · Belum terhubung',
                       }),

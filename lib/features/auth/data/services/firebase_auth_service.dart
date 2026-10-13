@@ -1,17 +1,28 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../domain/models/auth_session.dart';
 import '../../domain/models/auth_user.dart';
 
 class FirebaseAuthService {
-  FirebaseAuthService({FirebaseAuth? auth}) {
-    _auth = auth;
-  }
+  factory FirebaseAuthService({
+    FirebaseAuth? auth,
+    GoogleSignIn? googleSignIn,
+  }) => FirebaseAuthService._(
+    auth: auth,
+    googleSignIn: googleSignIn ?? GoogleSignIn.instance,
+  );
+
+  FirebaseAuthService._({this._auth, required this._googleSignIn});
 
   FirebaseAuth? _auth;
+  final GoogleSignIn _googleSignIn;
+  static Future<void>? _googleInitialization;
   final StreamController<AuthSession> _sessions = StreamController.broadcast();
   StreamSubscription<User?>? _authSubscription;
+
   bool get isAvailable => _auth != null;
 
   Future<void> dispose() async {
@@ -29,56 +40,47 @@ class FirebaseAuthService {
     );
   }
 
-  Stream<AuthSession> authStateChanges() {
-    return Stream<AuthSession>.multi((controller) {
-      controller.add(currentSession());
-      final subscription = _sessions.stream.listen(
-        controller.add,
-        onError: controller.addError,
-      );
-      controller.onCancel = subscription.cancel;
-    });
-  }
+  Stream<AuthSession> authStateChanges() =>
+      Stream<AuthSession>.multi((controller) {
+        controller.add(currentSession());
+        final subscription = _sessions.stream.listen(
+          controller.add,
+          onError: controller.addError,
+        );
+        controller.onCancel = subscription.cancel;
+      });
 
   AuthSession currentSession() =>
       _auth == null ? const AuthUnavailable() : _session(_auth!.currentUser);
 
-  Future<AuthUser> signIn(String email, String password) async =>
-      _mapOperation(() async {
-        final result = await _auth!.signInWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
-        return _user(result.user!);
-      });
-
-  Future<AuthUser> createAccount(String email, String password) async =>
-      _mapOperation(() async {
-        final result = await _auth!.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
-        return _user(result.user!);
-      });
-
-  Future<void> sendPasswordReset(String email) =>
-      _mapOperation(() => _auth!.sendPasswordResetEmail(email: email));
-
-  Future<void> sendVerification() => _mapOperation(() async {
-    final user = _auth?.currentUser;
-    if (user == null) throw const AuthOperationException(AuthFailure.unknown);
-    await user.sendEmailVerification();
+  Future<AuthUser> signInWithGoogle() => _mapOperation(() async {
+    await _ensureGoogleInitialized();
+    final account = await _googleSignIn.authenticate();
+    final idToken = account.authentication.idToken;
+    if (idToken == null || idToken.isEmpty) {
+      throw const AuthOperationException(AuthFailure.configurationError);
+    }
+    final credential = GoogleAuthProvider.credential(idToken: idToken);
+    final result = await _auth!.signInWithCredential(credential);
+    final user = result.user;
+    if (user == null) {
+      throw const AuthOperationException(AuthFailure.credentialRejected);
+    }
+    return _user(user);
   });
 
-  Future<AuthUser?> reloadCurrentUser() => _mapOperation(() async {
-    final user = _auth?.currentUser;
-    if (user == null) return null;
-    await user.reload();
-    final refreshed = _auth?.currentUser;
-    return refreshed == null ? null : _user(refreshed);
+  Future<void> signOut() => _mapOperation(() async {
+    await _auth!.signOut();
+    try {
+      await _ensureGoogleInitialized();
+      await _googleSignIn.signOut();
+    } catch (_) {
+      // Firebase sign-out must still complete if provider cleanup is unavailable.
+    }
   });
 
-  Future<void> signOut() => _mapOperation(() => _auth!.signOut());
+  Future<void> _ensureGoogleInitialized() =>
+      _googleInitialization ??= _googleSignIn.initialize();
 
   Future<T> _mapOperation<T>(Future<T> Function() operation) async {
     if (_auth == null) {
@@ -88,8 +90,10 @@ class FirebaseAuthService {
       return await operation();
     } on AuthOperationException {
       rethrow;
+    } on GoogleSignInException catch (error) {
+      throw AuthOperationException(_googleFailure(error.code));
     } on FirebaseAuthException catch (error) {
-      throw AuthOperationException(_failure(error.code));
+      throw AuthOperationException(_firebaseFailure(error.code));
     } on FirebaseException {
       throw const AuthOperationException(AuthFailure.serviceUnavailable);
     } catch (_) {
@@ -102,21 +106,32 @@ class FirebaseAuthService {
 
   AuthUser _user(User user) => AuthUser(
     uid: user.uid,
-    email: user.email ?? '',
-    emailVerified: user.emailVerified,
+    email: user.email,
+    displayName: user.displayName,
+    photoUrl: user.photoURL,
   );
 
-  AuthFailure _failure(String code) => switch (code) {
-    'invalid-credential' ||
-    'wrong-password' ||
-    'user-not-found' => AuthFailure.invalidCredentials,
-    'email-already-in-use' => AuthFailure.emailAlreadyInUse,
-    'weak-password' => AuthFailure.weakPassword,
-    'invalid-email' => AuthFailure.invalidEmail,
-    'too-many-requests' => AuthFailure.tooManyRequests,
+  AuthFailure _googleFailure(GoogleSignInExceptionCode code) => switch (code) {
+    GoogleSignInExceptionCode.canceled ||
+    GoogleSignInExceptionCode.interrupted => AuthFailure.cancelled,
+    GoogleSignInExceptionCode.clientConfigurationError ||
+    GoogleSignInExceptionCode.providerConfigurationError =>
+      AuthFailure.configurationError,
+    GoogleSignInExceptionCode.uiUnavailable => AuthFailure.serviceUnavailable,
+    GoogleSignInExceptionCode.userMismatch => AuthFailure.credentialRejected,
+    GoogleSignInExceptionCode.unknownError => AuthFailure.unknown,
+  };
+
+  AuthFailure _firebaseFailure(String code) => switch (code) {
     'network-request-failed' => AuthFailure.networkUnavailable,
-    'user-disabled' => AuthFailure.userDisabled,
-    'operation-not-allowed' => AuthFailure.operationNotAllowed,
+    'account-exists-with-different-credential' ||
+    'invalid-credential' ||
+    'credential-already-in-use' => AuthFailure.credentialRejected,
+    'user-disabled' => AuthFailure.accountDisabled,
+    'too-many-requests' => AuthFailure.tooManyRequests,
+    'operation-not-allowed' ||
+    'app-not-authorized' => AuthFailure.configurationError,
+    'service-not-available' => AuthFailure.serviceUnavailable,
     _ => AuthFailure.unknown,
   };
 }

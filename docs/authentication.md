@@ -1,45 +1,60 @@
-# Optional account authentication
+# Optional Google authentication
 
-Daisth remains usable without an account. Onboarding introduces local routines,
-History, and Reflection without requesting permissions or requiring sign-in.
-Authentication currently supports Email/Password only and does not gate app
-routes.
+Daisth remains usable without an account. Onboarding does not request sign-in,
+and authentication does not gate Today, Prayer Times, Routines, Reader, Dhikr,
+Mosque Finder, History, Penutup Hari, Reflection, Reminders, or Settings. Google
+Sign-In is the only authentication provider. Account access does not currently
+enable cloud sync or backup; those semantics belong to the later sync phase.
 
 ## Local-first boundary
 
 SQLite remains the source of truth for routines, progress, History, Reflection,
 theme, and reminders. Signing in or out does not change local data. Daisth does
-not yet upload, download, merge, or assign local records to an account. Those
-semantics belong to the later sync phase. Firebase Auth session persistence is
-handled by the native Firebase SDK; credentials and tokens are not copied into
-SQLite. Reminder background actions remain local and do not initialize Firebase.
+not upload, download, merge, delete, or assign local records to an account.
+Firebase Auth owns session persistence. Credentials and tokens are not copied
+into SQLite. Reminder background actions remain local and do not initialize
+Firebase or Google Sign-In.
 
 ## Architecture and behavior
 
-`AuthRepository` is implemented by `AuthRepositoryData`, which delegates Firebase
-SDK work to `FirebaseAuthService`. The domain exposes only `AuthUser`, explicit
-signed-out/signed-in/unavailable session states, and safe `AuthFailure` values.
-Presentation maps those failures to calm user-facing messages.
+`AuthRepository` is implemented by `AuthRepositoryData`, which delegates
+Firebase and Google SDK work to `FirebaseAuthService`. The domain exposes only
+plain-Dart `AuthUser`, explicit signed-out/signed-in/unavailable session states,
+and safe `AuthFailure` values. Presentation never displays SDK exception text.
+Google account-picker cancellation returns quietly to the signed-out Account
+screen. Normal sign-out ends Firebase and Google sessions after confirmation,
+while preserving SQLite.
 
-Create-account success is retained even when sending the verification email
-fails. Verification is encouraged but never required to use the app. Password
-reset confirmation is generic so it does not reveal whether an email is
-registered. Signing out requires confirmation and preserves the local database.
-Account deletion is deferred until cloud data deletion semantics are defined;
-it remains a production release requirement tracked in the QA ledger.
+The Google Sign-In singleton is initialized once before its first operation.
+The flow obtains a Google ID token, exchanges it for a Firebase credential, and
+maps the Firebase user into `AuthUser`. Daisth requests no Google API scopes.
+When Firebase cannot initialize, the account capability is unavailable while
+local features continue to work.
 
-## Firebase setup
+## Firebase and Google configuration
 
-1. Create/select the Daisth Firebase project.
-2. Register Android application ID `com.rendev.daisth` and iOS bundle ID
-   `com.rendev.daisth`.
-3. Enable **Authentication → Email/Password** in Firebase Console.
-4. Run the normal FlutterFire configuration workflow for the project and add
-   the generated platform configuration to the app. Do not commit fabricated
-   project IDs or API keys.
+The configured Firebase project is `daisthapp`, with Android application ID
+`com.rendev.daisth` and iOS bundle ID `com.rendev.daisth`. Firebase Core uses
+`lib/firebase_options.dart`; Android also uses its generated
+`android/app/google-services.json` and the Google Services Gradle plugin.
+Keep these files generated from the Firebase Console or FlutterFire tooling;
+do not fabricate project configuration.
 
-Firebase Core initialization is attempted after local services initialize. If
-configuration is missing or Firebase is unavailable, the account screen shows
-that account service is unavailable while local Daisth continues to work.
-Firebase Auth uses its native session persistence. No Firestore or other cloud
-data product is included in this phase.
+Google authentication must be enabled in Firebase Console. The Android debug
+SHA-1 is registered there. To inspect the local signing fingerprints, run:
+
+```bash
+cd android
+./gradlew signingReport
+```
+
+The current iOS `GoogleService-Info.plist` has no `CLIENT_ID` or
+`REVERSED_CLIENT_ID`, so iOS Google Sign-In still needs a refreshed Firebase
+configuration with the OAuth client values and URL scheme. Do not remove or
+rewrite Flutter Swift Package references to work around local `xcodeproj`
+tooling. iOS live sign-in remains unverified until that generated configuration
+is available.
+
+Firebase Auth session persistence is native. No Firestore or other cloud data
+product is included in this phase. Account deletion remains a production
+requirement after cloud-data deletion semantics are defined.

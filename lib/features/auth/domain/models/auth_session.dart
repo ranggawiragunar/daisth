@@ -18,14 +18,12 @@ final class AuthUnavailable extends AuthSession {
 }
 
 enum AuthFailure {
-  invalidCredentials,
-  emailAlreadyInUse,
-  weakPassword,
-  invalidEmail,
-  tooManyRequests,
+  cancelled,
   networkUnavailable,
-  userDisabled,
-  operationNotAllowed,
+  configurationError,
+  credentialRejected,
+  accountDisabled,
+  tooManyRequests,
   serviceUnavailable,
   unknown,
 }

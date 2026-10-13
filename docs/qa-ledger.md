@@ -8,8 +8,8 @@ implementation and must be revisited in the full device QA pass.
 - [ ] Fresh install onboarding, Skip, completion, restart, and page navigation.
 - [ ] Existing v4 install migration skips onboarding; fresh v5 remains incomplete.
 - [ ] Signed-out access to Today, History, and Routines.
-- [ ] Create account, verification delivery/resend/refresh, sign-out, and sign-in.
-- [ ] Firebase Auth session persistence after restart and generic password reset.
+- [ ] Google account picker, Firebase credential exchange, cancellation, and sign-out.
+- [ ] Firebase Auth session persistence after restart.
 - [ ] Offline auth failure and unavailable Firebase configuration behavior.
 - [ ] Confirm local routine, custom routine, Reflection, theme, and reminder data
   remain intact after sign-in and sign-out.
@@ -23,9 +23,11 @@ Daisth remained usable. The install reused existing app data; it was not cleared
 to simulate a fresh install. Fresh onboarding, auth operations/session
 persistence, and the remaining items above are still pending.
 
-Firebase project configuration is not present in this checkout, so live auth
-QA requires Firebase Console setup and platform configuration. Device QA remains
-deferred to this ledger.
+Android Firebase configuration is present in the local checkout. Verify Android
+Google sign-in, session persistence, and local-data preservation on device. The
+current iOS `GoogleService-Info.plist` lacks Google OAuth client IDs and its
+reversed URL scheme, so iOS sign-in QA remains blocked on refreshed generated
+Firebase configuration. Device QA remains deferred to this ledger.
 
 ## #014 Daily Reflection — pending device verification
 

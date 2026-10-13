@@ -10,47 +10,50 @@ import '../support/fake_auth_repository.dart';
 import '../support/test_persistence.dart';
 
 void main() {
-  test(
-    'email validation trims whitespace and accepts basic valid addresses',
-    () {
-      expect(isValidAuthEmail(' person@example.com '), isTrue);
-      expect(isValidAuthEmail('not-an-email'), isFalse);
-      expect(isValidAuthEmail('missing@domain'), isFalse);
-    },
-  );
-
-  test(
-    'create account remains successful when verification email fails',
-    () async {
-      final repository = FakeAuthRepository()
-        ..verificationFailure = AuthFailure.networkUnavailable;
-      final viewModel = AuthViewModel(repository);
-      addTearDown(viewModel.dispose);
-      addTearDown(repository.dispose);
-
-      expect(
-        await viewModel.createAccount('person@example.com', 'password123'),
-        isTrue,
-      );
-      expect(viewModel.session, isA<AuthSignedIn>());
-      expect(repository.verificationRequests, 1);
-    },
-  );
-
-  test('sign-in failures map to calm domain feedback', () async {
-    final repository = FakeAuthRepository()
-      ..nextFailure = AuthFailure.invalidCredentials;
+  test('Google sign-in updates the session with a plain AuthUser', () async {
+    final repository = FakeAuthRepository();
     final viewModel = AuthViewModel(repository);
     addTearDown(viewModel.dispose);
     addTearDown(repository.dispose);
 
-    expect(await viewModel.signIn('person@example.com', 'wrong'), isFalse);
-    expect(viewModel.failure, AuthFailure.invalidCredentials);
-    expect(viewModel.message, 'Email atau kata sandi tidak cocok.');
+    expect(await viewModel.signInWithGoogle(), isTrue);
+    final session = viewModel.session as AuthSignedIn;
+    expect(session.user.uid, 'test-uid');
+    expect(session.user.email, 'person@example.com');
+    expect(session.user.displayName, 'Test User');
+    expect(viewModel.message, 'Akun Google berhasil dihubungkan.');
+  });
+
+  test('Google sign-in failures map to calm domain feedback', () async {
+    final repository = FakeAuthRepository()
+      ..nextFailure = AuthFailure.networkUnavailable;
+    final viewModel = AuthViewModel(repository);
+    addTearDown(viewModel.dispose);
+    addTearDown(repository.dispose);
+
+    expect(await viewModel.signInWithGoogle(), isFalse);
+    expect(viewModel.failure, AuthFailure.networkUnavailable);
+    expect(
+      viewModel.message,
+      'Koneksi tidak tersedia. Coba lagi saat terhubung ke internet.',
+    );
+  });
+
+  test('Google account picker cancellation returns quietly to idle', () async {
+    final repository = FakeAuthRepository()
+      ..nextFailure = AuthFailure.cancelled;
+    final viewModel = AuthViewModel(repository);
+    addTearDown(viewModel.dispose);
+    addTearDown(repository.dispose);
+
+    expect(await viewModel.signInWithGoogle(), isFalse);
+    expect(viewModel.failure, AuthFailure.cancelled);
+    expect(viewModel.message, isNull);
+    expect(viewModel.operation, AuthOperationState.idle);
   });
 
   test(
-    'fake sign-in and sign-out leave persisted local data untouched',
+    'Google sign-in and sign-out leave persisted local data untouched',
     () async {
       final persistence = await TestPersistence.create();
       addTearDown(persistence.dispose);
@@ -77,7 +80,7 @@ void main() {
       final viewModel = AuthViewModel(repository);
       addTearDown(viewModel.dispose);
       addTearDown(repository.dispose);
-      await viewModel.signIn('person@example.com', 'password123');
+      await viewModel.signInWithGoogle();
       await viewModel.signOut();
 
       expect(
@@ -94,6 +97,7 @@ void main() {
       final settings = await persistence.appSettings.getSettings();
       expect(settings.themePreference, AppThemePreference.dark);
       expect(settings.remindersEnabled, isTrue);
+      expect(repository.googleSignInRequests, 1);
       expect(repository.signOutRequests, 1);
     },
   );
