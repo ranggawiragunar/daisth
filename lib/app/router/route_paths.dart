@@ -6,6 +6,7 @@ abstract final class RoutePaths {
   static const settings = '/settings';
   static const routineDetailPattern = '/routines/:routineId';
   static const historyDayPattern = '/history/:date';
+  static const reflection = '/reflection';
   static const readerPathSegment = 'reader/:contentId';
   static const dhikrPathSegment = 'dhikr/:dhikrId';
   static const mosquesPathSegment = 'mosques';
@@ -16,6 +17,8 @@ abstract final class RoutePaths {
 
   static String historyRoutine(String date, String routineId) =>
       '/history/$date/routines/$routineId';
+
+  static String historyReflection(String date) => '/history/$date/reflection';
 
   static String reader(String routineId, String contentId) =>
       '/routines/$routineId/reader/$contentId';

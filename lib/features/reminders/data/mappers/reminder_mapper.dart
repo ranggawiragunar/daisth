@@ -13,8 +13,13 @@ class ReminderMapper {
     final payload = jsonEncode({
       'v': 1,
       'app': 'daisth',
-      'type': 'routine',
-      'routineId': reminder.routineId,
+      'type': reminder.targetType == ReminderTargetType.reflection
+          ? 'reflection'
+          : 'routine',
+      if (reminder.targetType == ReminderTargetType.reflection)
+        'target': 'reflection'
+      else
+        'routineId': reminder.routineId,
       'identity': identity,
       'date': dateKey,
       'kind': switch (reminder.type) {
@@ -53,13 +58,15 @@ class ReminderMapper {
       if (decoded is! Map<String, dynamic> ||
           decoded['app'] != 'daisth' ||
           decoded['v'] != 1 ||
-          decoded['type'] != 'routine') {
+          (decoded['type'] != 'routine' && decoded['type'] != 'reflection')) {
         return null;
       }
-      final routineId = decoded['routineId'];
+      final isReflection = decoded['type'] == 'reflection';
+      final routineId = isReflection ? 'reflection' : decoded['routineId'];
       final identity = decoded['identity'];
       final scheduledString = decoded['scheduledAt'];
       if (routineId is! String ||
+          (isReflection && decoded['target'] != 'reflection') ||
           identity is! String ||
           scheduledString is! String) {
         return null;
@@ -85,6 +92,9 @@ class ReminderMapper {
         dateKey: decoded['date'] as String?,
         timezoneIdentifier: decoded['tz'] as String? ?? 'UTC',
         actionable: !_referenceRoutines.contains(routineId),
+        targetType: isReflection || routineId == 'reflection'
+            ? ReminderTargetType.reflection
+            : ReminderTargetType.routine,
       );
     } on Object {
       return null;
@@ -96,7 +106,9 @@ class ReminderMapper {
     if (parsed == null) return null;
     if (_referenceRoutines.contains(parsed.routineId) ||
         parsed.routineId == 'debug-test') {
-      return '/today';
+      return parsed.targetType == ReminderTargetType.reflection
+          ? '/reflection'
+          : '/today';
     }
     return '/routines/${parsed.routineId}';
   }

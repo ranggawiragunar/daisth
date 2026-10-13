@@ -32,9 +32,15 @@ the app settings and restored on launch. OS permission remains controlled by
 the operating system and is checked again when the app resumes. Daisth does
 not request permission automatically during restoration.
 
-Actionable routine reminders offer Done, Snooze, and Open. Daily Reflection
-remains Open-only and routes to Today. Penutup Hari supports Done, Snooze, and
-Open. Done uses the existing routine completion use case and payload date;
+Actionable routine reminders offer Done, Snooze, and Open. Daily Reflection is
+a local system reminder at 20:30 with medium priority. It is Open-only and
+routes to `/reflection`; it has no Snooze or follow-up. When today's reflection
+is already saved, reconciliation cancels or omits the pending Reflection
+reminder. Saving before 20:30 removes that reminder; clearing before 20:30 may
+restore it when reminders remain enabled and permission is granted. Clearing
+after 20:30 does not schedule a retroactive reminder. Historical reflection
+changes never reconcile today's notifications. Penutup Hari supports Done,
+Snooze, and Open. Done uses the existing routine completion use case and payload date;
 Penutup Hari Done completes its six required readings and leaves optional Wudu
 unchanged. Snooze replaces one reminder ten minutes later and suppresses that
 day's automatic follow-up. Open and body taps route to the matching Routine

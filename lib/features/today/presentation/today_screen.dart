@@ -14,6 +14,8 @@ import '../../routines/domain/models/routine_origin.dart';
 import '../../routines/domain/models/routine_schedule.dart';
 import '../../routines/domain/models/routine_definition.dart';
 import '../../routines/domain/models/routine_status.dart' as routine_domain;
+import '../../reflection/domain/repositories/reflection_repository.dart';
+import '../../reflection/presentation/widgets/reflection_today_card.dart';
 import '../presentation/view_models/today_view_model.dart';
 import 'widgets/daily_progress.dart';
 import 'widgets/focus_routine_card.dart';
@@ -24,20 +26,24 @@ class TodayScreen extends StatefulWidget {
     required this.prayerScheduleSession,
     required this.routineRecordRepository,
     this.routineRepository,
+    this.reflectionRepository,
     this.ensureRoutinesReady,
     this.startClock = true,
     this.bottomContentPadding = 0,
     this.onRoutineTap,
+    this.onReflectionTap,
     super.key,
   });
 
   final PrayerScheduleSession prayerScheduleSession;
   final RoutineRecordRepository routineRecordRepository;
   final RoutineRepository? routineRepository;
+  final ReflectionRepository? reflectionRepository;
   final Future<void> Function()? ensureRoutinesReady;
   final bool startClock;
   final double bottomContentPadding;
   final ValueChanged<String>? onRoutineTap;
+  final VoidCallback? onReflectionTap;
 
   @override
   State<TodayScreen> createState() => _TodayScreenState();
@@ -161,6 +167,14 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                                   )
                                   .length,
                       ),
+                      if (widget.reflectionRepository != null &&
+                          widget.onReflectionTap != null) ...[
+                        const SizedBox(height: DaisthSpacing.lg),
+                        ReflectionTodayCard(
+                          repository: widget.reflectionRepository!,
+                          onOpen: widget.onReflectionTap!,
+                        ),
+                      ],
                       const SizedBox(height: DaisthSpacing.section),
                       Text(
                         "Today's Routine",

@@ -3,6 +3,7 @@ enum AppRoute {
   history,
   routines,
   settings,
+  reflection,
   routineDetail,
   reader,
   dhikrCounter,

@@ -2,6 +2,7 @@ import '../../../../core/time/domain/models/calendar_day.dart';
 import '../../../routines/domain/models/routine.dart';
 import '../../../routines/domain/models/routine_record.dart';
 import '../../../routines/domain/models/routine_step_record.dart';
+import '../../../reflection/domain/models/daily_reflection.dart';
 
 const mandatoryPrayerIds = ['subuh', 'zuhur', 'asar', 'maghrib', 'isya'];
 
@@ -64,9 +65,11 @@ class HistoryDay {
     required this.day,
     required this.entries,
     required this.summary,
+    this.reflection,
   });
 
   final CalendarDay day;
   final List<HistoryRoutineEntry> entries;
   final HistorySummary summary;
+  final DailyReflection? reflection;
 }

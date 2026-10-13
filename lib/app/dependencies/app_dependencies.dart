@@ -59,6 +59,10 @@ import '../../features/routines/domain/use_cases/mark_routine_complete_use_case.
 import '../../features/routines/domain/use_cases/mark_routine_not_today_use_case.dart';
 import '../../features/routines/domain/use_cases/resolve_routine_status_use_case.dart';
 import '../../features/routines/domain/use_cases/set_routine_step_completion_use_case.dart';
+import '../../features/reflection/data/mappers/reflection_mapper.dart';
+import '../../features/reflection/data/repositories/reflection_repository_data.dart';
+import '../../features/reflection/data/services/reflection_sqlite_service.dart';
+import '../../features/reflection/domain/repositories/reflection_repository.dart';
 
 class AppDependencies {
   AppDependencies({
@@ -74,6 +78,7 @@ class AppDependencies {
     AppSettingsRepository? appSettingsRepository,
     RoutineRecordRepository? routineRecordRepository,
     RoutineRepository? routineRepository,
+    ReflectionRepository? reflectionRepository,
     this.startTodayClock = true,
   }) : httpClient = httpClient ?? http.Client(),
        _ownsHttpClient = httpClient == null {
@@ -94,6 +99,12 @@ class AppDependencies {
         RoutineRepositoryData(
           service: RoutineSqliteService(this.databaseService),
           mapper: RoutineDefinitionMapper(),
+        );
+    this.reflectionRepository =
+        reflectionRepository ??
+        ReflectionRepositoryData(
+          service: ReflectionSqliteService(this.databaseService),
+          mapper: ReflectionMapper(),
         );
     ensureDefaultRoutines = EnsureDefaultRoutinesUseCase(
       repository: this.routineRepository,
@@ -162,6 +173,7 @@ class AppDependencies {
       routineRecordRepository: this.routineRecordRepository,
       routineRepository: this.routineRepository,
       reminderStateRepository: routineReminderStateRepository,
+      reflectionRepository: this.reflectionRepository,
     );
     handleReminderAction = HandleReminderActionUseCase(
       routineRepository: this.routineRecordRepository,
@@ -188,6 +200,7 @@ class AppDependencies {
   late final AppSettingsRepository appSettingsRepository;
   late final RoutineRecordRepository routineRecordRepository;
   late final RoutineRepository routineRepository;
+  late final ReflectionRepository reflectionRepository;
   late final EnsureDefaultRoutinesUseCase ensureDefaultRoutines;
   late final RoutineResolver routineResolver;
   late final RoutineReminderStateRepository routineReminderStateRepository;
@@ -216,6 +229,7 @@ class AppDependencies {
   Future<void>? _routineDefinitionsInitialization;
   StreamSubscription<RoutineRecordChange>? _routineReminderChangeSubscription;
   StreamSubscription<void>? _routineDefinitionChangeSubscription;
+  StreamSubscription<ReflectionChange>? _reflectionChangeSubscription;
 
   Future<void> initialize({void Function(String? payload)? onNotificationTap}) {
     return _initialization ??= _initialize(onNotificationTap);
@@ -231,6 +245,9 @@ class AppDependencies {
           .listen((change) => unawaited(_reconcileRoutineChange(change)));
       _routineDefinitionChangeSubscription ??= routineRepository.changes.listen(
         (_) => unawaited(_reconcileRoutineDefinitionChange()),
+      );
+      _reflectionChangeSubscription ??= reflectionRepository.changes.listen(
+        (change) => unawaited(_reconcileReflectionChange(change)),
       );
     } catch (error) {
       initializationError = error;
@@ -255,6 +272,23 @@ class AppDependencies {
 
   Future<void> _reconcileRoutineDefinitionChange() async {
     if (!reminderSettings.remindersEnabled ||
+        reminderSettings.permissionStatus != ReminderPermissionStatus.granted) {
+      return;
+    }
+    try {
+      await scheduleTodayReminders(
+        schedule: prayerScheduleSession.schedule,
+        now: DateTime.now(),
+      );
+      await reminderSettings.refreshPermissionStatus();
+    } catch (error) {
+      initializationError ??= error;
+    }
+  }
+
+  Future<void> _reconcileReflectionChange(ReflectionChange change) async {
+    if (change.day != CalendarDay.fromDateTime(DateTime.now()) ||
+        !reminderSettings.remindersEnabled ||
         reminderSettings.permissionStatus != ReminderPermissionStatus.granted) {
       return;
     }
@@ -326,11 +360,15 @@ class AppDependencies {
   void dispose() {
     unawaited(_routineReminderChangeSubscription?.cancel());
     unawaited(_routineDefinitionChangeSubscription?.cancel());
+    unawaited(_reflectionChangeSubscription?.cancel());
     reminderSettings.dispose();
     if (routineRecordRepository case final RoutineRecordRepositoryData data) {
       unawaited(data.closeChanges());
     }
     if (routineRepository case final RoutineRepositoryData data) {
+      unawaited(data.closeChanges());
+    }
+    if (reflectionRepository case final ReflectionRepositoryData data) {
       unawaited(data.closeChanges());
     }
     unawaited(databaseService.close());

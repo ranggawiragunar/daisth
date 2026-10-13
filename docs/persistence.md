@@ -1,7 +1,7 @@
 # Local persistence
 
 Daisth stores local app state in `daisth.db`, managed by
-`DaisthDatabaseService`. The database currently uses schema version 3 and
+`DaisthDatabaseService`. The database currently uses schema version 4 and
 SQLite migrations through `onCreate` and `onUpgrade`.
 
 ## Stored data
@@ -16,6 +16,8 @@ SQLite migrations through `onCreate` and `onUpgrade`.
   configuration.
 - `routine_step_definitions` stores custom checklist definitions. Removed
   steps are archived so historical records can still be interpreted.
+- `daily_reflections` stores one optional reflection per local calendar day,
+  with a stable rhythm value, optional note, and UTC event timestamps.
 
 Definitions/configuration are separate from daily progress:
 `routine_definitions` and `routine_step_definitions` describe the user's plan;
@@ -52,16 +54,24 @@ inserts missing factory defaults into user-owned definitions without
 overwriting existing configuration. An explicit per-routine reset copies that
 routine's factory values again.
 
+The version 3 to 4 migration additively creates `daily_reflections`. It does
+not rewrite or delete routines, reminder states, definitions, settings, or
+their existing rows. `date_key` is the selected local `CalendarDay` in
+`YYYY-MM-DD` form. `recorded_at_utc` is set on first save and stays unchanged
+on edits; `updated_at_utc` records the latest edit instant. The `rhythm` column
+accepts only `steady`, `mixed`, or `heavy`; blank notes are stored as SQL
+`NULL`.
+
 The development rebrand changed the database filename and application
 identifier before release. No copy or migration from the previous development
 database is included; a rebranded development install starts with a fresh local
-database; existing Daisth installs upgrade in place to schema version 3.
+database; existing Daisth installs upgrade in place to schema version 4.
 
 This phase does not persist Dhikr counter position, location coordinates,
 mosque results or cache entries, Reader presentation state, or remote account
 data. Mosque and prayer-time behavior continue to use their existing services.
 
-History uses schema v3 without a migration. `RoutineRecordRepository` provides
+History and Reflection use schema v4. `RoutineRecordRepository` provides
 indexed `date_key` day/range reads for routine records and step records, plus
 an earliest-record query. `RoutineRepository` reads all routine definitions
 and archived steps for historical resolution and finds the earliest definition

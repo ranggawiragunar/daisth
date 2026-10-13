@@ -4,17 +4,27 @@ import 'package:flutter/foundation.dart';
 
 import '../../../../core/time/domain/models/calendar_day.dart';
 import '../../../routines/domain/repositories/routine_record_repository.dart';
+import '../../../reflection/domain/repositories/reflection_repository.dart';
 import '../../domain/models/history_day.dart';
 import '../../domain/use_cases/get_history_range_use_case.dart';
 
 class HistoryViewModel extends ChangeNotifier {
-  HistoryViewModel({required this.getHistory, required this.repository}) {
+  HistoryViewModel({
+    required this.getHistory,
+    required this.repository,
+    this.reflectionRepository,
+  }) {
     _subscription = repository.changes.listen((_) => unawaited(refresh()));
+    _reflectionSubscription = reflectionRepository?.changes.listen(
+      (_) => unawaited(refresh()),
+    );
   }
 
   final GetHistoryRangeUseCase getHistory;
   final RoutineRecordRepository repository;
+  final ReflectionRepository? reflectionRepository;
   late final StreamSubscription<RoutineRecordChange> _subscription;
+  StreamSubscription<ReflectionChange>? _reflectionSubscription;
   List<HistoryDay> days = const [];
   bool isLoading = true;
   bool isLoadingEarlier = false;
@@ -96,6 +106,7 @@ class HistoryViewModel extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     unawaited(_subscription.cancel());
+    unawaited(_reflectionSubscription?.cancel());
     super.dispose();
   }
 }
@@ -105,16 +116,22 @@ class HistoryDayViewModel extends ChangeNotifier {
     required this.day,
     required this.loadDay,
     required this.repository,
+    this.reflectionRepository,
   }) {
     _subscription = repository.changes.listen((change) {
       if (change.calendarDay == day) unawaited(reload());
+    });
+    _reflectionSubscription = reflectionRepository?.changes.listen((change) {
+      if (change.day == day) unawaited(reload());
     });
   }
 
   final CalendarDay day;
   final Future<HistoryDay> Function(CalendarDay) loadDay;
   final RoutineRecordRepository repository;
+  final ReflectionRepository? reflectionRepository;
   late final StreamSubscription<RoutineRecordChange> _subscription;
+  StreamSubscription<ReflectionChange>? _reflectionSubscription;
   Future<HistoryDay>? future;
   bool _disposed = false;
 
@@ -129,6 +146,7 @@ class HistoryDayViewModel extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     unawaited(_subscription.cancel());
+    unawaited(_reflectionSubscription?.cancel());
     super.dispose();
   }
 }

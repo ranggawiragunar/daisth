@@ -15,6 +15,7 @@ import '../../../routines/domain/models/routine_status.dart';
 import '../../../routines/domain/repositories/routine_record_repository.dart';
 import '../../../routines/domain/repositories/routine_repository.dart';
 import '../../../routines/domain/models/routine_origin.dart';
+import '../../../reflection/domain/repositories/reflection_repository.dart';
 import 'build_today_reminder_plan_use_case.dart';
 import 'reminder_follow_up_policy.dart';
 
@@ -27,6 +28,7 @@ class ScheduleTodayRemindersUseCase {
     this.routineRecordRepository,
     this.routineRepository,
     this.reminderStateRepository,
+    this.reflectionRepository,
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now;
 
@@ -37,6 +39,7 @@ class ScheduleTodayRemindersUseCase {
   final RoutineRecordRepository? routineRecordRepository;
   final RoutineRepository? routineRepository;
   final RoutineReminderStateRepository? reminderStateRepository;
+  final ReflectionRepository? reflectionRepository;
   final DateTime Function() _clock;
   static const _followUpPolicy = ReminderFollowUpPolicy();
 
@@ -58,11 +61,18 @@ class ScheduleTodayRemindersUseCase {
       includePast: true,
       definitions: activeDefinitions,
     );
+    final day = CalendarDay.fromDateTime(completePlan.date);
+    final hasReflection =
+        await reflectionRepository?.getReflection(day) != null;
     final plan = ReminderPlan(
       date: completePlan.date,
       timezone: completePlan.timezone,
       reminders: completePlan.reminders
-          .where((r) => r.scheduledAt.isAfter(current))
+          .where(
+            (reminder) =>
+                reminder.scheduledAt.isAfter(current) &&
+                !(hasReflection && reminder.routineId == 'reflection'),
+          )
           .toList(),
     );
     final exactStatus = await reminderRepository.getExactAlarmStatus();
@@ -70,7 +80,6 @@ class ScheduleTodayRemindersUseCase {
         ? ReminderSchedulingMode.exact
         : ReminderSchedulingMode.inexact;
 
-    final day = CalendarDay.fromDateTime(plan.date);
     var states =
         await reminderStateRepository?.getStatesForDay(day) ??
         const <RoutineReminderState>[];

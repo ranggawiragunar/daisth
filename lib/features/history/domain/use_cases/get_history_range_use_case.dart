@@ -1,6 +1,7 @@
 import '../../../../core/time/domain/models/calendar_day.dart';
 import '../../../routines/domain/repositories/routine_record_repository.dart';
 import '../../../routines/domain/repositories/routine_repository.dart';
+import '../../../reflection/domain/repositories/reflection_repository.dart';
 import '../models/history_day.dart';
 import '../models/history_page.dart';
 import 'build_history_day_use_case.dart';
@@ -10,20 +11,29 @@ class GetHistoryRangeUseCase {
     required this.recordRepository,
     required this.routineRepository,
     required this.buildDay,
+    this.reflectionRepository,
   });
 
   static const pageSize = 30;
   final RoutineRecordRepository recordRepository;
   final RoutineRepository routineRepository;
   final BuildHistoryDayUseCase buildDay;
+  final ReflectionRepository? reflectionRepository;
 
   Future<CalendarDay?> get earliestDay async {
     final recordDay = await recordRepository.getEarliestRecordDay();
     final definitionDay = await routineRepository
         .getEarliestRoutineCreationDay();
-    if (recordDay == null) return definitionDay;
-    if (definitionDay == null) return recordDay;
-    return recordDay.compareTo(definitionDay) <= 0 ? recordDay : definitionDay;
+    final reflectionDay = await reflectionRepository
+        ?.getEarliestReflectionDay();
+    return [
+      recordDay,
+      definitionDay,
+      reflectionDay,
+    ].whereType<CalendarDay>().fold<CalendarDay?>(null, (earliest, day) {
+      if (earliest == null || day.compareTo(earliest) < 0) return day;
+      return earliest;
+    });
   }
 
   Future<HistoryPage> initial({DateTime? now}) async {
@@ -70,8 +80,16 @@ class GetHistoryRangeUseCase {
     final definitions = await routineRepository.getAllRoutineDefinitions();
     final steps = await routineRepository
         .getAllStepDefinitionsIncludingArchived();
+    final reflectionRows = await reflectionRepository?.getReflectionsBetween(
+      start,
+      end,
+    );
     final recordsByDay = _group(records, (record) => record.calendarDay);
     final stepsByDay = _group(stepRecords, (record) => record.calendarDay);
+    final reflectionsByDay = {
+      for (final reflection in reflectionRows ?? const [])
+        reflection.day.toDateKey(): reflection,
+    };
     final count = end.toDateTime().difference(start.toDateTime()).inDays;
     final days = <HistoryDay>[];
     for (var offset = 0; offset <= count; offset++) {
@@ -83,6 +101,7 @@ class GetHistoryRangeUseCase {
           definitions: definitions,
           steps: steps,
           stepRecords: stepsByDay[day.toDateKey()] ?? const [],
+          reflection: reflectionsByDay[day.toDateKey()],
         ),
       );
     }

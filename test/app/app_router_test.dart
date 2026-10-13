@@ -20,9 +20,11 @@ import 'package:daisth/features/routines/domain/models/routine_schedule.dart';
 import 'package:daisth/features/routines/data/catalog/default_routine_template_catalog.dart';
 import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
 import 'package:daisth/features/reader/presentation/screens/reader_screen.dart';
+import 'package:daisth/features/reflection/domain/models/reflection_rhythm.dart';
 
 import '../support/fake_routine_repository.dart';
 import '../support/fake_routine_record_repository.dart';
+import '../support/fake_reflection_repository.dart';
 import '../support/test_persistence.dart';
 
 void main() {
@@ -52,6 +54,7 @@ void main() {
           databaseService: TestPersistence.createDatabaseService(),
           routineRepository: definitions,
           routineRecordRepository: records,
+          reflectionRepository: FakeReflectionRepository(),
           startTodayClock: false,
         ),
       );
@@ -59,6 +62,7 @@ void main() {
       await tester.pumpWidget(harness.app);
       await tester.pumpAndSettle();
       expect(find.text('Unrecorded'), findsNWidgets(5));
+      expect(find.text('No reflection recorded.'), findsOneWidget);
 
       await tester.tap(find.text('Sholat Zuhur'));
       await tester.pumpAndSettle();
@@ -106,6 +110,7 @@ void main() {
         databaseService: TestPersistence.createDatabaseService(),
         routineRepository: definitions,
         routineRecordRepository: records,
+        reflectionRepository: FakeReflectionRepository(),
         startTodayClock: false,
       ),
     );
@@ -148,6 +153,112 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'current Reflection saves explicitly and updates the Today card',
+    (tester) async {
+      final harness = _RouterHarness(initialLocation: RoutePaths.reflection);
+      addTearDown(harness.dispose);
+      await tester.pumpWidget(harness.app);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 30)),
+      );
+      await _pumpReflection(tester);
+      expect(find.text('Bagaimana ritmemu hari ini?'), findsOneWidget);
+
+      await tester.tap(find.text('Simpan refleksi'));
+      await _pumpReflection(tester);
+      expect(
+        find.text('Pilih satu gambaran ritmemu untuk menyimpan refleksi.'),
+        findsOneWidget,
+      );
+      expect(
+        await harness.dependencies.reflectionRepository.getReflection(
+          CalendarDay.fromDateTime(DateTime.now()),
+        ),
+        isNull,
+      );
+
+      await tester.tap(find.text('Terasa mengalir'));
+      await tester.ensureVisible(find.byType(TextField));
+      final noteField = tester.widget<TextField>(find.byType(TextField));
+      noteField.controller!.text = 'Hari yang tenang.';
+      noteField.onChanged!('Hari yang tenang.');
+      expect(noteField.controller?.text, 'Hari yang tenang.');
+      await tester.tap(find.text('Simpan refleksi'));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 30)),
+      );
+      await _pumpReflection(tester);
+      final today = CalendarDay.fromDateTime(DateTime.now());
+      final saved = await harness.dependencies.reflectionRepository
+          .getReflection(today);
+      expect(saved?.rhythm, ReflectionRhythm.steady);
+      expect(saved?.note, 'Hari yang tenang.');
+      expect(saved?.recordedAt, saved?.updatedAt);
+
+      harness.router.go(RoutePaths.today);
+      await _pumpReflection(tester);
+      expect(find.text('Terasa mengalir · Tersimpan'), findsOneWidget);
+      expect(find.text('Daily Reflection'), findsNothing);
+      await tester.tap(find.text('Refleksi Hari Ini'));
+      await _pumpReflection(tester);
+      expect(find.text('Daily Reflection'), findsOneWidget);
+      expect(find.text('Hapus refleksi'), findsOneWidget);
+      await tester.tap(find.text('Hapus refleksi'));
+      await tester.pumpAndSettle();
+      expect(find.text('Hapus refleksi'), findsNWidgets(2));
+      await tester.tap(find.text('Hapus refleksi').last);
+      await _pumpReflection(tester);
+      await tester.pump(const Duration(seconds: 5));
+      harness.router.pop();
+      await _pumpReflection(tester);
+      expect(
+        find.text('Luangkan sebentar untuk melihat kembali ritmemu hari ini.'),
+        findsOneWidget,
+      );
+      await tester.pump(const Duration(seconds: 5));
+    },
+  );
+
+  testWidgets('historical Reflection route preserves its selected day', (
+    tester,
+  ) async {
+    final day = CalendarDay.fromDateTime(DateTime.now()).addDays(-1);
+    final harness = _RouterHarness(
+      initialLocation: RoutePaths.historyReflection(day.toDateKey()),
+    );
+    addTearDown(harness.dispose);
+    await harness.dependencies.reflectionRepository.saveReflection(
+      day: day,
+      rhythm: ReflectionRhythm.heavy,
+      note: 'A difficult but useful day.',
+      now: DateTime.now().toUtc(),
+    );
+    await tester.pumpWidget(harness.app);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 30)),
+    );
+    await _pumpReflection(tester);
+    expect(find.textContaining('Editing'), findsOneWidget);
+    expect(find.text('Terasa berat'), findsOneWidget);
+    expect(find.text('A difficult but useful day.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('malformed historical Reflection route safely falls back', (
+    tester,
+  ) async {
+    final harness = _RouterHarness(initialLocation: '/history/foo/reflection');
+    addTearDown(harness.dispose);
+    await tester.pumpWidget(harness.app);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 30)),
+    );
+    await _pumpReflection(tester);
+    expect(harness.router.routeInformationProvider.value.uri.path, '/history');
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('History list renders neutral daily summaries and opens a day', (
     tester,
   ) async {
@@ -158,6 +269,7 @@ void main() {
         DateTime.now().subtract(const Duration(days: 40)),
       ),
     );
+    final reflectionRepository = FakeReflectionRepository();
     for (final routine in [
       RoutineDemoData.subuh,
       RoutineDemoData.zuhur,
@@ -171,6 +283,12 @@ void main() {
         now: DateTime.now(),
       );
     }
+    await reflectionRepository.saveReflection(
+      day: day,
+      rhythm: ReflectionRhythm.mixed,
+      note: 'Aku ingin mengingat hari ini.',
+      now: DateTime.now().toUtc(),
+    );
     final harness = _RouterHarness(
       initialLocation: RoutePaths.history,
       dependencies: AppDependencies(
@@ -178,10 +296,12 @@ void main() {
         databaseService: TestPersistence.createDatabaseService(),
         routineRepository: definitions,
         routineRecordRepository: records,
+        reflectionRepository: reflectionRepository,
         startTodayClock: false,
       ),
     );
     addTearDown(records.close);
+    addTearDown(reflectionRepository.close);
     addTearDown(harness.dispose);
     await tester.pumpWidget(harness.app);
     await tester.pumpAndSettle();
@@ -193,6 +313,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Day Detail'), findsOneWidget);
     expect(find.text('Completed'), findsNWidgets(5));
+    expect(find.text('Reflection'), findsOneWidget);
+    expect(find.text('Naik turun'), findsOneWidget);
+    expect(find.text('Aku ingin mengingat hari ini.'), findsOneWidget);
+
+    await tester.tap(find.text('Naik turun'));
+    await _pumpReflection(tester);
+    expect(find.textContaining('Editing'), findsOneWidget);
+    expect(find.text('Aku ingin mengingat hari ini.'), findsOneWidget);
   });
 
   testWidgets('stable Routine Detail paths resolve outside the shell', (
@@ -258,6 +386,7 @@ void main() {
         databaseService: TestPersistence.createDatabaseService(),
         routineRepository: FakeRoutineRepository(definitions: [custom]),
         routineRecordRepository: FakeRoutineRecordRepository(),
+        reflectionRepository: FakeReflectionRepository(),
         startTodayClock: false,
       ),
     );
@@ -283,6 +412,7 @@ void main() {
           locationRepository: _DeniedLocation(),
           databaseService: TestPersistence.createDatabaseService(),
           routineRepository: FakeRoutineRepository(),
+          reflectionRepository: FakeReflectionRepository(),
           startTodayClock: false,
         ),
       );
@@ -360,6 +490,7 @@ class _RouterHarness {
              locationRepository: _DeniedLocation(),
              databaseService: TestPersistence.createDatabaseService(),
              routineRepository: FakeRoutineRepository(),
+             reflectionRepository: FakeReflectionRepository(),
              startTodayClock: false,
            ) {
     router = createAppRouter(
@@ -392,6 +523,11 @@ class _RouterHarness {
     dependencies.dispose();
     noticeController.dispose();
   }
+}
+
+Future<void> _pumpReflection(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
 }
 
 class _DeniedLocation implements LocationRepository {

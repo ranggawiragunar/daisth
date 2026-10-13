@@ -9,6 +9,9 @@ import 'package:daisth/core/persistence/data/services/daisth_database_service.da
 import 'package:daisth/features/routines/data/mappers/routine_record_mapper.dart';
 import 'package:daisth/features/routines/data/repositories/routine_record_repository_data.dart';
 import 'package:daisth/features/routines/data/services/routine_record_sqlite_service.dart';
+import 'package:daisth/features/reflection/data/mappers/reflection_mapper.dart';
+import 'package:daisth/features/reflection/data/repositories/reflection_repository_data.dart';
+import 'package:daisth/features/reflection/data/services/reflection_sqlite_service.dart';
 
 class TestPersistence {
   TestPersistence._(this.directory, this.database, this.databasePath);
@@ -23,6 +26,10 @@ class TestPersistence {
   );
   late final appSettings = AppSettingsRepositoryData(
     service: AppSettingsSqliteService(database),
+  );
+  late final reflections = ReflectionRepositoryData(
+    service: ReflectionSqliteService(database),
+    mapper: ReflectionMapper(),
   );
 
   static Future<TestPersistence> create() async {
@@ -58,6 +65,7 @@ class TestPersistence {
 
   Future<void> dispose() async {
     await routineRecords.closeChanges();
+    await reflections.closeChanges();
     await database.close();
     await directory.delete(recursive: true);
   }

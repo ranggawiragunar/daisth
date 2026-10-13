@@ -36,13 +36,19 @@ void main() {
     );
   });
 
-  test('reflection routes to Today and Penutup Hari opens its routine', () {
-    expect(
-      mapper.routeForPayload(
-        mapper.toScheduleData(_routine('reflection')).payload,
-      ),
-      '/today',
-    );
+  test('reflection uses its system target; Penutup Hari opens its routine', () {
+    final reflection = _routine('reflection').copyWithTargetReflection();
+    final data = mapper.toScheduleData(reflection);
+    final payload = ReminderPayload.tryParse(data.payload)!;
+    expect(payload.targetType, ReminderTargetType.reflection);
+    expect(data.payload, contains('"type":"reflection"'));
+    expect(data.payload, contains('"target":"reflection"'));
+    expect(data.payload, isNot(contains('"routineId"')));
+    expect(data.actionable, isFalse);
+    expect(mapper.routeForPayload(data.payload), '/reflection');
+    final previousPayload =
+        '{"v":1,"app":"daisth","type":"routine","routineId":"reflection","identity":"reflection-primary-2026-10-13","date":"2026-10-13","kind":"primary","title":"Refleksi hari ini","tz":"Asia/Jakarta","scheduledAt":"2026-10-13T20:30:00.000"}';
+    expect(mapper.routeForPayload(previousPayload), '/reflection');
     expect(
       mapper.routeForPayload(
         mapper.toScheduleData(_routine('penutup-hari')).payload,
@@ -126,3 +132,19 @@ Reminder _routine(String routineId) => Reminder(
   scheduledAt: DateTime(2026, 10, 13, 11, 50),
   priority: ReminderPriority.medium,
 );
+
+extension on Reminder {
+  Reminder copyWithTargetReflection() => Reminder(
+    id: id,
+    routineId: routineId,
+    title: title,
+    body: body,
+    scheduledAt: scheduledAt,
+    priority: priority,
+    type: type,
+    dateKey: dateKey,
+    timezoneIdentifier: timezoneIdentifier,
+    actionable: false,
+    targetType: ReminderTargetType.reflection,
+  );
+}

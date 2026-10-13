@@ -7,6 +7,8 @@ import '../../../routines/domain/models/routine_step_record.dart';
 import '../../../routines/domain/models/routine_status.dart';
 import '../../../routines/domain/repositories/routine_record_repository.dart';
 import '../../../routines/domain/repositories/routine_repository.dart';
+import '../../../reflection/domain/models/daily_reflection.dart';
+import '../../../reflection/domain/repositories/reflection_repository.dart';
 import '../models/history_day.dart';
 import '../repositories/history_routine_resolver.dart';
 
@@ -15,21 +17,28 @@ class BuildHistoryDayUseCase {
     required this.recordRepository,
     required this.routineRepository,
     required this.routineResolver,
+    this.reflectionRepository,
   });
 
   final RoutineRecordRepository recordRepository;
   final RoutineRepository routineRepository;
   final HistoryRoutineResolver routineResolver;
+  final ReflectionRepository? reflectionRepository;
 
   Future<HistoryDay> call(CalendarDay day) async {
     final recordBoundary = await recordRepository.getEarliestRecordDay();
     final definitionBoundary = await routineRepository
         .getEarliestRoutineCreationDay();
+    final reflectionBoundary = await reflectionRepository
+        ?.getEarliestReflectionDay();
     final boundary = switch ((recordBoundary, definitionBoundary)) {
-      (null, null) => null,
-      (final value?, null) || (null, final value?) => value,
-      (final record?, final definition?) =>
+      (null, null) => reflectionBoundary,
+      (final value?, null) ||
+      (null, final value?) => _earliest(value, reflectionBoundary),
+      (final record?, final definition?) => _earliest(
         record.compareTo(definition) <= 0 ? record : definition,
+        reflectionBoundary,
+      ),
     };
     final today = CalendarDay.fromDateTime(DateTime.now());
     if (boundary == null ||
@@ -44,6 +53,7 @@ class BuildHistoryDayUseCase {
           notToday: 0,
           unrecorded: 0,
         ),
+        reflection: await reflectionRepository?.getReflection(day),
       );
     }
     final records = await recordRepository.getRecordsForDay(day);
@@ -51,12 +61,14 @@ class BuildHistoryDayUseCase {
     final steps = await routineRepository
         .getAllStepDefinitionsIncludingArchived();
     final stepRecords = await recordRepository.getStepRecordsForDay(day);
+    final reflection = await reflectionRepository?.getReflection(day);
     return buildFromRecords(
       day,
       records,
       definitions: definitions,
       steps: steps,
       stepRecords: stepRecords,
+      reflection: reflection,
     );
   }
 
@@ -66,6 +78,7 @@ class BuildHistoryDayUseCase {
     required List<RoutineDefinition> definitions,
     required List<RoutineStepDefinition> steps,
     List<RoutineStepRecord> stepRecords = const [],
+    DailyReflection? reflection,
   }) {
     final definitionById = {for (final item in definitions) item.id: item};
     final stepDefinitionsByRoutine = <String, List<RoutineStepDefinition>>{};
@@ -126,6 +139,7 @@ class BuildHistoryDayUseCase {
       day: day,
       entries: List.unmodifiable(entries),
       summary: HistorySummary.fromEntries(entries),
+      reflection: reflection,
     );
   }
 
@@ -145,4 +159,7 @@ class BuildHistoryDayUseCase {
     isOptional: !isMandatory,
     steps: const [],
   );
+
+  CalendarDay? _earliest(CalendarDay first, CalendarDay? second) =>
+      second == null || first.compareTo(second) <= 0 ? first : second;
 }

@@ -28,7 +28,7 @@ returns a completed routine to `Partial` and clears `completed_at_utc`.
 
 The steps are a built-in capability, not rows in the user-editable
 `routine_step_definitions` checklist. They use the existing daily routine and
-step record tables; the database remains schema v3.
+step record tables; the database remains schema v4.
 
 ## Reader
 

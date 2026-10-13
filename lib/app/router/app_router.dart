@@ -15,6 +15,7 @@ import '../../features/reader/data/catalog/reader_content_catalog.dart';
 import '../../features/reader/presentation/screens/reader_screen.dart';
 import '../../features/mosque/presentation/screens/mosque_finder_screen.dart';
 import '../../features/mosque/presentation/view_models/mosque_finder_view_model.dart';
+import '../../features/reflection/presentation/screens/reflection_screen.dart';
 import '../app_preferences_scope.dart';
 import '../app_shell.dart';
 import 'app_routes.dart';
@@ -47,11 +48,13 @@ GoRouter createAppRouter({
                 prayerScheduleSession: dependencies.prayerScheduleSession,
                 routineRecordRepository: dependencies.routineRecordRepository,
                 routineRepository: dependencies.routineRepository,
+                reflectionRepository: dependencies.reflectionRepository,
                 ensureRoutinesReady: dependencies.ensureRoutineDefinitionsReady,
                 startClock: dependencies.startTodayClock,
                 bottomContentPadding: AppShell.contentBottomPadding,
                 onRoutineTap: (routineId) =>
                     context.push(RoutePaths.routineDetail(routineId)),
+                onReflectionTap: () => context.push(RoutePaths.reflection),
               ),
             ),
           ],
@@ -74,6 +77,31 @@ GoRouter createAppRouter({
                     dependencies: dependencies,
                   ),
                   routes: [
+                    GoRoute(
+                      path: 'reflection',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      redirect: (context, state) {
+                        try {
+                          CalendarDay.parseDateKey(
+                            state.pathParameters['date']!,
+                          );
+                          return null;
+                        } on FormatException {
+                          return RoutePaths.history;
+                        }
+                      },
+                      builder: (context, state) => ReflectionScreen(
+                        key: ValueKey(
+                          'history-reflection-${state.pathParameters['date']}',
+                        ),
+                        day: CalendarDay.parseDateKey(
+                          state.pathParameters['date']!,
+                        ),
+                        historical: true,
+                        dependencies: dependencies,
+                        noticeController: noticeController,
+                      ),
+                    ),
                     GoRoute(
                       path: 'routines/:routineId',
                       parentNavigatorKey: _rootNavigatorKey,
@@ -140,6 +168,18 @@ GoRouter createAppRouter({
           ],
         ),
       ],
+    ),
+    GoRoute(
+      path: RoutePaths.reflection,
+      name: AppRoute.reflection.name,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => ReflectionScreen(
+        key: const ValueKey('current-reflection'),
+        day: CalendarDay.fromDateTime(DateTime.now()),
+        historical: false,
+        dependencies: dependencies,
+        noticeController: noticeController,
+      ),
     ),
     GoRoute(
       path: RoutePaths.routineDetailPattern,

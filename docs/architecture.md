@@ -270,3 +270,22 @@ Historical Routine Detail reuses `RoutineDetailScreen` and
 `RoutineDetailViewModel` with an explicit `CalendarDay`. The app's record-change
 subscription only reconciles notification actions for today's local date;
 historical progress changes therefore cannot touch OS reminders.
+
+Daily Reflection is a local system feature separate from routines. Its data
+path is:
+
+```text
+ReflectionRepository
+↑
+ReflectionRepositoryData
+↓
+ReflectionSqliteService
+↓
+DaisthDatabaseService → SQLite
+```
+
+`ReflectionViewModel` operates on an explicit `CalendarDay`; `/reflection`
+passes the current local day and `/history/:date/reflection` passes the selected
+historical day. Repository changes refresh Today and History. Only current-day
+reflection changes can reconcile reminders. Reflection uses
+`daily_reflections` and never participates in routine status or progress.

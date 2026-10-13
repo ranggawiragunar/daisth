@@ -14,9 +14,11 @@ import 'package:daisth/features/routines/domain/models/routine_schedule.dart';
 import 'package:daisth/features/routines/domain/models/routine_step.dart';
 import 'package:daisth/features/routines/domain/models/routine_step_definition.dart';
 import 'package:daisth/features/routines/domain/models/routine_status.dart';
+import 'package:daisth/features/reflection/domain/models/reflection_rhythm.dart';
 
 import '../support/fake_routine_record_repository.dart';
 import '../support/fake_routine_repository.dart';
+import '../support/fake_reflection_repository.dart';
 
 void main() {
   final day = CalendarDay(year: 2026, month: 10, day: 12);
@@ -295,6 +297,45 @@ void main() {
     expect(history.entries, isEmpty);
     expect(history.summary.isEmpty, isTrue);
   });
+
+  test(
+    'reflection is separate from summaries and can define the earliest day',
+    () async {
+      final records = FakeRoutineRecordRepository();
+      final definitions = FakeRoutineRepository();
+      final reflections = FakeReflectionRepository();
+      addTearDown(records.close);
+      addTearDown(definitions.close);
+      addTearDown(reflections.close);
+      final oldest = CalendarDay(year: 2026, month: 10, day: 5);
+      await reflections.saveReflection(
+        day: oldest,
+        rhythm: ReflectionRhythm.mixed,
+        note: 'A quiet note',
+        now: DateTime.utc(2026, 10, 13, 2),
+      );
+      final build = BuildHistoryDayUseCase(
+        recordRepository: records,
+        routineRepository: definitions,
+        routineResolver: const HistoryRoutineResolverData(),
+        reflectionRepository: reflections,
+      );
+      final range = GetHistoryRangeUseCase(
+        recordRepository: records,
+        routineRepository: definitions,
+        buildDay: build,
+        reflectionRepository: reflections,
+      );
+      final page = await range.initial(now: DateTime(2026, 10, 13, 12));
+      expect(page.days.first.day, day);
+      expect(page.days.last.day, oldest);
+      final oldestHistoryDay = page.days.last;
+      expect(oldestHistoryDay.reflection?.rhythm, ReflectionRhythm.mixed);
+      expect(oldestHistoryDay.summary.completed, 0);
+      expect(oldestHistoryDay.summary.unrecorded, 5);
+      expect(page.days.where((item) => item.reflection != null), hasLength(1));
+    },
+  );
 }
 
 List<RoutineDefinition> _defaultDefinitions(DateTime created) => [

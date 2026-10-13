@@ -24,7 +24,6 @@ class _RoutineEntry {
     this.routineId,
     this.prayer,
     this.isCurrent = false,
-    this.isEvening = false,
   });
 
   final String time;
@@ -34,7 +33,6 @@ class _RoutineEntry {
   final String? routineId;
   final PrayerName? prayer;
   final bool isCurrent;
-  final bool isEvening;
 }
 
 class RoutineTimeline extends StatelessWidget {
@@ -103,12 +101,6 @@ class RoutineTimeline extends StatelessWidget {
       prayerEntry(PrayerName.asr),
       prayerEntry(PrayerName.maghrib),
       prayerEntry(PrayerName.isha),
-      const _RoutineEntry(
-        time: '20:30',
-        title: 'Daily Reflection',
-        status: design.RoutineStatus.upcoming,
-        isEvening: true,
-      ),
       _RoutineEntry(
         time: _formatMinutes(
           BuiltInRoutineDefaults.penutupHariMinutesAfterMidnight,
@@ -184,15 +176,6 @@ class RoutineTimeline extends StatelessWidget {
       );
       entries.add((minute: minute, entry: entry));
     }
-    entries.add((
-      minute: 20 * 60 + 30,
-      entry: const _RoutineEntry(
-        time: '20:30',
-        title: 'Daily Reflection',
-        status: design.RoutineStatus.upcoming,
-        isEvening: true,
-      ),
-    ));
     entries.sort((first, second) => first.minute.compareTo(second.minute));
     return entries.map((item) => item.entry).toList(growable: false);
   }
@@ -266,7 +249,7 @@ class _TimelineRow extends StatelessWidget {
     );
 
     final row = Padding(
-      padding: EdgeInsets.only(top: entry.isEvening ? DaisthSpacing.md : 0),
+      padding: EdgeInsets.zero,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOutCubic,

@@ -12,7 +12,7 @@ import '../support/test_persistence.dart';
 
 void main() {
   test(
-    'real v1 database upgrades to v3 and preserves routine/settings data',
+    'real v1 database upgrades to v4 and preserves routine/settings data',
     () async {
       sqfliteFfiInit();
       final dir = await Directory.systemTemp.createTemp('daisth-v1-');
@@ -62,7 +62,7 @@ void main() {
       final db = await service.open();
       expect(
         Sqflite.firstIntValue(await db.rawQuery('PRAGMA user_version')),
-        3,
+        4,
       );
       expect((await db.query('routine_records')).single['status'], 'partial');
       expect(
@@ -76,7 +76,7 @@ void main() {
     },
   );
 
-  test('v2 to v3 migration preserves daily records, actions, and settings', () async {
+  test('v2 to v4 migration preserves daily records, actions, and settings', () async {
     sqfliteFfiInit();
     final dir = await Directory.systemTemp.createTemp('daisth-v2-');
     addTearDown(() => dir.delete(recursive: true));
@@ -139,7 +139,7 @@ void main() {
     final service = TestPersistence.createDatabaseServiceAt(filename);
     addTearDown(service.close);
     final db = await service.open();
-    expect(Sqflite.firstIntValue(await db.rawQuery('PRAGMA user_version')), 3);
+    expect(Sqflite.firstIntValue(await db.rawQuery('PRAGMA user_version')), 4);
     expect((await db.query('routine_records')).single['status'], 'completed');
     expect((await db.query('routine_step_records')).single['is_completed'], 1);
     expect((await db.query('app_settings')).single['theme_mode'], 'dark');

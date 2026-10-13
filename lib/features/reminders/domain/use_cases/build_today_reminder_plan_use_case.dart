@@ -44,6 +44,9 @@ class BuildTodayReminderPlanUseCase {
           dateKey: _dateKey(date),
           timezoneIdentifier: timezone.ianaName,
           actionable: routineId != 'reflection',
+          targetType: routineId == 'reflection'
+              ? ReminderTargetType.reflection
+              : ReminderTargetType.routine,
         ),
       );
     }
@@ -89,7 +92,7 @@ class BuildTodayReminderPlanUseCase {
     add(
       routineId: 'reflection',
       title: 'Refleksi hari ini',
-      body: 'Luangkan waktu sebentar untuk melihat kembali rutinitasmu.',
+      body: 'Luangkan sebentar untuk melihat kembali ritmemu hari ini.',
       scheduledAt: DateTime(date.year, date.month, date.day, 20, 30),
       priority: ReminderPriority.medium,
     );

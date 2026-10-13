@@ -9,12 +9,14 @@ class ReminderPayload {
     required this.kind,
     required this.title,
     required this.timezoneIdentifier,
+    this.targetType = ReminderTargetType.routine,
   });
   final String routineId;
   final String dateKey;
   final ReminderType kind;
   final String title;
   final String timezoneIdentifier;
+  final ReminderTargetType targetType;
 
   static ReminderPayload? tryParse(String? value) {
     if (value == null) return null;
@@ -22,17 +24,19 @@ class ReminderPayload {
       final json = jsonDecode(value);
       if (json is! Map<String, dynamic> ||
           json['v'] != 1 ||
-          json['type'] != 'routine' ||
+          (json['type'] != 'routine' && json['type'] != 'reflection') ||
           json['app'] != 'daisth') {
         return null;
       }
-      final routine = json['routineId'];
+      final isReflection = json['type'] == 'reflection';
+      final routine = isReflection ? 'reflection' : json['routineId'];
       final date = json['date'];
       final kind = json['kind'];
       final title = json['title'];
       final zone = json['tz'];
       if (routine is! String ||
-          !_supported.contains(routine) ||
+          (!isReflection && !_supported.contains(routine)) ||
+          (isReflection && json['target'] != 'reflection') ||
           date is! String ||
           !_validDate(date) ||
           title is! String ||
@@ -53,6 +57,9 @@ class ReminderPayload {
         kind: reminderKind,
         title: title,
         timezoneIdentifier: zone,
+        targetType: isReflection || routine == 'reflection'
+            ? ReminderTargetType.reflection
+            : ReminderTargetType.routine,
       );
     } on Object {
       return null;
@@ -82,8 +89,10 @@ class ReminderPayload {
     'asar',
     'maghrib',
     'isya',
-    'reflection',
     'penutup-hari',
     'debug-test',
+    // Older scheduled notifications represented this system target as a
+    // routine ID. New payloads use type/target = reflection instead.
+    'reflection',
   };
 }

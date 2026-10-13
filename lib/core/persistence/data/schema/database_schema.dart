@@ -1,13 +1,14 @@
 import 'package:sqflite/sqflite.dart';
 
 abstract final class DatabaseSchema {
-  static const version = 3;
+  static const version = 4;
   static const routineRecords = 'routine_records';
   static const routineStepRecords = 'routine_step_records';
   static const appSettings = 'app_settings';
   static const routineReminderStates = 'routine_reminder_states';
   static const routineDefinitions = 'routine_definitions';
   static const routineStepDefinitions = 'routine_step_definitions';
+  static const dailyReflections = 'daily_reflections';
 
   static Future<void> create(DatabaseExecutor db) async {
     await db.execute('''
@@ -50,6 +51,7 @@ abstract final class DatabaseSchema {
     });
     await createReminderStates(db);
     await createRoutineDefinitions(db);
+    await createDailyReflections(db);
   }
 
   static Future<void> upgrade(
@@ -67,6 +69,21 @@ abstract final class DatabaseSchema {
     if (oldVersion < 3 && newVersion >= 3) {
       await createRoutineDefinitions(db);
     }
+    if (oldVersion < 4 && newVersion >= 4) {
+      await createDailyReflections(db);
+    }
+  }
+
+  static Future<void> createDailyReflections(DatabaseExecutor db) async {
+    await db.execute('''
+      CREATE TABLE $dailyReflections (
+        date_key TEXT PRIMARY KEY,
+        rhythm TEXT NOT NULL CHECK (rhythm IN ('steady', 'mixed', 'heavy')),
+        note TEXT,
+        recorded_at_utc TEXT NOT NULL,
+        updated_at_utc TEXT NOT NULL
+      )
+    ''');
   }
 
   static Future<void> createReminderStates(DatabaseExecutor db) async {

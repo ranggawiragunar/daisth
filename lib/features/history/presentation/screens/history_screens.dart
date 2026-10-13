@@ -15,6 +15,8 @@ import '../../data/resolvers/history_routine_resolver_data.dart';
 import '../../domain/models/history_day.dart';
 import '../../domain/use_cases/build_history_day_use_case.dart';
 import '../../domain/use_cases/get_history_range_use_case.dart';
+import '../../../reflection/domain/models/daily_reflection.dart';
+import '../../../reflection/domain/models/reflection_rhythm.dart';
 import '../view_models/history_view_model.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -40,14 +42,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
       recordRepository: widget.dependencies.routineRecordRepository,
       routineRepository: widget.dependencies.routineRepository,
       routineResolver: const HistoryRoutineResolverData(),
+      reflectionRepository: widget.dependencies.reflectionRepository,
     );
     _model = HistoryViewModel(
       getHistory: GetHistoryRangeUseCase(
         recordRepository: widget.dependencies.routineRecordRepository,
         routineRepository: widget.dependencies.routineRepository,
         buildDay: buildDay,
+        reflectionRepository: widget.dependencies.reflectionRepository,
       ),
       repository: widget.dependencies.routineRecordRepository,
+      reflectionRepository: widget.dependencies.reflectionRepository,
     )..addListener(_changed);
     unawaited(_initialize());
   }
@@ -184,6 +189,7 @@ class _HistoryDayScreenState extends State<HistoryDayScreen> {
       recordRepository: widget.dependencies.routineRecordRepository,
       routineRepository: widget.dependencies.routineRepository,
       routineResolver: const HistoryRoutineResolverData(),
+      reflectionRepository: widget.dependencies.reflectionRepository,
     );
     try {
       _day = CalendarDay.parseDateKey(widget.date);
@@ -192,6 +198,7 @@ class _HistoryDayScreenState extends State<HistoryDayScreen> {
               day: _day!,
               loadDay: _loadDay,
               repository: widget.dependencies.routineRecordRepository,
+              reflectionRepository: widget.dependencies.reflectionRepository,
             )
             ..addListener(_changed)
             ..initialize();
@@ -264,7 +271,8 @@ class _HistoryDayScreenState extends State<HistoryDayScreen> {
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: DaisthSpacing.xl),
-                    if (historyDay.entries.isEmpty)
+                    if (historyDay.entries.isEmpty &&
+                        historyDay.reflection == null)
                       const Text(
                         'No local history is available for this date.',
                       ),
@@ -280,6 +288,16 @@ class _HistoryDayScreenState extends State<HistoryDayScreen> {
                       for (final entry in other)
                         _HistoryEntryTile(entry: entry, day: _day!),
                     ],
+                    const SizedBox(height: DaisthSpacing.lg),
+                    Text(
+                      'Reflection',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: DaisthSpacing.sm),
+                    _HistoryReflectionTile(
+                      day: _day!,
+                      reflection: historyDay.reflection,
+                    ),
                   ],
                 ),
               ),
@@ -290,6 +308,49 @@ class _HistoryDayScreenState extends State<HistoryDayScreen> {
     );
   }
 }
+
+class _HistoryReflectionTile extends StatelessWidget {
+  const _HistoryReflectionTile({required this.day, required this.reflection});
+
+  final CalendarDay day;
+  final DailyReflection? reflection;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: () => context.push(RoutePaths.historyReflection(day.toDateKey())),
+    borderRadius: BorderRadius.circular(18),
+    child: DaisthSurface(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            reflection == null
+                ? 'No reflection recorded.'
+                : _rhythmLabel(reflection!.rhythm),
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          if (reflection?.note case final note?) ...[
+            const SizedBox(height: DaisthSpacing.xs),
+            Text(
+              note,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
+String _rhythmLabel(ReflectionRhythm rhythm) => switch (rhythm) {
+  ReflectionRhythm.steady => 'Terasa mengalir',
+  ReflectionRhythm.mixed => 'Naik turun',
+  ReflectionRhythm.heavy => 'Terasa berat',
+};
 
 class _HistoryDayCard extends StatelessWidget {
   const _HistoryDayCard({

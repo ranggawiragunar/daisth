@@ -1,5 +1,12 @@
 # History
 
+Daily Reflection appears in a separate section below routine entries. It shows
+the selected rhythm and a short note preview, or the neutral message
+`No reflection recorded.` when absent. Reflection does not affect routine
+summary counts or become `Unrecorded`. The section opens the same editor for
+the selected historical date; a late entry is allowed and does not change
+today's reminders.
+
 History is a local, observational view of routine records. It has no score,
 completion percentage, streak, chart, badge, or failure language.
 

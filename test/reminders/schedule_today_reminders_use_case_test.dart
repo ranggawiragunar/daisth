@@ -12,11 +12,14 @@ import 'package:daisth/features/prayer_times/domain/repositories/prayer_time_rep
 import 'package:daisth/features/prayer_times/domain/use_cases/load_today_prayer_schedule_use_case.dart';
 import 'package:daisth/features/reminders/domain/models/exact_alarm_status.dart';
 import 'package:daisth/features/reminders/domain/models/reminder.dart';
+import 'package:daisth/features/reminders/domain/models/reminder_priority.dart';
 import 'package:daisth/features/reminders/domain/models/reminder_permission_status.dart';
 import 'package:daisth/features/reminders/domain/models/reminder_scheduling_mode.dart';
 import 'package:daisth/features/reminders/domain/repositories/reminder_repository.dart';
 import 'package:daisth/features/reminders/domain/use_cases/build_today_reminder_plan_use_case.dart';
 import 'package:daisth/features/reminders/domain/use_cases/schedule_today_reminders_use_case.dart';
+import 'package:daisth/features/reflection/domain/models/reflection_rhythm.dart';
+import 'package:daisth/features/reflection/domain/repositories/reflection_repository.dart';
 import 'package:daisth/features/reminders/domain/repositories/routine_reminder_state_repository.dart';
 import 'package:daisth/features/reminders/data/mappers/routine_reminder_state_mapper.dart';
 import 'package:daisth/features/reminders/data/repositories/routine_reminder_state_repository_data.dart';
@@ -31,6 +34,7 @@ import 'package:daisth/features/routines/domain/repositories/routine_repository.
 import 'package:daisth/features/routines/domain/models/routine_schedule.dart';
 import 'package:daisth/features/routines/domain/use_cases/ensure_default_routines_use_case.dart';
 import '../support/test_persistence.dart';
+import '../support/fake_reflection_repository.dart';
 
 void main() {
   test(
@@ -118,6 +122,108 @@ void main() {
     },
   );
 
+  test('saved current Reflection suppresses its Open-only reminder', () async {
+    final reflectionRepository = FakeReflectionRepository();
+    addTearDown(reflectionRepository.close);
+    final day = CalendarDay(year: 2026, month: 10, day: 13);
+    await reflectionRepository.saveReflection(
+      day: day,
+      rhythm: ReflectionRhythm.steady,
+      note: null,
+      now: DateTime.utc(2026, 10, 13, 10),
+    );
+    final reminders = _Reminders(ExactAlarmStatus.enabled);
+    reminders.scheduled.add(
+      Reminder(
+        id: 'reflection-primary-2026-10-13',
+        routineId: 'reflection',
+        title: 'Refleksi hari ini',
+        body: 'Luangkan sebentar.',
+        scheduledAt: DateTime(2026, 10, 13, 20, 30),
+        priority: ReminderPriority.medium,
+        dateKey: '2026-10-13',
+        actionable: false,
+        targetType: ReminderTargetType.reflection,
+      ),
+    );
+    final useCase = _useCase(
+      reminders,
+      reflectionRepository: reflectionRepository,
+    );
+    final savedSummary = await useCase(
+      schedule: _schedule(),
+      now: DateTime(2026, 10, 13, 18),
+    );
+    expect(
+      savedSummary.plan.reminders.any(
+        (reminder) => reminder.routineId == 'reflection',
+      ),
+      isFalse,
+    );
+    expect(
+      reminders.scheduled.any((reminder) => reminder.routineId == 'reflection'),
+      isFalse,
+    );
+    expect(reminders.cancelledDates, [DateTime(2026, 10, 13)]);
+
+    await reflectionRepository.deleteReflection(day);
+    final clearedSummary = await useCase(
+      schedule: _schedule(),
+      now: DateTime(2026, 10, 13, 18),
+    );
+    expect(
+      clearedSummary.plan.reminders.any(
+        (reminder) => reminder.routineId == 'reflection',
+      ),
+      isTrue,
+    );
+  });
+
+  test(
+    'clearing after 20:30 does not recreate a retroactive reminder',
+    () async {
+      final reflectionRepository = FakeReflectionRepository();
+      addTearDown(reflectionRepository.close);
+      final day = CalendarDay(year: 2026, month: 10, day: 13);
+      await reflectionRepository.saveReflection(
+        day: day,
+        rhythm: ReflectionRhythm.steady,
+        note: null,
+        now: DateTime.utc(2026, 10, 13, 10),
+      );
+      final reminders = _Reminders(ExactAlarmStatus.enabled);
+      final useCase = _useCase(
+        reminders,
+        reflectionRepository: reflectionRepository,
+      );
+      await useCase(schedule: _schedule(), now: DateTime(2026, 10, 13, 21));
+      expect(
+        reminders.scheduled.any(
+          (reminder) => reminder.routineId == 'reflection',
+        ),
+        isFalse,
+      );
+
+      await reflectionRepository.deleteReflection(day);
+      final cleared = await useCase(
+        schedule: _schedule(),
+        now: DateTime(2026, 10, 13, 21, 1),
+      );
+      expect(
+        cleared.plan.reminders.any(
+          (reminder) => reminder.routineId == 'reflection',
+        ),
+        isFalse,
+      );
+      expect(
+        reminders.scheduled.any(
+          (reminder) => reminder.routineId == 'reflection',
+        ),
+        isFalse,
+      );
+    },
+  );
+
   test(
     'startup reconciliation restores future snooze and skips suppressed/completed follow-up',
     () async {
@@ -187,6 +293,7 @@ ScheduleTodayRemindersUseCase _useCase(
   RoutineRecordRepository? routineRepository,
   RoutineRepository? definitionsRepository,
   RoutineReminderStateRepository? reminderStateRepository,
+  ReflectionRepository? reflectionRepository,
 }) => ScheduleTodayRemindersUseCase(
   reminderRepository: reminders,
   timezoneRepository: _Timezones(),
@@ -200,6 +307,7 @@ ScheduleTodayRemindersUseCase _useCase(
   routineRecordRepository: routineRepository,
   routineRepository: definitionsRepository,
   reminderStateRepository: reminderStateRepository,
+  reflectionRepository: reflectionRepository,
 );
 
 PrayerDaySchedule _schedule() => PrayerDaySchedule(
@@ -259,8 +367,17 @@ class _Reminders implements ReminderRepository {
   @override
   Future<void> cancel(Reminder reminder) async {}
   @override
-  Future<void> cancelRemindersForDate(DateTime date) async =>
-      cancelledDates.add(date);
+  Future<void> cancelRemindersForDate(DateTime date) async {
+    cancelledDates.add(date);
+    scheduled.removeWhere((reminder) {
+      final key = reminder.dateKey;
+      return key ==
+          '${date.year.toString().padLeft(4, '0')}-'
+              '${date.month.toString().padLeft(2, '0')}-'
+              '${date.day.toString().padLeft(2, '0')}';
+    });
+  }
+
   @override
   Future<void> cancelAllDaisthReminders() async {}
   @override

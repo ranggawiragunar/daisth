@@ -11,6 +11,7 @@ import 'package:daisth/core/location/domain/repositories/location_repository.dar
 import 'support/test_persistence.dart';
 import 'support/fake_routine_record_repository.dart';
 import 'support/fake_routine_repository.dart';
+import 'support/fake_reflection_repository.dart';
 
 void main() {
   testWidgets('Today is the initial destination and navigation works', (
@@ -226,6 +227,7 @@ Widget _testApp() => DaisthApp(
     locationRepository: _DeniedLocation(),
     routineRecordRepository: FakeRoutineRecordRepository(),
     routineRepository: FakeRoutineRepository(),
+    reflectionRepository: FakeReflectionRepository(),
     databaseService: TestPersistence.createDatabaseService(),
   ),
 );
