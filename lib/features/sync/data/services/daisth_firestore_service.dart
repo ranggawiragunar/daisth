@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/models/sync_entity.dart';
 import '../../domain/repositories/cloud_data_repository.dart';
 import '../mappers/sync_entity_firestore_mapper.dart';
+import 'firestore_account_data_purger.dart';
 
 class DaisthFirestoreService implements CloudDataRepository {
   DaisthFirestoreService() : _firestore = null;
@@ -78,5 +79,59 @@ class DaisthFirestoreService implements CloudDataRepository {
       'dataSchemaVersion': 1,
       'lastSyncAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> deleteAllUserCloudData(String uid) async {
+    configureTransport();
+    await const FirestoreAccountDataPurger().purge(
+      uid,
+      _FirestorePurgeGateway(firestore),
+    );
+  }
+}
+
+class _FirestorePurgeGateway implements FirestorePurgeGateway {
+  const _FirestorePurgeGateway(this.firestore);
+
+  final FirebaseFirestore firestore;
+
+  @override
+  Future<List<String>> nextDocumentIds(
+    String uid,
+    String collection,
+    int limit,
+  ) async {
+    final snapshot = await firestore
+        .collection('users')
+        .doc(uid)
+        .collection(collection)
+        .limit(limit)
+        .get(const GetOptions(source: Source.server));
+    return snapshot.docs.map((document) => document.id).toList(growable: false);
+  }
+
+  @override
+  Future<void> deleteDocuments(
+    String uid,
+    String collection,
+    List<String> documentIds,
+  ) async {
+    final batch = firestore.batch();
+    final target = firestore
+        .collection('users')
+        .doc(uid)
+        .collection(collection);
+    for (final id in documentIds) {
+      batch.delete(target.doc(id));
+    }
+    await batch.commit();
+  }
+
+  @override
+  Future<void> deleteUserRoot(String uid) async {
+    final root = firestore.collection('users').doc(uid);
+    final snapshot = await root.get(const GetOptions(source: Source.server));
+    if (snapshot.exists) await root.delete();
   }
 }

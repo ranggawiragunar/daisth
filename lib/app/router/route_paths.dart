@@ -6,6 +6,10 @@ abstract final class RoutePaths {
   static const settings = '/settings';
   static const onboarding = '/onboarding';
   static const account = '/settings/account';
+  static const settingsPrayerLocation = '/settings/prayer-location';
+  static const settingsNotifications = '/settings/notifications';
+  static const settingsPrivacy = '/settings/privacy';
+  static const settingsAbout = '/settings/about';
   static const routineDetailPattern = '/routines/:routineId';
   static const historyDayPattern = '/history/:date';
   static const reflection = '/reflection';

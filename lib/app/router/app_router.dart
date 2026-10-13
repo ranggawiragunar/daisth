@@ -13,6 +13,7 @@ import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
 import '../../features/routines/presentation/routine_detail_route_screen.dart';
 import '../../features/routines/presentation/routines_screen.dart';
 import '../../features/settings/presentation/settings_placeholder_screen.dart';
+import '../../features/settings/presentation/settings_detail_screens.dart';
 import '../../features/today/presentation/today_screen.dart';
 import '../../features/reader/data/catalog/reader_content_catalog.dart';
 import '../../features/reader/presentation/screens/reader_screen.dart';
@@ -62,9 +63,37 @@ GoRouter createAppRouter({
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => AccountScreen(
         viewModel: dependencies.authViewModel,
+        deleteAccountUseCase: dependencies.deleteAccountUseCase,
         syncViewModel: dependencies.syncViewModel,
         notices: noticeController,
       ),
+    ),
+    GoRoute(
+      path: RoutePaths.settingsPrayerLocation,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => PrayerLocationSettingsScreen(
+        locationRepository: dependencies.locationRepository,
+        timezoneRepository: dependencies.timezoneRepository,
+        prayerScheduleSession: dependencies.prayerScheduleSession,
+        reminderSettings: dependencies.reminderSettings,
+      ),
+    ),
+    GoRoute(
+      path: RoutePaths.settingsNotifications,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => NotificationsSettingsScreen(
+        reminderSettings: dependencies.reminderSettings,
+      ),
+    ),
+    GoRoute(
+      path: RoutePaths.settingsPrivacy,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const DataPrivacySettingsScreen(),
+    ),
+    GoRoute(
+      path: RoutePaths.settingsAbout,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const AboutDaisthScreen(),
     ),
     GoRoute(
       path: RoutePaths.root,
@@ -193,10 +222,6 @@ GoRouter createAppRouter({
                 return SettingsPlaceholderScreen(
                   themeMode: preferences.themeMode,
                   onThemeModeChanged: preferences.onThemeModeChanged,
-                  prayerScheduleSession: dependencies.prayerScheduleSession,
-                  reminderSettings: dependencies.reminderSettings,
-                  authViewModel: dependencies.authViewModel,
-                  noticeController: noticeController,
                   bottomContentPadding: AppShell.contentBottomPadding,
                 );
               },

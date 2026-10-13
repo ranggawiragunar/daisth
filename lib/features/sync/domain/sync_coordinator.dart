@@ -30,6 +30,7 @@ class SyncCoordinator {
   SyncState? state;
   AuthSession _session = const AuthUnavailable();
   bool _disposed = false;
+  bool _accountDeletionInProgress = false;
   SyncStatus status = SyncStatus.localOnly;
 
   Future<void> initialize() async {
@@ -91,6 +92,26 @@ class SyncCoordinator {
     }
     await _syncDataset(uid);
   });
+
+  Future<T> runAccountDeletion<T>(
+    String uid,
+    Future<T> Function() action,
+  ) async {
+    if (_accountDeletionInProgress) {
+      throw StateError('Account deletion is already in progress.');
+    }
+    _accountDeletionInProgress = true;
+    try {
+      final active = _active;
+      if (active != null) await active;
+      if (_currentUid != uid) {
+        throw StateError('The signed-in account changed.');
+      }
+      return await action();
+    } finally {
+      _accountDeletionInProgress = false;
+    }
+  }
 
   Future<void> _syncDataset(String uid, {String? linkUid}) async {
     if (_currentUid != uid) return;
@@ -215,6 +236,7 @@ class SyncCoordinator {
   }
 
   Future<void> _enqueueRun(Future<void> Function() action) async {
+    if (_accountDeletionInProgress) return;
     if (_active != null) {
       _rerun = true;
       await _active;

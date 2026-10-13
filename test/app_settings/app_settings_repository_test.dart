@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:daisth/core/app_settings/domain/models/app_settings.dart';
+import 'package:daisth/core/persistence/data/schema/database_schema.dart';
 import 'package:daisth/core/app_settings/data/repositories/app_settings_repository_data.dart';
 import 'package:daisth/core/app_settings/data/services/app_settings_sqlite_service.dart';
 
@@ -23,6 +24,13 @@ void main() {
           remindersEnabled: true,
           updatedAt: updatedAt,
         ),
+      );
+      expect(
+        await (await persistence.database.open()).query(
+          DatabaseSchema.syncOutbox,
+        ),
+        isEmpty,
+        reason: 'Appearance and reminder preferences remain device-local.',
       );
       final restored = await persistence.appSettings.getSettings();
       expect(restored.themePreference, AppThemePreference.dark);

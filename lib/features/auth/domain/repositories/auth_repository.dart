@@ -5,6 +5,9 @@ abstract interface class AuthRepository {
   Stream<AuthSession> authStateChanges();
   Future<AuthSession> currentSession();
   Future<AuthUser> signInWithGoogle();
+  Future<AuthUser> reauthenticateWithGoogle();
+  Future<void> deleteCurrentUser();
+  Future<void> disconnectGoogle();
   Future<void> signOut();
   Future<void> retryAvailability();
 }

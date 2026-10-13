@@ -66,3 +66,29 @@ verification remains pending. No iOS device was connected for this pass.
 The project currently supports one SQLite dataset linked to one Firebase UID
 per installation. Account profile switching and background sync are not
 implemented. This is a deliberate MVP boundary.
+
+## #017 Settings and account deletion — manual checks pending
+
+- [ ] Settings groups and detail navigation in light and dark appearance.
+- [ ] Theme choice persists after a process restart and remains device-local.
+- [ ] Location allowed/denied/permanently denied/service-disabled transitions;
+  verify explicit permission and system settings actions.
+- [ ] Prayer refresh updates the schedule and reminder plan; no coordinates are
+  shown in normal Settings.
+- [ ] Change device timezone, resume Daisth, and verify schedule, reminder plan,
+  and Reminder Health refresh without changing historical dates.
+- [ ] Notification permission transitions, reminder toggle, precise/standard
+  timing, and pending reminder list.
+- [ ] Verify debug notification controls do not appear in a release build.
+- [ ] Google sign-in and sync status on device.
+- [ ] Delete Account: cancel confirmation, cancel reauthentication, reauthenticate,
+  purge cloud collections, remove Firebase Auth user, and sign out.
+- [ ] Verify routines, History, custom routines, Reflection, theme, and reminder
+  preference remain on-device after linked-account deletion.
+- [ ] Verify normal sign-out does not purge cloud data or unlink local sync.
+- [ ] Verify deleting a different signed-in UID preserves the existing local
+  UID link and outbox.
+
+These checks are carried forward to #017.5. No local database reset control was
+added. No Privacy Policy or Terms URL is configured; public legal URLs remain a
+release requirement tracked for #018.

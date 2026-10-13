@@ -26,11 +26,19 @@ standard system sound and vibration behavior; it does not request DND bypass,
 full-screen intent, or critical-alert capabilities. iOS requests regular alert
 and sound permission only when the user enables reminders.
 
-Settings shows notification permission, precise-alarm availability, timezone,
-Reminder Health, last action, and pending reminders for today. The enabled preference is stored locally with
+Settings has a Notifications detail surface showing permission, precise or
+standard timing, timezone, Reminder Health, last action, and upcoming reminders
+without exposing plugin IDs. Debug-only test notification controls are guarded
+by `kDebugMode`. The enabled preference is stored locally with
 the app settings and restored on launch. OS permission remains controlled by
 the operating system and is checked again when the app resumes. Daisth does
 not request permission automatically during restoration.
+
+On resume, the app refreshes notification and exact-alarm permission even when
+reminders are off. It also refreshes device timezone and reconciles the current
+schedule only when reminders are enabled and notification permission is
+granted. `Standard timing` indicates inexact Android scheduling is available;
+it is not an error state.
 
 Actionable routine reminders offer Done, Snooze, and Open. Daily Reflection is
 a local system reminder at 20:30 with medium priority. It is Open-only and

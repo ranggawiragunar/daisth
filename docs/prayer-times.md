@@ -9,8 +9,13 @@ The current flow requests foreground location only after a user action when
 permission is missing. A previously granted permission allows Today to load
 automatically. If a fresh coordinate cannot be read, the app may calculate from
 the last-known location and labels that schedule. The schedule and settings live
-in memory for the app session; coordinates are not persisted. No Kemenag API,
-background location, or notification scheduler is used.
+in memory for the app session; coordinates are not persisted. Settings displays
+only a user-facing location access state and the current device IANA timezone;
+it does not show coordinates. Opening Settings checks access without requesting
+permission. Permission requests and system settings actions require an explicit
+tap. Prayer refresh uses the shared schedule session and normal reminder
+reconciliation. No Kemenag API, background location, or notification scheduler
+is used by the prayer calculation service.
 
 Prayer values are converted to device-local time and shown in 24-hour `HH:mm`
 format. This assumes the device timezone matches the current physical location.

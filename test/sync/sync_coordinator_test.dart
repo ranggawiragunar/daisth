@@ -50,6 +50,36 @@ void main() {
     expect(cloud.writeCount, 0);
     expect(local.state.linkedUid, 'user-a');
   });
+
+  test(
+    'account deletion lock blocks a new sync run until purge finishes',
+    () async {
+      final local = _MemorySyncLocalRepository(linkedUid: 'user-a');
+      final cloud = _MemoryCloudRepository(() => local.state.linkedUid);
+      final coordinator = SyncCoordinator(
+        authRepository: _MemoryAuthRepository('user-a'),
+        localRepository: local,
+        cloudRepository: cloud,
+      );
+      addTearDown(coordinator.dispose);
+      await coordinator.initialize();
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      final fetchesBeforeDelete = cloud.fetchCount;
+      final entered = Completer<void>();
+      final release = Completer<void>();
+
+      final deletion = coordinator.runAccountDeletion('user-a', () async {
+        entered.complete();
+        await release.future;
+      });
+      await entered.future;
+      await coordinator.syncNow();
+      expect(cloud.fetchCount, fetchesBeforeDelete);
+
+      release.complete();
+      await deletion;
+    },
+  );
 }
 
 class _MemoryAuthRepository implements AuthRepository {
@@ -64,6 +94,13 @@ class _MemoryAuthRepository implements AuthRepository {
   Future<AuthUser> signInWithGoogle() async => (_session as AuthSignedIn).user;
   @override
   Future<void> signOut() async {}
+  @override
+  Future<AuthUser> reauthenticateWithGoogle() async =>
+      (_session as AuthSignedIn).user;
+  @override
+  Future<void> deleteCurrentUser() async {}
+  @override
+  Future<void> disconnectGoogle() async {}
   @override
   Future<void> retryAvailability() async {}
 }
@@ -88,6 +125,8 @@ class _MemoryCloudRepository implements CloudDataRepository {
 
   @override
   Future<void> updateUserSyncMetadata(String uid, DateTime nowUtc) async {}
+  @override
+  Future<void> deleteAllUserCloudData(String uid) async {}
 }
 
 class _MemorySyncLocalRepository implements SyncLocalRepository {
@@ -146,4 +185,6 @@ class _MemorySyncLocalRepository implements SyncLocalRepository {
   Future<void> markSuccessfulSync(DateTime nowUtc) async {}
   @override
   Future<void> setError(String? errorCode, DateTime nowUtc) async {}
+  @override
+  Future<void> clearLinkForDeletedAccount(String uid) async {}
 }

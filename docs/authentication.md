@@ -59,5 +59,12 @@ tooling. iOS live sign-in remains unverified until that generated configuration
 is available.
 
 Firebase Auth session persistence is native. Firestore is configured for
-private user-scoped sync; it is not a UI repository. Account deletion remains
-a production requirement after cloud-data deletion semantics are defined.
+private user-scoped sync; it is not a UI repository. Account deletion is
+available from the signed-in Account screen. It requires confirmation and
+Google reauthentication, purges the user's known Firestore collections before
+deleting Firebase Auth, and disconnects Google afterward. Deleting the account
+does not delete local SQLite data. When the deleted UID matches the local sync
+link, the link and pending outbox are cleared while the stable device ID is
+retained. A different local UID link is left untouched. Cloud purge failure
+leaves Firebase Auth and local linkage intact so the user can retry. See
+[sync.md](sync.md) for purge ordering and sync exclusion.

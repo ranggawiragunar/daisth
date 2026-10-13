@@ -69,6 +69,39 @@ class FirebaseAuthService {
     return _user(user);
   });
 
+  Future<AuthUser> reauthenticateWithGoogle() => _mapOperation(() async {
+    await _ensureGoogleInitialized();
+    final current = _auth!.currentUser;
+    if (current == null) {
+      throw const AuthOperationException(AuthFailure.serviceUnavailable);
+    }
+    final account = await _googleSignIn.authenticate();
+    final idToken = account.authentication.idToken;
+    if (idToken == null || idToken.isEmpty) {
+      throw const AuthOperationException(AuthFailure.configurationError);
+    }
+    final credential = GoogleAuthProvider.credential(idToken: idToken);
+    final result = await current.reauthenticateWithCredential(credential);
+    final user = result.user;
+    if (user == null || user.uid != current.uid) {
+      throw const AuthOperationException(AuthFailure.credentialRejected);
+    }
+    return _user(user);
+  });
+
+  Future<void> deleteCurrentUser() => _mapOperation(() async {
+    final current = _auth!.currentUser;
+    if (current == null) {
+      throw const AuthOperationException(AuthFailure.serviceUnavailable);
+    }
+    await current.delete();
+  });
+
+  Future<void> disconnectGoogle() => _mapOperation(() async {
+    await _ensureGoogleInitialized();
+    await _googleSignIn.disconnect();
+  });
+
   Future<void> signOut() => _mapOperation(() async {
     await _auth!.signOut();
     try {
@@ -124,8 +157,10 @@ class FirebaseAuthService {
 
   AuthFailure _firebaseFailure(String code) => switch (code) {
     'network-request-failed' => AuthFailure.networkUnavailable,
+    'requires-recent-login' => AuthFailure.needsReauthentication,
     'account-exists-with-different-credential' ||
     'invalid-credential' ||
+    'user-mismatch' ||
     'credential-already-in-use' => AuthFailure.credentialRejected,
     'user-disabled' => AuthFailure.accountDisabled,
     'too-many-requests' => AuthFailure.tooManyRequests,

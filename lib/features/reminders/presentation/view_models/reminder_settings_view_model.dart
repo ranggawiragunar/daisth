@@ -184,6 +184,22 @@ class ReminderSettingsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> requestNotificationPermission() async {
+    if (isLoading) return;
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      permissionStatus = await reminderRepository.requestPermission();
+      await _refreshPending();
+    } catch (_) {
+      errorMessage = 'Izin notifikasi belum dapat diperbarui.';
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> openNotificationSettings() async {
     await reminderRepository.openNotificationSettings();
   }
@@ -218,25 +234,26 @@ class ReminderSettingsViewModel extends ChangeNotifier {
   }
 
   Future<void> onAppResumed() async {
-    if (!remindersEnabled || isLoading) return;
+    if (isLoading) return;
     try {
       permissionStatus = await reminderRepository.getPermissionStatus();
       exactAlarmStatus = await reminderRepository.getExactAlarmStatus();
-      if (permissionStatus != ReminderPermissionStatus.granted) {
+      final current = _clock();
+      deviceTimezone = await timezoneRepository.getDeviceTimezone();
+      if (!remindersEnabled ||
+          permissionStatus != ReminderPermissionStatus.granted) {
         await _refreshPending();
         notifyListeners();
         return;
       }
-      final current = _clock();
-      final timezone = await timezoneRepository.getDeviceTimezone();
-      deviceTimezone = timezone;
-      if (!_reschedulePolicy.shouldReschedule(
+      final shouldReschedule = _reschedulePolicy.shouldReschedule(
         scheduledDate: _lastPlanDate,
         scheduledTimezone: _lastPlanTimezone,
         currentDate: current,
-        currentTimezone: timezone.ianaName,
-      )) {
-        await _reschedule(now: current);
+        currentTimezone: deviceTimezone!.ianaName,
+      );
+      if (!shouldReschedule) {
+        await prayerScheduleSession.refreshIfStale(now: current);
         await _refreshPending();
         notifyListeners();
         return;
@@ -244,7 +261,30 @@ class ReminderSettingsViewModel extends ChangeNotifier {
       await prayerScheduleSession.refresh(now: current);
       await _reschedule(now: current);
     } catch (_) {
-      errorMessage = 'Pengingat hari ini belum dapat diperbarui.';
+      errorMessage = 'Pengaturan perangkat belum dapat diperbarui.';
+      notifyListeners();
+    }
+  }
+
+  Future<void> refreshDeviceStatus() async {
+    if (isLoading) return;
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      permissionStatus = await reminderRepository.getPermissionStatus();
+      exactAlarmStatus = await reminderRepository.getExactAlarmStatus();
+      deviceTimezone = await timezoneRepository.getDeviceTimezone();
+      await _refreshPending();
+      if (remindersEnabled &&
+          permissionStatus == ReminderPermissionStatus.granted) {
+        await prayerScheduleSession.refresh(requestPermission: false);
+        await _reschedule(now: _clock());
+      }
+    } catch (_) {
+      errorMessage = 'Pengaturan perangkat belum dapat diperbarui.';
+    } finally {
+      isLoading = false;
       notifyListeners();
     }
   }

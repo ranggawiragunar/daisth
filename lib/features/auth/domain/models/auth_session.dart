@@ -24,6 +24,7 @@ enum AuthFailure {
   credentialRejected,
   accountDisabled,
   tooManyRequests,
+  needsReauthentication,
   serviceUnavailable,
   unknown,
 }

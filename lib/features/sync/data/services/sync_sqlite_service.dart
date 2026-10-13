@@ -350,6 +350,33 @@ class SyncSqliteService {
     'updated_at_utc': nowUtc.toUtc().toIso8601String(),
   });
 
+  Future<void> clearLinkForDeletedAccount(String uid) async {
+    final db = await databaseService.open();
+    await db.transaction((transaction) async {
+      final rows = await transaction.query(
+        DatabaseSchema.syncMetadata,
+        columns: ['linked_uid'],
+        where: 'id = 1',
+        limit: 1,
+      );
+      if (rows.isEmpty || rows.first['linked_uid'] != uid) return;
+      await transaction.update(
+        DatabaseSchema.syncMetadata,
+        {
+          'linked_uid': null,
+          'initial_sync_completed': 0,
+          'last_attempt_at_utc': null,
+          'last_successful_sync_at_utc': null,
+          'last_error_code': null,
+          'updated_at_utc': DateTime.now().toUtc().toIso8601String(),
+        },
+        where: 'id = 1 AND linked_uid = ?',
+        whereArgs: [uid],
+      );
+      await transaction.delete(DatabaseSchema.syncOutbox);
+    });
+  }
+
   Future<void> _updateMetadata(Map<String, Object?> values) async {
     final db = await databaseService.open();
     await db.update(DatabaseSchema.syncMetadata, values, where: 'id = 1');

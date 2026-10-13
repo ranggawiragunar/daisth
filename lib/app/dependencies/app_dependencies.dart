@@ -68,6 +68,7 @@ import '../../features/auth/data/services/firebase_auth_service.dart';
 import '../../features/auth/data/services/firebase_bootstrap_service.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/auth_view_model.dart';
+import '../../features/auth/domain/use_cases/delete_account_use_case.dart';
 import '../../features/onboarding/domain/current_onboarding_version.dart';
 import '../../features/sync/data/mappers/firestore_document_ids.dart';
 import '../../features/sync/data/repositories/sync_local_repository_data.dart';
@@ -117,6 +118,12 @@ class AppDependencies {
       onRemoteChanges: _notifyRemoteChanges,
     );
     syncViewModel = SyncViewModel(syncCoordinator);
+    deleteAccountUseCase = DeleteAccountUseCase(
+      authRepository: this.authRepository,
+      cloudRepository: this.cloudDataRepository,
+      syncLocalRepository: syncLocalRepository,
+      syncCoordinator: syncCoordinator,
+    );
     this.appSettingsRepository =
         appSettingsRepository ??
         AppSettingsRepositoryData(
@@ -239,6 +246,7 @@ class AppDependencies {
   late final CloudDataRepository cloudDataRepository;
   late final SyncCoordinator syncCoordinator;
   late final SyncViewModel syncViewModel;
+  late final DeleteAccountUseCase deleteAccountUseCase;
   late final AppSettingsRepository appSettingsRepository;
   late final RoutineRecordRepository routineRecordRepository;
   late final RoutineRepository routineRepository;
@@ -529,6 +537,7 @@ class AppDependencies {
   }
 
   Future<void> onAppResumed() async {
+    await prayerScheduleSession.refresh(requestPermission: false);
     await reminderSettings.onAppResumed();
     unawaited(syncCoordinator.onAppResumed());
   }

@@ -322,3 +322,16 @@ The Account feature explicitly links a signed-in UID before sync. The sync
 coordinator owns pull/merge/push work and remote writes re-enter SQLite without
 creating outbox feedback. See [sync.md](sync.md) for entity scope, conflicts,
 account mismatch behavior, and private Firestore paths.
+
+Settings is a local control center that routes to focused Prayer & Location,
+Notifications, Account & Sync, Data & Privacy, and About surfaces. It reuses
+the shared prayer schedule, location, timezone, reminder, auth, and sync
+services. App resume refreshes location access, timezone, notification
+permission, exact-alarm availability, Reminder Health, and the current schedule
+without prompting for permission.
+
+Account deletion is orchestrated by `DeleteAccountUseCase`. It locks the sync
+coordinator for the target UID, reauthenticates with Google, purges the known
+Firestore user collections, deletes the Firebase Auth user, clears the local
+sync link only when it belongs to that UID, then disconnects Google. Local
+SQLite feature data and device settings remain intact.

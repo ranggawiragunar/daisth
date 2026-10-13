@@ -22,4 +22,5 @@ abstract interface class SyncLocalRepository {
   Future<void> recordFailure(SyncOutboxOperation operation, String errorCode);
   Future<void> markSuccessfulSync(DateTime nowUtc);
   Future<void> setError(String? errorCode, DateTime nowUtc);
+  Future<void> clearLinkForDeletedAccount(String uid);
 }

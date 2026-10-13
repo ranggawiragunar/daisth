@@ -80,7 +80,7 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('navigation-settings')));
     await tester.pumpAndSettle();
-    expect(find.text('Prayer & Location'), findsOneWidget);
+    expect(find.text('Prayer & Location'), findsWidgets);
     expect(find.text('Appearance'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('navigation-today')));
@@ -138,6 +138,44 @@ void main() {
     );
   });
 
+  testWidgets('Settings destinations open device and privacy details', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('navigation-settings')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('settings-prayer-location')));
+    await tester.pumpAndSettle();
+    expect(find.text('Calculation'), findsOneWidget);
+    expect(find.text('KEMENAG'), findsOneWidget);
+    expect(find.text('Izinkan lokasi'), findsOneWidget);
+    expect(find.textContaining('latitude'), findsNothing);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('settings-privacy')),
+      300,
+    );
+    await tester.tap(find.byKey(const ValueKey('settings-privacy')));
+    await tester.pumpAndSettle();
+    expect(find.text('Data & Privacy'), findsOneWidget);
+    expect(find.textContaining('opsional'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('settings-about')),
+      300,
+    );
+    await tester.tap(find.byKey(const ValueKey('settings-about')));
+    await tester.pumpAndSettle();
+    expect(find.text('Stay consistent in what matters.'), findsOneWidget);
+    expect(find.text('Open-source licenses'), findsOneWidget);
+  });
+
   testWidgets('navigation and Settings fit a compact phone width', (
     tester,
   ) async {
@@ -157,9 +195,17 @@ void main() {
       );
       await tester.pumpAndSettle();
       if (destination == 'Settings') {
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('settings-notifications')),
+          300,
+        );
+        await tester.tap(find.text('Reminders & Reminder Health'));
+        await tester.pumpAndSettle();
         expect(find.text('Notifications'), findsOneWidget);
         expect(find.text('Reminders'), findsOneWidget);
         expect(find.text('Timezone'), findsOneWidget);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
       }
       expect(tester.takeException(), isNull);
     }

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:daisth/core/app_settings/domain/models/app_settings.dart';
 import 'package:daisth/core/persistence/data/schema/database_schema.dart';
 import 'package:daisth/core/time/domain/models/calendar_day.dart';
 import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
@@ -79,6 +80,106 @@ void main() {
     expect(pending.every((row) => row['operation'] == 'upsert'), isTrue);
     expect(await db.query(DatabaseSchema.routineRecords), isNotEmpty);
   });
+
+  test(
+    'deleting linked account unlinks sync but preserves local feature data',
+    () async {
+      final persistence = await TestPersistence.create();
+      addTearDown(persistence.dispose);
+      final db = await persistence.database.open();
+      final service = SyncSqliteService(persistence.database);
+      final initial = await service.initialize();
+      await db.update(DatabaseSchema.syncMetadata, {
+        'linked_uid': 'user-1',
+        'initial_sync_completed': 1,
+        'last_attempt_at_utc': DateTime.utc(2026, 10, 13).toIso8601String(),
+        'last_successful_sync_at_utc': DateTime.utc(
+          2026,
+          10,
+          13,
+        ).toIso8601String(),
+        'last_error_code': 'offline',
+      }, where: 'id = 1');
+      await db.insert(DatabaseSchema.routineDefinitions, {
+        'id': 'custom-evening',
+        'origin': 'custom',
+        'template_key': null,
+        'title': 'Evening routine',
+        'description': null,
+        'is_enabled': 1,
+        'is_archived': 0,
+        'schedule_kind': 'fixed',
+        'fixed_time_minutes': 1260,
+        'prayer_key': null,
+        'reminder_enabled': 0,
+        'priority': 'medium',
+        'sort_order': 20,
+        'created_at_utc': DateTime.utc(2026, 10, 1).toIso8601String(),
+        'updated_at_utc': DateTime.utc(2026, 10, 1).toIso8601String(),
+      });
+      await persistence.appSettings.saveSettings(
+        const AppSettings(
+          themePreference: AppThemePreference.dark,
+          remindersEnabled: true,
+        ),
+      );
+      final day = CalendarDay(year: 2026, month: 10, day: 12);
+      await persistence.routineRecords.markCompleted(
+        routine: RoutineDemoData.zuhur,
+        day: day,
+        now: DateTime.utc(2026, 10, 12, 5),
+      );
+      await persistence.reflections.saveReflection(
+        day: day,
+        rhythm: ReflectionRhythm.steady,
+        note: 'local note',
+        now: DateTime.utc(2026, 10, 12, 18),
+      );
+      expect(await db.query(DatabaseSchema.syncOutbox), isNotEmpty);
+
+      await service.clearLinkForDeletedAccount('user-1');
+
+      final state = await service.getState();
+      expect(state.linkedUid, isNull);
+      expect(state.initialSyncCompleted, isFalse);
+      expect(state.lastAttemptAtUtc, isNull);
+      expect(state.lastSuccessfulSyncAtUtc, isNull);
+      expect(state.lastErrorCode, isNull);
+      expect(state.deviceId, initial.deviceId);
+      expect(await db.query(DatabaseSchema.syncOutbox), isEmpty);
+      expect(await db.query(DatabaseSchema.routineRecords), isNotEmpty);
+      expect(await db.query(DatabaseSchema.dailyReflections), isNotEmpty);
+      expect(await db.query(DatabaseSchema.routineDefinitions), hasLength(1));
+      final settings = await persistence.appSettings.getSettings();
+      expect(settings.themePreference, AppThemePreference.dark);
+      expect(settings.remindersEnabled, isTrue);
+    },
+  );
+
+  test(
+    'deleting a different account does not clear the linked outbox',
+    () async {
+      final persistence = await TestPersistence.create();
+      addTearDown(persistence.dispose);
+      final db = await persistence.database.open();
+      final service = SyncSqliteService(persistence.database);
+      await service.initialize();
+      await db.update(DatabaseSchema.syncMetadata, {
+        'linked_uid': 'user-a',
+        'initial_sync_completed': 1,
+      }, where: 'id = 1');
+      await persistence.routineRecords.markCompleted(
+        routine: RoutineDemoData.zuhur,
+        day: CalendarDay(year: 2026, month: 10, day: 12),
+        now: DateTime.utc(2026, 10, 12, 5),
+      );
+
+      await service.clearLinkForDeletedAccount('user-b');
+
+      expect((await service.getState()).linkedUid, 'user-a');
+      expect(await db.query(DatabaseSchema.syncOutbox), isNotEmpty);
+    },
+  );
 
   test(
     'Reflection deletion replaces its pending upsert with a tombstone',

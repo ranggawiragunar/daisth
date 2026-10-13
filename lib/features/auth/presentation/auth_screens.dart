@@ -5,6 +5,7 @@ import '../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
 import '../domain/models/auth_session.dart';
+import '../domain/use_cases/delete_account_use_case.dart';
 import 'auth_view_model.dart';
 import '../../sync/domain/models/sync_entity.dart';
 import '../../sync/presentation/sync_view_model.dart';
@@ -12,12 +13,14 @@ import '../../sync/presentation/sync_view_model.dart';
 class AccountScreen extends StatefulWidget {
   const AccountScreen({
     required this.viewModel,
+    this.deleteAccountUseCase,
     this.syncViewModel,
     required this.notices,
     super.key,
   });
 
   final AuthViewModel viewModel;
+  final DeleteAccountUseCase? deleteAccountUseCase;
   final SyncViewModel? syncViewModel;
   final DaisthNoticeController notices;
 
@@ -78,6 +81,41 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<void> _retryAvailability() async {
     final success = await widget.viewModel.retryAvailability();
     if (mounted) _notice(success);
+  }
+
+  Future<void> _deleteAccount(AuthSignedIn session) async {
+    final useCase = widget.deleteAccountUseCase;
+    if (useCase == null) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus akun Daisth?'),
+        content: const Text(
+          'Data Daisth yang tersimpan di cloud untuk akun ini akan dihapus permanen. Data yang tersimpan di perangkat ini tetap ada. Anda akan diminta memverifikasi akun Google sebelum penghapusan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus akun'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    final outcome = await widget.viewModel.deleteAccount(
+      useCase,
+      session.user.uid,
+    );
+    if (!mounted || outcome == DeleteAccountOutcome.cancelled) return;
+    _notice(outcome == DeleteAccountOutcome.success);
   }
 
   Future<void> _activateSync(AuthSignedIn session) async {
@@ -301,12 +339,38 @@ class _AccountScreenState extends State<AccountScreen> {
                           ],
                         ),
                         const SizedBox(height: DaisthSpacing.lg),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: loading ? null : _signOut,
-                            child: const Text('Keluar'),
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            OutlinedButton(
+                              onPressed: loading ? null : _signOut,
+                              child: const Text('Keluar'),
+                            ),
+                            const SizedBox(height: DaisthSpacing.sm),
+                            if (widget.deleteAccountUseCase != null)
+                              OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: theme.colorScheme.error,
+                                  side: BorderSide(
+                                    color: theme.colorScheme.error.withValues(
+                                      alpha: 0.55,
+                                    ),
+                                  ),
+                                ),
+                                onPressed: loading
+                                    ? null
+                                    : () => _deleteAccount(session),
+                                icon: loading
+                                    ? const SizedBox.square(
+                                        dimension: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.delete_outline_rounded),
+                                label: const Text('Hapus akun Daisth'),
+                              ),
+                          ],
                         ),
                       ],
                     ),

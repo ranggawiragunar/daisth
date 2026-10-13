@@ -50,4 +50,7 @@ class SyncLocalRepositoryData implements SyncLocalRepository {
   @override
   Future<void> setError(String? errorCode, DateTime nowUtc) =>
       service.setError(errorCode, nowUtc);
+  @override
+  Future<void> clearLinkForDeletedAccount(String uid) =>
+      service.clearLinkForDeletedAccount(uid);
 }

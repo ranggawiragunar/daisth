@@ -115,6 +115,33 @@ void main() {
     expect(fixture.repository.scheduled, isEmpty);
     expect(fixture.viewModel.errorMessage, contains('Izinkan notifikasi'));
   });
+
+  test(
+    'app resume refreshes device permissions while reminders are off',
+    () async {
+      final fixture = _fixture();
+      addTearDown(fixture.viewModel.dispose);
+      addTearDown(fixture.session.dispose);
+      await fixture.viewModel.initialize();
+      expect(fixture.viewModel.remindersEnabled, isFalse);
+      expect(
+        fixture.viewModel.permissionStatus,
+        ReminderPermissionStatus.denied,
+      );
+
+      fixture.repository.currentPermission = ReminderPermissionStatus.granted;
+      fixture.repository.exactStatus = ExactAlarmStatus.enabled;
+      await fixture.viewModel.onAppResumed();
+
+      expect(
+        fixture.viewModel.permissionStatus,
+        ReminderPermissionStatus.granted,
+      );
+      expect(fixture.viewModel.exactAlarmStatus, ExactAlarmStatus.enabled);
+      expect(fixture.viewModel.deviceTimezone?.ianaName, 'Asia/Jakarta');
+      expect(fixture.repository.scheduled, isEmpty);
+    },
+  );
 }
 
 ({

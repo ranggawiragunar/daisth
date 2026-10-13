@@ -69,6 +69,24 @@ continuous snapshot listener. Unsent work remains durable for the next eligible
 foreground session. Firestore persistence is disabled so SQLite remains the
 only offline store.
 
+## Account deletion
+
+`DeleteAccountUseCase` holds an exclusive sync-coordinator lock for the
+currently authenticated UID so another pull or outbox write cannot race the
+purge. It reauthenticates through Google and verifies the returned Firebase
+identity before deleting data. `FirestoreAccountDataPurger` enumerates and
+deletes each known Daisth subcollection in batches of at most 400 documents,
+including tombstones, then deletes `users/{uid}`. Re-enumerating remaining
+documents makes a retry safe after a partial purge. Firebase Auth deletion
+occurs only after Firestore cleanup succeeds.
+
+After successful Auth deletion, local sync metadata is unlinked only if its
+`linked_uid` equals the deleted UID. This transaction clears sync timestamps,
+the error, initial-sync flag, and outbox, while preserving `device_id`. A
+mismatched local link remains unchanged. Routine, History, custom definition,
+Reflection, theme, reminder settings, and all other SQLite feature data are
+preserved. Normal sign-out does not purge cloud data or unlink sync.
+
 Remote record/definition changes publish through existing repository change
 streams. Composite routine records are recalculated from the merged step state
 using the shared routine-status rule; a corrected status is queued once for

@@ -16,6 +16,13 @@ class AuthRepositoryData implements AuthRepository {
   @override
   Future<AuthUser> signInWithGoogle() => service.signInWithGoogle();
   @override
+  Future<AuthUser> reauthenticateWithGoogle() =>
+      service.reauthenticateWithGoogle();
+  @override
+  Future<void> deleteCurrentUser() => service.deleteCurrentUser();
+  @override
+  Future<void> disconnectGoogle() => service.disconnectGoogle();
+  @override
   Future<void> signOut() => service.signOut();
   @override
   Future<void> retryAvailability() async {

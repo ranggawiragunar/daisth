@@ -11,4 +11,5 @@ abstract interface class CloudDataRepository {
   Future<CloudDataset> fetchAccountDataset(String uid);
   Future<void> writeEntities(String uid, List<SyncEntity> entities);
   Future<void> updateUserSyncMetadata(String uid, DateTime nowUtc);
+  Future<void> deleteAllUserCloudData(String uid);
 }
