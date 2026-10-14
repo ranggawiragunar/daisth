@@ -48,6 +48,12 @@ dependencies:
   sqflite: ^2.4.4+1
   timezone: ^0.11.1
   url_launcher: ^6.3.3
+  flutter_quill: ^11.6.0
+  image_picker: ^1.2.4
+  path_provider: ^2.1.6
+  flutter_image_compress: ^2.5.1
+  firebase_storage: ^13.6.0
+  crypto: ^3.0.6
 
 dev_dependencies:
   flutter_test:

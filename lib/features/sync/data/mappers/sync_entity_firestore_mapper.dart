@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../reflection/domain/models/daily_reflection.dart';
@@ -11,6 +13,8 @@ import '../../../routines/domain/models/routine_schedule.dart';
 import '../../../routines/domain/models/routine_status.dart';
 import '../../../routines/domain/models/routine_step_definition.dart';
 import '../../../routines/domain/models/routine_step_record.dart';
+import '../../../routines/domain/models/routine_attachment.dart';
+import '../../../routines/domain/models/routine_content.dart';
 import '../../../../core/time/domain/models/calendar_day.dart';
 import '../../domain/models/sync_entity.dart';
 import 'firestore_document_ids.dart';
@@ -31,6 +35,8 @@ class SyncEntityFirestoreMapper {
     SyncEntityType.routineRecord => 'routineRecords',
     SyncEntityType.routineStepRecord => 'routineStepRecords',
     SyncEntityType.dailyReflection => 'dailyReflections',
+    SyncEntityType.routineContent => 'routineContents',
+    SyncEntityType.routineAttachment => 'routineAttachments',
   };
 
   SyncEntity routineDefinition(RoutineDefinition value, String deviceId) =>
@@ -89,6 +95,26 @@ class SyncEntityFirestoreMapper {
         payload: value,
       );
 
+  SyncEntity routineContent(RoutineContent value, String deviceId) =>
+      SyncEntity(
+        type: SyncEntityType.routineContent,
+        id: Uri.encodeComponent(value.routineId),
+        updatedAtUtc: value.updatedAt,
+        sourceDeviceId: deviceId,
+        payload: value,
+      );
+
+  SyncEntity routineAttachment(RoutineAttachment value, String deviceId) =>
+      SyncEntity(
+        type: SyncEntityType.routineAttachment,
+        id: Uri.encodeComponent(value.id),
+        updatedAtUtc: value.updatedAt,
+        sourceDeviceId: deviceId,
+        payload: value.deletedAt == null ? value : null,
+        isDeleted: value.deletedAt != null,
+        deletedAtUtc: value.deletedAt,
+      );
+
   Map<String, Object?> toFirestore(SyncEntity entity) {
     final fields = entity.isDeleted
         ? <String, Object?>{}
@@ -107,6 +133,12 @@ class SyncEntityFirestoreMapper {
             ),
             SyncEntityType.dailyReflection => _reflectionToMap(
               _expect<DailyReflection>(entity.payload),
+            ),
+            SyncEntityType.routineContent => _routineContentToMap(
+              _expect<RoutineContent>(entity.payload),
+            ),
+            SyncEntityType.routineAttachment => _routineAttachmentToMap(
+              _expect<RoutineAttachment>(entity.payload),
             ),
           };
     return {
@@ -160,6 +192,14 @@ class SyncEntityFirestoreMapper {
               data,
             ),
             SyncEntityType.dailyReflection => _reflectionFromMap(
+              documentId,
+              data,
+            ),
+            SyncEntityType.routineContent => _routineContentFromMap(
+              documentId,
+              data,
+            ),
+            SyncEntityType.routineAttachment => _routineAttachmentFromMap(
               documentId,
               data,
             ),
@@ -387,6 +427,93 @@ class SyncEntityFirestoreMapper {
     );
   }
 
+  Map<String, Object?> _routineContentToMap(RoutineContent value) => {
+    'routineId': value.routineId,
+    'deltaJson': value.serializedDelta,
+    'plainText': value.plainText,
+    'formatVersion': value.formatVersion,
+    'createdAtUtc': Timestamp.fromDate(value.createdAt.toUtc()),
+  };
+
+  RoutineContent _routineContentFromMap(
+    String documentId,
+    Map<String, dynamic> data,
+  ) {
+    final routineId = _requiredString(data['routineId']);
+    if (Uri.encodeComponent(routineId) != documentId ||
+        _requiredInteger(data['formatVersion']) != 1) {
+      throw const FormatException();
+    }
+    final serialized = _requiredString(data['deltaJson']);
+    if (utf8.encode(serialized).length > 700 * 1024) {
+      throw const FormatException();
+    }
+    final plainText = _requiredString(data['plainText']);
+    if (plainText.length > 50000) throw const FormatException();
+    return RoutineContent(
+      routineId: routineId,
+      serializedDelta: serialized,
+      plainText: plainText,
+      formatVersion: 1,
+      createdAt: _timestamp(data['createdAtUtc']),
+      updatedAt: _timestamp(data['updatedAtUtc']),
+    );
+  }
+
+  Map<String, Object?> _routineAttachmentToMap(RoutineAttachment value) => {
+    'id': value.id,
+    'routineId': value.routineId,
+    'type': value.type,
+    'storagePath': value.storagePath,
+    'mimeType': value.mimeType,
+    'byteSize': value.byteSize,
+    'width': value.width,
+    'height': value.height,
+    'sortOrder': value.sortOrder,
+    'contentSha256': value.contentSha256,
+    'createdAtUtc': Timestamp.fromDate(value.createdAt.toUtc()),
+  };
+
+  RoutineAttachment _routineAttachmentFromMap(
+    String documentId,
+    Map<String, dynamic> data,
+  ) {
+    final id = _requiredString(data['id']);
+    final routineId = _requiredString(data['routineId']);
+    if (Uri.encodeComponent(id) != documentId ||
+        _requiredString(data['type']) != 'image') {
+      throw const FormatException();
+    }
+    final mime = _requiredString(data['mimeType']);
+    if (mime != 'image/jpeg' && mime != 'image/png') {
+      throw const FormatException();
+    }
+    final byteSize = _requiredInteger(data['byteSize']);
+    if (byteSize <= 0 || byteSize > RoutineAttachment.maxBytes) {
+      throw const FormatException();
+    }
+    final storagePath = _requiredString(data['storagePath']);
+    if (!storagePath.contains('/routine-attachments/$id/')) {
+      throw const FormatException();
+    }
+    return RoutineAttachment(
+      id: id,
+      routineId: routineId,
+      type: 'image',
+      localRelativePath: null,
+      originalFileName: null,
+      mimeType: mime,
+      byteSize: byteSize,
+      width: _integer(data['width']),
+      height: _integer(data['height']),
+      sortOrder: _requiredInteger(data['sortOrder']),
+      contentSha256: _optionalString(data['contentSha256']),
+      storagePath: storagePath,
+      createdAt: _timestamp(data['createdAtUtc']),
+      updatedAt: _timestamp(data['updatedAtUtc']),
+    );
+  }
+
   void _validateTombstoneId(SyncEntityType type, String id) {
     switch (type) {
       case SyncEntityType.routineDefinition:
@@ -401,6 +528,8 @@ class SyncEntityFirestoreMapper {
       case SyncEntityType.routineStepRecord:
         final triple = FirestoreDocumentIds.splitTriple(id);
         _validateDay(triple.$1);
+      case SyncEntityType.routineContent || SyncEntityType.routineAttachment:
+        if (Uri.decodeComponent(id).isEmpty) throw const FormatException();
     }
   }
 

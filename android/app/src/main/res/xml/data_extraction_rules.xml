@@ -3,9 +3,11 @@
     <cloud-backup>
         <!-- Keep local SQLite data out of Android cloud backups. -->
         <exclude domain="database" path="." />
+        <exclude domain="file" path="routine_attachments/" />
     </cloud-backup>
     <device-transfer>
         <!-- Cross-device continuity uses optional Daisth sync, not SQLite copying. -->
         <exclude domain="database" path="." />
+        <exclude domain="file" path="routine_attachments/" />
     </device-transfer>
 </data-extraction-rules>

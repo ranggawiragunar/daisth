@@ -4,6 +4,8 @@ const daisthAccountCollections = [
   'routineRecords',
   'routineStepRecords',
   'dailyReflections',
+  'routineContents',
+  'routineAttachments',
 ];
 
 abstract interface class FirestorePurgeGateway {

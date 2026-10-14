@@ -12,6 +12,7 @@ import '../../features/dhikr/data/demo/dhikr_demo_data.dart';
 import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
 import '../../features/routines/presentation/routine_detail_route_screen.dart';
 import '../../features/routines/presentation/routines_screen.dart';
+import '../../features/routines/presentation/routine_editor_screen.dart';
 import '../../features/settings/presentation/settings_placeholder_screen.dart';
 import '../../features/settings/presentation/settings_detail_screens.dart';
 import '../../features/today/presentation/today_screen.dart';
@@ -241,6 +242,24 @@ GoRouter createAppRouter({
         key: const ValueKey('current-reflection'),
         day: CalendarDay.fromDateTime(DateTime.now()),
         historical: false,
+        dependencies: dependencies,
+        noticeController: noticeController,
+      ),
+    ),
+    GoRoute(
+      path: RoutePaths.routineNew,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => RoutineEditorScreen(
+        dependencies: dependencies,
+        noticeController: noticeController,
+      ),
+    ),
+    GoRoute(
+      path: RoutePaths.routineEditPattern,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => RoutineEditorScreen(
+        key: ValueKey('routine-editor-${state.pathParameters['routineId']}'),
+        routineId: state.pathParameters['routineId']!,
         dependencies: dependencies,
         noticeController: noticeController,
       ),

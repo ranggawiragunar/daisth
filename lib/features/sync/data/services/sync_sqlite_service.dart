@@ -15,6 +15,10 @@ import '../../../routines/domain/models/routine_definition.dart';
 import '../../../routines/domain/models/routine_record.dart';
 import '../../../routines/domain/models/routine_step_definition.dart';
 import '../../../routines/domain/models/routine_step_record.dart';
+import '../../../routines/domain/models/routine_content.dart';
+import '../../../routines/domain/models/routine_attachment.dart';
+import '../../../routines/data/mappers/routine_content_mapper.dart';
+import '../../../routines/data/mappers/routine_attachment_mapper.dart';
 import '../../domain/models/sync_entity.dart';
 import '../mappers/firestore_document_ids.dart';
 import '../mappers/sync_entity_firestore_mapper.dart';
@@ -26,6 +30,8 @@ class SyncSqliteService {
   final _definitionMapper = RoutineDefinitionMapper();
   final _recordMapper = RoutineRecordMapper();
   final _reflectionMapper = ReflectionMapper();
+  final _contentMapper = RoutineContentMapper();
+  final _attachmentMapper = RoutineAttachmentMapper();
   final _entityMapper = SyncEntityFirestoreMapper();
 
   Future<SyncState> initialize() async {
@@ -108,6 +114,22 @@ class SyncSqliteService {
         ),
       );
     }
+    for (final row in await db.query(DatabaseSchema.routineContents)) {
+      result.add(
+        _entityMapper.routineContent(
+          _contentMapper.fromMap(row),
+          state.deviceId,
+        ),
+      );
+    }
+    for (final row in await db.query(DatabaseSchema.routineAttachments)) {
+      result.add(
+        _entityMapper.routineAttachment(
+          _attachmentMapper.fromMap(row),
+          state.deviceId,
+        ),
+      );
+    }
     return result;
   }
 
@@ -179,6 +201,26 @@ class SyncSqliteService {
             ? null
             : _entityMapper.dailyReflection(
                 _reflectionMapper.fromData(row),
+                deviceId,
+              );
+      case SyncEntityType.routineContent:
+        row = await _one(db, DatabaseSchema.routineContents, 'routine_id = ?', [
+          Uri.decodeComponent(key),
+        ]);
+        return row == null
+            ? null
+            : _entityMapper.routineContent(
+                _contentMapper.fromMap(row),
+                deviceId,
+              );
+      case SyncEntityType.routineAttachment:
+        row = await _one(db, DatabaseSchema.routineAttachments, 'id = ?', [
+          Uri.decodeComponent(key),
+        ]);
+        return row == null
+            ? null
+            : _entityMapper.routineAttachment(
+                _attachmentMapper.fromMap(row),
                 deviceId,
               );
     }
@@ -468,6 +510,32 @@ class SyncSqliteService {
                 _reflectionMapper.fromData(row),
                 deviceId,
               );
+      case SyncEntityType.routineContent:
+        row = await _one(
+          executor,
+          DatabaseSchema.routineContents,
+          'routine_id = ?',
+          [Uri.decodeComponent(key)],
+        );
+        return row == null
+            ? null
+            : _entityMapper.routineContent(
+                _contentMapper.fromMap(row),
+                deviceId,
+              );
+      case SyncEntityType.routineAttachment:
+        row = await _one(
+          executor,
+          DatabaseSchema.routineAttachments,
+          'id = ?',
+          [Uri.decodeComponent(key)],
+        );
+        return row == null
+            ? null
+            : _entityMapper.routineAttachment(
+                _attachmentMapper.fromMap(row),
+                deviceId,
+              );
     }
   }
 
@@ -486,6 +554,8 @@ class SyncSqliteService {
       SyncEntityType.routineRecord => DatabaseSchema.routineRecords,
       SyncEntityType.routineStepRecord => DatabaseSchema.routineStepRecords,
       SyncEntityType.dailyReflection => DatabaseSchema.dailyReflections,
+      SyncEntityType.routineContent => DatabaseSchema.routineContents,
+      SyncEntityType.routineAttachment => DatabaseSchema.routineAttachments,
     };
     final where = switch (entity.type) {
       SyncEntityType.routineDefinition => 'id = ?',
@@ -494,6 +564,8 @@ class SyncSqliteService {
       SyncEntityType.routineStepRecord =>
         'date_key = ? AND routine_id = ? AND step_id = ?',
       SyncEntityType.dailyReflection => 'date_key = ?',
+      SyncEntityType.routineContent => 'routine_id = ?',
+      SyncEntityType.routineAttachment => 'id = ?',
     };
     final args = switch (entity.type) {
       SyncEntityType.routineDefinition => [Uri.decodeComponent(entity.id)],
@@ -501,6 +573,8 @@ class SyncSqliteService {
       SyncEntityType.routineRecord => _pairArgs(entity.id),
       SyncEntityType.routineStepRecord => _tripleArgs(entity.id),
       SyncEntityType.dailyReflection => [entity.id],
+      SyncEntityType.routineContent => [Uri.decodeComponent(entity.id)],
+      SyncEntityType.routineAttachment => [Uri.decodeComponent(entity.id)],
     };
     if (entity.isDeleted) {
       await tx.delete(table, where: where, whereArgs: args);
@@ -518,6 +592,12 @@ class SyncSqliteService {
           _recordMapper.stepToData(entity.payload as RoutineStepRecord).toMap(),
         SyncEntityType.dailyReflection => _reflectionRow(
           entity.payload as DailyReflection,
+        ),
+        SyncEntityType.routineContent => _contentMapper.toMap(
+          entity.payload as RoutineContent,
+        ),
+        SyncEntityType.routineAttachment => _attachmentMapper.toMap(
+          entity.payload as RoutineAttachment,
         ),
       };
       await tx.insert(table, map, conflictAlgorithm: ConflictAlgorithm.replace);

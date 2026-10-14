@@ -256,6 +256,8 @@ void main() {
         SyncEntityType.routineRecord: '2026-10-12__zuhur',
         SyncEntityType.routineStepRecord: '2026-10-12__zuhur__step',
         SyncEntityType.dailyReflection: '2026-10-12',
+        SyncEntityType.routineContent: 'custom-routine',
+        SyncEntityType.routineAttachment: 'image-1',
       };
       final entities = ids.entries
           .map(

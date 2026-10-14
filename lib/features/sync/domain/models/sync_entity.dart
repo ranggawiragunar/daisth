@@ -4,6 +4,8 @@ enum SyncEntityType {
   routineRecord,
   routineStepRecord,
   dailyReflection,
+  routineContent,
+  routineAttachment,
 }
 
 extension SyncEntityTypeStorage on SyncEntityType {
@@ -13,6 +15,8 @@ extension SyncEntityTypeStorage on SyncEntityType {
     SyncEntityType.routineRecord => 'routineRecord',
     SyncEntityType.routineStepRecord => 'routineStepRecord',
     SyncEntityType.dailyReflection => 'dailyReflection',
+    SyncEntityType.routineContent => 'routineContent',
+    SyncEntityType.routineAttachment => 'routineAttachment',
   };
 
   static SyncEntityType? fromStorage(String value) => switch (value) {
@@ -21,6 +25,8 @@ extension SyncEntityTypeStorage on SyncEntityType {
     'routineRecord' => SyncEntityType.routineRecord,
     'routineStepRecord' => SyncEntityType.routineStepRecord,
     'dailyReflection' => SyncEntityType.dailyReflection,
+    'routineContent' => SyncEntityType.routineContent,
+    'routineAttachment' => SyncEntityType.routineAttachment,
     _ => null,
   };
 }

@@ -48,6 +48,14 @@ import '../../features/routines/data/catalog/default_routine_template_catalog.da
 import '../../features/routines/data/mappers/routine_definition_mapper.dart';
 import '../../features/routines/data/repositories/routine_record_repository_data.dart';
 import '../../features/routines/data/repositories/routine_repository_data.dart';
+import '../../features/routines/data/repositories/routine_content_repository_data.dart';
+import '../../features/routines/data/repositories/routine_attachment_repository_data.dart';
+import '../../features/routines/data/repositories/routine_editor_repository_data.dart';
+import '../../features/routines/data/services/routine_attachment_file_service.dart';
+import '../../features/routines/data/services/routine_attachment_storage_service.dart';
+import '../../features/routines/domain/repositories/routine_content_repository.dart';
+import '../../features/routines/domain/repositories/routine_attachment_repository.dart';
+import '../../features/routines/domain/repositories/routine_editor_repository.dart';
 import '../../features/routines/data/resolvers/routine_resolver.dart';
 import '../../features/routines/data/services/routine_record_sqlite_service.dart';
 import '../../features/routines/data/services/routine_sqlite_service.dart';
@@ -95,6 +103,11 @@ class AppDependencies {
     AppSettingsRepository? appSettingsRepository,
     RoutineRecordRepository? routineRecordRepository,
     RoutineRepository? routineRepository,
+    RoutineContentRepository? routineContentRepository,
+    RoutineAttachmentRepository? routineAttachmentRepository,
+    RoutineEditorRepository? routineEditorRepository,
+    RoutineAttachmentFileService? routineAttachmentFileService,
+    RoutineAttachmentStorageService? routineAttachmentStorageService,
     ReflectionRepository? reflectionRepository,
     AuthRepository? authRepository,
     CloudDataRepository? cloudDataRepository,
@@ -106,6 +119,10 @@ class AppDependencies {
         reminderNotificationGateway ??
         ReminderLocalNotificationsService(languageCode: languageCode);
     this.databaseService = databaseService ?? DaisthDatabaseService();
+    this.routineAttachmentFileService =
+        routineAttachmentFileService ?? RoutineAttachmentFileService();
+    this.routineAttachmentStorageService =
+        routineAttachmentStorageService ?? RoutineAttachmentStorageService();
     firebaseAuthService = FirebaseAuthService();
     firebaseBootstrapService = FirebaseBootstrapService();
     this.authRepository =
@@ -115,7 +132,12 @@ class AppDependencies {
     syncLocalRepository = SyncLocalRepositoryData(
       SyncSqliteService(this.databaseService),
     );
-    this.cloudDataRepository = cloudDataRepository ?? DaisthFirestoreService();
+    this.cloudDataRepository =
+        cloudDataRepository ??
+        DaisthFirestoreService(
+          attachmentStorage: this.routineAttachmentStorageService,
+          attachmentFiles: this.routineAttachmentFileService,
+        );
     syncCoordinator = SyncCoordinator(
       authRepository: this.authRepository,
       localRepository: syncLocalRepository,
@@ -145,6 +167,23 @@ class AppDependencies {
         RoutineRepositoryData(
           service: RoutineSqliteService(this.databaseService),
           mapper: RoutineDefinitionMapper(),
+        );
+    this.routineContentRepository =
+        routineContentRepository ??
+        RoutineContentRepositoryData(database: this.databaseService);
+    this.routineAttachmentRepository =
+        routineAttachmentRepository ??
+        RoutineAttachmentRepositoryData(database: this.databaseService);
+    this.routineEditorRepository =
+        routineEditorRepository ??
+        RoutineEditorRepositoryData(
+          database: this.databaseService,
+          onRoutineChanged: () {
+            final repository = this.routineRepository;
+            if (repository is RoutineRepositoryData) {
+              repository.notifyLocalChanged();
+            }
+          },
         );
     this.reflectionRepository =
         reflectionRepository ??
@@ -257,6 +296,11 @@ class AppDependencies {
   late final AppSettingsRepository appSettingsRepository;
   late final RoutineRecordRepository routineRecordRepository;
   late final RoutineRepository routineRepository;
+  late final RoutineContentRepository routineContentRepository;
+  late final RoutineAttachmentRepository routineAttachmentRepository;
+  late final RoutineEditorRepository routineEditorRepository;
+  late final RoutineAttachmentFileService routineAttachmentFileService;
+  late final RoutineAttachmentStorageService routineAttachmentStorageService;
   late final ReflectionRepository reflectionRepository;
   late final EnsureDefaultRoutinesUseCase ensureDefaultRoutines;
   late final RoutineResolver routineResolver;
@@ -302,6 +346,14 @@ class AppDependencies {
   ) async {
     try {
       await ensureRoutineDefinitionsReady();
+      try {
+        await routineAttachmentFileService.cleanStaging();
+        await routineAttachmentFileService.deleteOrphanFiles(
+          await routineAttachmentRepository.getAllLocalRelativePaths(),
+        );
+      } catch (_) {
+        // Attachment cleanup is best-effort and never blocks local startup.
+      }
       appSettings = await appSettingsRepository.getSettings();
       _routineReminderChangeSubscription ??= routineRecordRepository.changes
           .listen((change) {
@@ -388,6 +440,9 @@ class AppDependencies {
           if (reflectionRepository case final ReflectionRepositoryData data) {
             data.notifyRemoteChanged(CalendarDay.parseDateKey(entity.id));
           }
+        case SyncEntityType.routineContent || SyncEntityType.routineAttachment:
+          // User notes and images do not change routine status or reminders.
+          break;
       }
     }
     if (routineRecordRepository case final RoutineRecordRepositoryData data) {

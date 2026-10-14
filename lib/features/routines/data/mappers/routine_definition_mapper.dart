@@ -6,6 +6,8 @@ import '../../domain/models/routine_schedule.dart';
 import '../../domain/models/routine_step_definition.dart';
 
 class RoutineDefinitionMapper {
+  const RoutineDefinitionMapper();
+
   RoutineDefinition fromMap(Map<String, Object?> row) {
     final kind = row['schedule_kind'] as String;
     final schedule = switch (kind) {

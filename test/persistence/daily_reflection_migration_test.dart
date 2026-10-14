@@ -8,7 +8,7 @@ import 'package:daisth/core/persistence/data/schema/database_schema.dart';
 import '../support/test_persistence.dart';
 
 void main() {
-  test('v4 through v7 preserves local data and marks existing install onboarded', () async {
+  test('v4 through v8 preserves local data and marks existing install onboarded', () async {
     sqfliteFfiInit();
     final directory = await Directory.systemTemp.createTemp('daisth-v3-');
     addTearDown(() => directory.delete(recursive: true));
@@ -96,7 +96,7 @@ void main() {
     final migrated = TestPersistence.createDatabaseServiceAt(filename);
     addTearDown(migrated.close);
     final db = await migrated.open();
-    expect(Sqflite.firstIntValue(await db.rawQuery('PRAGMA user_version')), 7);
+    expect(Sqflite.firstIntValue(await db.rawQuery('PRAGMA user_version')), 8);
     expect(
       (await db.query(DatabaseSchema.dailyReflections)).single['note'],
       'Kept locally',

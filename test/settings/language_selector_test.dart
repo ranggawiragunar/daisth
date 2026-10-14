@@ -45,6 +45,7 @@ void main() {
 
       expect(find.text('Pengaturan'), findsOneWidget);
       expect(find.text('Ikuti Sistem'), findsOneWidget);
+      expect(find.text('Bahasa'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('settings-language')));
       await tester.pumpAndSettle();
       expect(
@@ -63,6 +64,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Settings'), findsOneWidget);
       expect(find.text('English'), findsOneWidget);
+      expect(find.text('Language'), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey('settings-language')));
       await tester.pumpAndSettle();

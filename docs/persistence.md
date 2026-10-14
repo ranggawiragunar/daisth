@@ -1,7 +1,7 @@
 # Local persistence
 
 Daisth stores local app state in `daisth.db`, managed by
-`DaisthDatabaseService`. The database currently uses schema version 7 and
+`DaisthDatabaseService`. The database currently uses schema version 8 and
 SQLite migrations through `onCreate` and `onUpgrade`.
 
 ## Stored data
@@ -19,6 +19,11 @@ SQLite migrations through `onCreate` and `onUpgrade`.
   steps are archived so historical records can still be interpreted.
 - `daily_reflections` stores one optional reflection per local calendar day,
   with a stable rhythm value, optional note, and UTC event timestamps.
+- `routine_contents` stores optional user-authored Quill Delta JSON and
+  derived plain text for each routine.
+- `routine_attachments` stores image metadata, local relative paths, cloud
+  storage paths, ordering, and deletion tombstones. Image bytes live in the
+  app-owned Application Support `routine_attachments/` directory.
 
 Definitions/configuration are separate from daily progress:
 `routine_definitions` and `routine_step_definitions` describe the user's plan;
@@ -91,6 +96,13 @@ pre-link deletions allows first sync to merge tombstones.
 Schema v7 adds `app_settings.language_mode` with stable values `system`, `id`,
 and `en`, defaulting to `system`. Existing v6 databases upgrade additively;
 language remains device-local and is excluded from Firestore sync.
+
+Schema v8 adds `routine_contents` and `routine_attachments` additively. The
+v7-to-v8 migration preserves definitions, records, settings, and sync state.
+Routine editor writes persist the definition, steps, optional Delta, attachment
+metadata, and outbox entries in one SQLite transaction. Attachment files are
+normalized and moved before the transaction; if the transaction fails, newly
+moved files are removed. Orphan cleanup is best-effort on startup.
 
 `RoutineRecordRepository` provides
 indexed `date_key` day/range reads for routine records and step records, plus

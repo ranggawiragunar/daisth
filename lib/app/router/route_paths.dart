@@ -11,6 +11,8 @@ abstract final class RoutePaths {
   static const settingsPrivacy = '/settings/privacy';
   static const settingsAbout = '/settings/about';
   static const routineDetailPattern = '/routines/:routineId';
+  static const routineNew = '/routines/new';
+  static const routineEditPattern = '/routines/:routineId/edit';
   static const historyDayPattern = '/history/:date';
   static const reflection = '/reflection';
   static const readerPathSegment = 'reader/:contentId';
@@ -18,6 +20,8 @@ abstract final class RoutePaths {
   static const mosquesPathSegment = 'mosques';
 
   static String routineDetail(String routineId) => '/routines/$routineId';
+
+  static String routineEdit(String routineId) => '/routines/$routineId/edit';
 
   static String historyDay(String date) => '/history/$date';
 

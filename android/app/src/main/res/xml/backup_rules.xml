@@ -2,4 +2,6 @@
 <full-backup-content>
     <!-- SQLite holds local routine history and private Reflection notes. -->
     <exclude domain="database" path="." />
+    <!-- Routine image attachments are private app-owned content and are not backed up here. -->
+    <exclude domain="file" path="routine_attachments/" />
 </full-backup-content>

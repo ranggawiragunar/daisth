@@ -8,7 +8,7 @@ import '../support/fake_routine_record_repository.dart';
 import '../support/fake_routine_repository.dart';
 
 void main() {
-  testWidgets('manager renders defaults and can create a custom routine', (
+  testWidgets('manager renders defaults and offers full-screen creation', (
     tester,
   ) async {
     final routines = FakeRoutineRepository();
@@ -37,14 +37,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('No custom routines yet.'), findsOneWidget);
 
-    await tester.tap(find.text('Add Routine'));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField).first, 'Morning Reading');
-    await tester.tap(find.text('Save Routine'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Morning Reading'), findsOneWidget);
-    expect(find.text('No custom routines yet.'), findsNothing);
+    expect(find.text('Add Routine'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

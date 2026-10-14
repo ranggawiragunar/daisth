@@ -95,10 +95,10 @@ class SaveCustomRoutineUseCase {
           ),
       ],
     );
-    await _recalculateToday(normalized, steps, now);
+    await recalculateTodayAfterDefinitionChange(normalized, steps, now);
   }
 
-  Future<void> _recalculateToday(
+  Future<void> recalculateTodayAfterDefinitionChange(
     RoutineDefinition definition,
     List<RoutineStepDefinition> activeDefinitions,
     DateTime now,

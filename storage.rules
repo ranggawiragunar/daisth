@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Recursive owner read also permits the account purge to list every image.
+    match /users/{userId}/routine-attachments/{path=**} {
+      allow get, list: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/routine-attachments/{attachmentId}/{fileName} {
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && fileName.matches('image\\.(jpg|png)')
+        && (request.resource == null
+          || (request.resource.size <= 8 * 1024 * 1024
+            && request.resource.contentType.matches('image/(jpeg|png)')));
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

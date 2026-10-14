@@ -29,6 +29,11 @@ class RoutineRepositoryData implements RoutineRepository {
   Stream<void> get localChanges => _localChanges.stream;
 
   void notifyRemoteChanged() => _changes.add(null);
+  void notifyLocalChanged() {
+    _changes.add(null);
+    _localChanges.add(null);
+  }
+
   @override
   Stream<void> get changes => _changes.stream;
 

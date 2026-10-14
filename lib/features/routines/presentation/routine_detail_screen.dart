@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/router/route_paths.dart';
 import '../../../core/design_system/components/daisth_button.dart';
@@ -21,6 +25,8 @@ import '../../prayer_times/domain/models/prayer_name.dart';
 import '../../prayer_times/presentation/prayer_schedule_session.dart';
 import '../../prayer_times/presentation/prayer_time_presentation.dart';
 import '../domain/models/routine.dart';
+import '../domain/models/routine_attachment.dart';
+import '../domain/models/routine_content.dart';
 import '../domain/models/routine_status.dart' as routine_domain;
 import '../domain/models/routine_step.dart';
 import '../domain/repositories/routine_record_repository.dart';
@@ -28,6 +34,7 @@ import '../domain/use_cases/mark_routine_complete_use_case.dart';
 import '../domain/use_cases/mark_routine_not_today_use_case.dart';
 import '../domain/use_cases/set_routine_step_completion_use_case.dart';
 import 'view_models/routine_detail_view_model.dart';
+import '../data/services/routine_attachment_file_service.dart';
 import 'widgets/routine_link_sections.dart';
 import 'widgets/routine_sheets.dart';
 import 'widgets/routine_steps_card.dart';
@@ -43,6 +50,10 @@ class RoutineDetailScreen extends StatefulWidget {
     this.prayerScheduleSession,
     this.calendarDay,
     this.historical = false,
+    this.userContent,
+    this.attachments = const [],
+    this.attachmentFileService,
+    this.resolveRemoteAttachment,
     super.key,
   });
 
@@ -55,6 +66,10 @@ class RoutineDetailScreen extends StatefulWidget {
   final PrayerScheduleSession? prayerScheduleSession;
   final CalendarDay? calendarDay;
   final bool historical;
+  final RoutineContent? userContent;
+  final List<RoutineAttachment> attachments;
+  final RoutineAttachmentFileService? attachmentFileService;
+  final Future<File?> Function(RoutineAttachment)? resolveRemoteAttachment;
 
   @override
   State<RoutineDetailScreen> createState() => _RoutineDetailScreenState();
@@ -62,6 +77,7 @@ class RoutineDetailScreen extends StatefulWidget {
 
 class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   late final RoutineDetailViewModel _viewModel;
+  QuillController? _notesController;
   Routine get _routine => _viewModel.routine;
   List<RoutineStep> get _steps => _viewModel.steps;
   routine_domain.RoutineStatus get _completionState => _viewModel.status;
@@ -83,6 +99,20 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   @override
   void initState() {
     super.initState();
+    final content = widget.userContent;
+    if (content != null && content.hasMeaningfulText) {
+      try {
+        _notesController = QuillController(
+          document: Document.fromJson(
+            jsonDecode(content.serializedDelta) as List,
+          ),
+          selection: const TextSelection.collapsed(offset: 0),
+          readOnly: true,
+        );
+      } catch (_) {
+        _notesController = null;
+      }
+    }
     _viewModel = RoutineDetailViewModel(
       routine: widget.routine,
       repository: widget.routineRecordRepository,
@@ -94,6 +124,16 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     _viewModel.addListener(_onViewModelChanged);
     widget.prayerScheduleSession?.addListener(_onViewModelChanged);
     unawaited(_viewModel.initialize());
+  }
+
+  @override
+  void dispose() {
+    _notesController?.dispose();
+    _viewModel
+      ..removeListener(_onViewModelChanged)
+      ..dispose();
+    widget.prayerScheduleSession?.removeListener(_onViewModelChanged);
+    super.dispose();
   }
 
   void _onViewModelChanged() {
@@ -127,15 +167,6 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     } else if (error == null) {
       _lastDisplayedError = null;
     }
-  }
-
-  @override
-  void dispose() {
-    _viewModel
-      ..removeListener(_onViewModelChanged)
-      ..dispose();
-    widget.prayerScheduleSession?.removeListener(_onViewModelChanged);
-    super.dispose();
   }
 
   String _statusLabel(BuildContext context) => switch (_completionState) {
@@ -319,6 +350,10 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   }
 
   void _onMenuSelected(String value) {
+    if (value == 'edit' && !widget.historical) {
+      context.push(RoutePaths.routineEdit(_routine.id));
+      return;
+    }
     _showNotice(
       type: DaisthNoticeType.info,
       title: DaisthLocalizations.text(
@@ -472,6 +507,50 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                   ),
                                 ),
                               ],
+                              if (_notesController != null ||
+                                  widget.attachments.isNotEmpty) ...[
+                                const SizedBox(height: DaisthSpacing.section),
+                                if (_notesController != null) ...[
+                                  Text(
+                                    DaisthLocalizations.text(
+                                      context,
+                                      id: 'Catatan',
+                                      en: 'Notes',
+                                    ),
+                                    style: theme.textTheme.titleMedium,
+                                  ),
+                                  const SizedBox(height: DaisthSpacing.sm),
+                                  DaisthSurface(
+                                    child: QuillEditor.basic(
+                                      controller: _notesController!,
+                                      config: QuillEditorConfig(
+                                        padding: EdgeInsets.zero,
+                                        minHeight: 12,
+                                        onLaunchUrl: _launchSafeLink,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                if (widget.attachments.isNotEmpty) ...[
+                                  if (_notesController != null)
+                                    const SizedBox(height: DaisthSpacing.lg),
+                                  Text(
+                                    DaisthLocalizations.text(
+                                      context,
+                                      id: 'Gambar',
+                                      en: 'Images',
+                                    ),
+                                    style: theme.textTheme.titleMedium,
+                                  ),
+                                  const SizedBox(height: DaisthSpacing.sm),
+                                  _RoutineAttachmentGrid(
+                                    attachments: widget.attachments,
+                                    fileService: widget.attachmentFileService,
+                                    resolveRemoteAttachment:
+                                        widget.resolveRemoteAttachment,
+                                  ),
+                                ],
+                              ],
                             ],
                           ),
                         ),
@@ -486,6 +565,15 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _launchSafeLink(String value) async {
+    final uri = Uri.tryParse(value);
+    if (uri == null ||
+        !const {'https', 'http', 'mailto'}.contains(uri.scheme.toLowerCase())) {
+      return;
+    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   List<RoutineLinkItem> get _guidanceItems {
@@ -820,6 +908,108 @@ class _DetailTopBar extends StatelessWidget {
       ),
     );
   }
+}
+
+class _RoutineAttachmentGrid extends StatelessWidget {
+  const _RoutineAttachmentGrid({
+    required this.attachments,
+    required this.fileService,
+    required this.resolveRemoteAttachment,
+  });
+
+  final List<RoutineAttachment> attachments;
+  final RoutineAttachmentFileService? fileService;
+  final Future<File?> Function(RoutineAttachment)? resolveRemoteAttachment;
+
+  @override
+  Widget build(BuildContext context) => GridView.builder(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    itemCount: attachments.length,
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,
+      crossAxisSpacing: DaisthSpacing.sm,
+      mainAxisSpacing: DaisthSpacing.sm,
+    ),
+    itemBuilder: (context, index) {
+      final attachment = attachments[index];
+      final service = fileService;
+      if (service == null) return const SizedBox.shrink();
+      return _RoutineAttachmentTile(
+        attachment: attachment,
+        fileService: service,
+        resolveRemoteAttachment: resolveRemoteAttachment,
+      );
+    },
+  );
+}
+
+class _RoutineAttachmentTile extends StatefulWidget {
+  const _RoutineAttachmentTile({
+    required this.attachment,
+    required this.fileService,
+    required this.resolveRemoteAttachment,
+  });
+
+  final RoutineAttachment attachment;
+  final RoutineAttachmentFileService fileService;
+  final Future<File?> Function(RoutineAttachment)? resolveRemoteAttachment;
+
+  @override
+  State<_RoutineAttachmentTile> createState() => _RoutineAttachmentTileState();
+}
+
+class _RoutineAttachmentTileState extends State<_RoutineAttachmentTile> {
+  late final Future<File?> _file = _resolve();
+
+  Future<File?> _resolve() async {
+    final local = await widget.fileService.resolve(
+      widget.attachment.localRelativePath,
+    );
+    if (local != null) return local;
+    return widget.resolveRemoteAttachment?.call(widget.attachment);
+  }
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<File?>(
+    future: _file,
+    builder: (context, snapshot) {
+      final file = snapshot.data;
+      if (file == null) {
+        return DaisthSurface(
+          child: Icon(
+            snapshot.connectionState == ConnectionState.waiting
+                ? Icons.downloading_outlined
+                : Icons.image_not_supported_outlined,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        );
+      }
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(DaisthRadius.large),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => Scaffold(
+                  appBar: AppBar(),
+                  body: Center(
+                    child: InteractiveViewer(
+                      minScale: 0.7,
+                      maxScale: 4,
+                      child: Image.file(file, fit: BoxFit.contain),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: Image.file(file, fit: BoxFit.cover, cacheWidth: 520),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 class _RoutineIllustration extends StatelessWidget {

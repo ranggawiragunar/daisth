@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 abstract final class DatabaseSchema {
-  static const version = 7;
+  static const version = 8;
   static const routineRecords = 'routine_records';
   static const routineStepRecords = 'routine_step_records';
   static const appSettings = 'app_settings';
@@ -11,6 +11,8 @@ abstract final class DatabaseSchema {
   static const dailyReflections = 'daily_reflections';
   static const syncMetadata = 'sync_metadata';
   static const syncOutbox = 'sync_outbox';
+  static const routineContents = 'routine_contents';
+  static const routineAttachments = 'routine_attachments';
 
   static Future<void> create(DatabaseExecutor db) async {
     await db.execute('''
@@ -59,6 +61,7 @@ abstract final class DatabaseSchema {
     await createRoutineDefinitions(db);
     await createDailyReflections(db);
     await createSyncTables(db);
+    await createRoutineContentTables(db);
   }
 
   static Future<void> upgrade(
@@ -93,6 +96,47 @@ abstract final class DatabaseSchema {
         "ALTER TABLE $appSettings ADD COLUMN language_mode TEXT NOT NULL DEFAULT 'system' CHECK (language_mode IN ('system', 'id', 'en'))",
       );
     }
+    if (oldVersion < 8 && newVersion >= 8) {
+      await createRoutineContentTables(db);
+    }
+  }
+
+  static Future<void> createRoutineContentTables(DatabaseExecutor db) async {
+    await db.execute('''
+      CREATE TABLE $routineContents (
+        routine_id TEXT PRIMARY KEY,
+        delta_json TEXT NOT NULL,
+        plain_text TEXT NOT NULL,
+        format_version INTEGER NOT NULL CHECK (format_version = 1),
+        created_at_utc TEXT NOT NULL,
+        updated_at_utc TEXT NOT NULL,
+        FOREIGN KEY (routine_id) REFERENCES $routineDefinitions(id)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE $routineAttachments (
+        id TEXT PRIMARY KEY,
+        routine_id TEXT NOT NULL,
+        type TEXT NOT NULL CHECK (type = 'image'),
+        local_relative_path TEXT,
+        original_file_name TEXT,
+        mime_type TEXT NOT NULL CHECK (mime_type IN ('image/jpeg', 'image/png')),
+        byte_size INTEGER NOT NULL CHECK (byte_size > 0 AND byte_size <= 8388608),
+        width INTEGER,
+        height INTEGER,
+        sort_order INTEGER NOT NULL,
+        content_sha256 TEXT,
+        storage_path TEXT,
+        created_at_utc TEXT NOT NULL,
+        updated_at_utc TEXT NOT NULL,
+        deleted_at_utc TEXT,
+        FOREIGN KEY (routine_id) REFERENCES $routineDefinitions(id)
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX routine_attachments_order ON '
+      '$routineAttachments(routine_id, deleted_at_utc, sort_order)',
+    );
   }
 
   static Future<void> createSyncTables(DatabaseExecutor db) async {

@@ -123,6 +123,14 @@ RoutineSqliteService
 DaisthDatabaseService → SQLite
 ```
 
+Optional routine notes and gallery images are separate from completion state.
+The full-screen `RoutineEditorScreen` writes Quill Delta content and image
+metadata through `SaveRoutineEditorUseCase` and `RoutineEditorRepositoryData`.
+`RoutineAttachmentFileService` owns normalization, staging, and app-support
+files; `RoutineAttachmentStorageService` owns authenticated Firebase Storage
+operations. Content and metadata participate in the existing explicit sync
+outbox. See [routine-content.md](routine-content.md).
+
 Default and custom definitions use fixed local wall-clock minutes or a stable
 prayer key. Prayer schedules still resolve their clock time from the current
 Prayer Time schedule. Custom routines are daily optional routines; archiving a

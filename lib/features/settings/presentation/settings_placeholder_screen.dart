@@ -415,31 +415,21 @@ class _LanguageSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = _optionLabel(context, preference);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          DaisthLocalizations.text(context, id: 'Bahasa', en: 'Language'),
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-        const SizedBox(height: DaisthSpacing.sm),
-        DaisthSurface(
-          padding: EdgeInsets.zero,
-          child: Material(
-            color: Colors.transparent,
-            child: ListTile(
-              key: const ValueKey('settings-language'),
-              minVerticalPadding: DaisthSpacing.md,
-              title: Text(
-                DaisthLocalizations.text(context, id: 'Bahasa', en: 'Language'),
-              ),
-              subtitle: Text(label),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () => _showPicker(context),
-            ),
+    return DaisthSurface(
+      padding: EdgeInsets.zero,
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          key: const ValueKey('settings-language'),
+          minVerticalPadding: DaisthSpacing.md,
+          title: Text(
+            DaisthLocalizations.text(context, id: 'Bahasa', en: 'Language'),
           ),
+          subtitle: Text(label),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => _showPicker(context),
         ),
-      ],
+      ),
     );
   }
 

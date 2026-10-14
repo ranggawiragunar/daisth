@@ -1,4 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../../routines/data/services/routine_attachment_file_service.dart';
+import '../../../routines/data/services/routine_attachment_storage_service.dart';
+import '../../../routines/domain/models/routine_attachment.dart';
 
 import '../../domain/models/sync_entity.dart';
 import '../../domain/repositories/cloud_data_repository.dart';
@@ -6,9 +12,17 @@ import '../mappers/sync_entity_firestore_mapper.dart';
 import 'firestore_account_data_purger.dart';
 
 class DaisthFirestoreService implements CloudDataRepository {
-  DaisthFirestoreService() : _firestore = null;
+  DaisthFirestoreService({
+    this._firestore,
+    RoutineAttachmentStorageService? attachmentStorage,
+    RoutineAttachmentFileService? attachmentFiles,
+  }) : _attachmentStorage =
+           attachmentStorage ?? RoutineAttachmentStorageService(),
+       _attachmentFiles = attachmentFiles ?? RoutineAttachmentFileService();
 
   FirebaseFirestore? _firestore;
+  final RoutineAttachmentStorageService _attachmentStorage;
+  final RoutineAttachmentFileService _attachmentFiles;
   final _mapper = SyncEntityFirestoreMapper();
   bool _configured = false;
 
@@ -57,9 +71,41 @@ class DaisthFirestoreService implements CloudDataRepository {
   Future<void> writeEntities(String uid, List<SyncEntity> entities) async {
     configureTransport();
     final root = firestore.collection('users').doc(uid);
-    for (var offset = 0; offset < entities.length; offset += 450) {
+    final prepared = <SyncEntity>[];
+    final deletions = <String>[];
+    for (final entity in entities) {
+      if (entity.type != SyncEntityType.routineAttachment) {
+        prepared.add(entity);
+        continue;
+      }
+      if (entity.isDeleted) {
+        deletions.add(Uri.decodeComponent(entity.id));
+        prepared.add(entity);
+        continue;
+      }
+      final attachment = entity.payload as RoutineAttachment;
+      final file = await _attachmentFiles.resolve(attachment.localRelativePath);
+      if (file == null) {
+        throw const FileSystemException('Attachment file is missing.');
+      }
+      final storagePath = await _attachmentStorage.uploadIfChanged(
+        uid: uid,
+        attachment: attachment,
+        file: file,
+      );
+      prepared.add(
+        SyncEntity(
+          type: entity.type,
+          id: entity.id,
+          updatedAtUtc: entity.updatedAtUtc,
+          sourceDeviceId: entity.sourceDeviceId,
+          payload: attachment.copyWith(storagePath: storagePath),
+        ),
+      );
+    }
+    for (var offset = 0; offset < prepared.length; offset += 450) {
       final batch = firestore.batch();
-      final group = entities.skip(offset).take(450);
+      final group = prepared.skip(offset).take(450);
       for (final entity in group) {
         final ref = root
             .collection(_mapper.collectionFor(entity.type))
@@ -71,6 +117,9 @@ class DaisthFirestoreService implements CloudDataRepository {
         batch.set(ref, data);
       }
       await batch.commit();
+    }
+    for (final attachmentId in deletions) {
+      await _attachmentStorage.deleteAttachment(uid, attachmentId);
     }
   }
 
@@ -86,6 +135,7 @@ class DaisthFirestoreService implements CloudDataRepository {
   @override
   Future<void> deleteAllUserCloudData(String uid) async {
     configureTransport();
+    await _attachmentStorage.purgeUserAttachments(uid);
     await const FirestoreAccountDataPurger().purge(
       uid,
       _FirestorePurgeGateway(firestore),

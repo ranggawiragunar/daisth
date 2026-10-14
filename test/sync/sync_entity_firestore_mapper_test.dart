@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:daisth/core/time/domain/models/calendar_day.dart';
 import 'package:daisth/features/routines/domain/models/routine_record.dart';
 import 'package:daisth/features/routines/domain/models/routine_status.dart';
+import 'package:daisth/features/routines/domain/models/routine_attachment.dart';
+import 'package:daisth/features/routines/domain/models/routine_content.dart';
 import 'package:daisth/features/sync/data/mappers/firestore_document_ids.dart';
 import 'package:daisth/features/sync/data/mappers/sync_entity_firestore_mapper.dart';
 import 'package:daisth/features/sync/domain/models/sync_entity.dart';
@@ -69,5 +71,66 @@ void main() {
       'custom_routine',
       'step__one',
     ));
+  });
+
+  test('routine notes round-trip as bounded Delta content', () {
+    final instant = DateTime.utc(2026, 10, 13, 3);
+    final original = mapper.routineContent(
+      RoutineContent(
+        routineId: 'custom/reading',
+        serializedDelta: '[{"insert":"Read slowly\\n"}]',
+        plainText: 'Read slowly',
+        formatVersion: 1,
+        createdAt: instant,
+        updatedAt: instant,
+      ),
+      'device-a',
+    );
+    final data = mapper.toFirestore(original);
+    final decoded = mapper.fromFirestore(
+      type: SyncEntityType.routineContent,
+      documentId: original.id,
+      data: data,
+    );
+
+    expect(decoded.payload, isA<RoutineContent>());
+    expect((decoded.payload! as RoutineContent).plainText, 'Read slowly');
+    expect(data, isNot(contains('localRelativePath')));
+  });
+
+  test('routine attachment metadata never syncs a local file path', () {
+    final instant = DateTime.utc(2026, 10, 13, 3);
+    final original = mapper.routineAttachment(
+      RoutineAttachment(
+        id: 'photo-1',
+        routineId: 'custom-reading',
+        type: 'image',
+        localRelativePath: 'custom-reading/photo-1.jpg',
+        originalFileName: 'reading.jpg',
+        mimeType: 'image/jpeg',
+        byteSize: 4200,
+        width: 1200,
+        height: 800,
+        sortOrder: 0,
+        contentSha256: 'abc123',
+        storagePath: 'users/user-1/routine-attachments/photo-1/image.jpg',
+        createdAt: instant,
+        updatedAt: instant,
+      ),
+      'device-a',
+    );
+    final data = mapper.toFirestore(original);
+    final decoded = mapper.fromFirestore(
+      type: SyncEntityType.routineAttachment,
+      documentId: original.id,
+      data: data,
+    );
+
+    expect(data, isNot(contains('localRelativePath')));
+    expect((decoded.payload! as RoutineAttachment).localRelativePath, isNull);
+    expect(
+      (decoded.payload! as RoutineAttachment).storagePath,
+      contains('photo-1'),
+    );
   });
 }
