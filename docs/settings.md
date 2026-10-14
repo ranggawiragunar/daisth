@@ -2,8 +2,10 @@
 
 Settings groups the device and account controls into Appearance, Prayer &
 Location, Notifications, Account & Sync, Data & Privacy, and About. The existing
-System / Light / Dark theme choice stays in `app_settings` and remains local to
-the installation.
+System / Light / Dark theme choice and the System Default / Indonesia / English
+language preference stay in `app_settings` and remain local to the
+installation. The language preference resolves the root-app locale immediately
+and never enters the Firestore sync model.
 
 ## Prayer & Location
 

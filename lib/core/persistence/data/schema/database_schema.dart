@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 abstract final class DatabaseSchema {
-  static const version = 6;
+  static const version = 7;
   static const routineRecords = 'routine_records';
   static const routineStepRecords = 'routine_step_records';
   static const appSettings = 'app_settings';
@@ -41,6 +41,8 @@ abstract final class DatabaseSchema {
       CREATE TABLE $appSettings (
         id INTEGER PRIMARY KEY CHECK (id = 1),
         theme_mode TEXT NOT NULL CHECK (theme_mode IN ('system', 'light', 'dark')),
+        language_mode TEXT NOT NULL DEFAULT 'system'
+          CHECK (language_mode IN ('system', 'id', 'en')),
         reminders_enabled INTEGER NOT NULL CHECK (reminders_enabled IN (0, 1)),
         onboarding_version INTEGER,
         updated_at_utc TEXT NOT NULL
@@ -49,6 +51,7 @@ abstract final class DatabaseSchema {
     await db.insert(appSettings, {
       'id': 1,
       'theme_mode': 'system',
+      'language_mode': 'system',
       'reminders_enabled': 0,
       'updated_at_utc': DateTime.now().toUtc().toIso8601String(),
     });
@@ -84,6 +87,11 @@ abstract final class DatabaseSchema {
     }
     if (oldVersion < 6 && newVersion >= 6) {
       await createSyncTables(db);
+    }
+    if (oldVersion < 7 && newVersion >= 7) {
+      await db.execute(
+        "ALTER TABLE $appSettings ADD COLUMN language_mode TEXT NOT NULL DEFAULT 'system' CHECK (language_mode IN ('system', 'id', 'en'))",
+      );
     }
   }
 

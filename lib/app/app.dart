@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/app_settings/domain/models/app_settings.dart';
@@ -8,7 +9,7 @@ import '../core/design_system/components/daisth_notice.dart';
 import '../core/design_system/components/daisth_notice_controller.dart';
 import '../core/design_system/theme/daisth_theme.dart';
 import '../core/location/domain/repositories/location_repository.dart';
-import '../core/localization/daisth_terminology.dart';
+import '../core/localization/daisth_localizations.dart';
 import '../features/reminders/domain/models/reminder_action.dart';
 import '../features/reminders/domain/models/reminder_payload.dart';
 import 'app_preferences_scope.dart';
@@ -34,6 +35,10 @@ class DaisthApp extends StatefulWidget {
 
 class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
   ThemeMode _themeMode = ThemeMode.system;
+  AppLanguagePreference _languagePreference = AppLanguagePreference.system;
+  Locale _effectiveLocale = const Locale('en');
+  List<Locale> _systemLocales = const [];
+  bool _localeReady = false;
   late final DaisthNoticeController _noticeController;
   late final GoRouter _router;
   late final AppDependencies _dependencies;
@@ -42,12 +47,15 @@ class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _systemLocales = WidgetsBinding.instance.platformDispatcher.locales;
     _noticeController = DaisthNoticeController();
     _dependencies =
         widget.dependencies ??
         AppDependencies(
-          languageCode:
-              WidgetsBinding.instance.platformDispatcher.locale.languageCode,
+          languageCode: AppLanguagePreferenceResolver.resolveCode(
+            AppLanguagePreference.system,
+            _systemLocales.map((locale) => locale.languageCode),
+          ),
           locationRepository: widget.locationRepository,
           startTodayClock: widget.startTodayClock,
         );
@@ -55,7 +63,23 @@ class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
       noticeController: _noticeController,
       dependencies: _dependencies,
     );
+    unawaited(_loadLocalPreferences());
     unawaited(_initializeDependencies());
+  }
+
+  Future<void> _loadLocalPreferences() async {
+    try {
+      final settings = await _dependencies.appSettingsRepository.getSettings();
+      _dependencies.appSettings = settings;
+      _languagePreference = settings.languagePreference;
+      _themeMode = _toThemeMode(settings.themePreference);
+    } catch (_) {
+      _languagePreference = AppLanguagePreference.system;
+    }
+    _effectiveLocale = _resolveLocale();
+    _dependencies.updateLanguageCode(_effectiveLocale.languageCode);
+    if (!mounted) return;
+    setState(() => _localeReady = true);
   }
 
   Future<void> _initializeDependencies() async {
@@ -87,6 +111,61 @@ class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _router.go(destination);
     });
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    super.didChangeLocales(locales);
+    _systemLocales =
+        locales ?? WidgetsBinding.instance.platformDispatcher.locales;
+    if (_languagePreference != AppLanguagePreference.system) return;
+    final locale = _resolveLocale();
+    if (locale == _effectiveLocale) return;
+    setState(() => _effectiveLocale = locale);
+    _dependencies.updateLanguageCode(locale.languageCode);
+  }
+
+  Locale _resolveLocale() => Locale(
+    AppLanguagePreferenceResolver.resolveCode(
+      _languagePreference,
+      _systemLocales.map((locale) => locale.languageCode),
+    ),
+  );
+
+  void _setLanguagePreference(AppLanguagePreference preference) {
+    if (_languagePreference == preference) return;
+    setState(() {
+      _languagePreference = preference;
+      _effectiveLocale = _resolveLocale();
+    });
+    _dependencies.updateLanguageCode(_effectiveLocale.languageCode);
+    unawaited(_persistLanguagePreference(preference));
+  }
+
+  Future<void> _persistLanguagePreference(
+    AppLanguagePreference preference,
+  ) async {
+    try {
+      final current = await _dependencies.appSettingsRepository.getSettings();
+      final updated = current.copyWith(
+        languagePreference: preference,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      await _dependencies.appSettingsRepository.saveSettings(updated);
+      _dependencies.appSettings = updated;
+    } catch (_) {
+      if (mounted) {
+        _noticeController.show(
+          context,
+          type: DaisthNoticeType.error,
+          title: DaisthLocalizations.text(
+            context,
+            id: 'Bahasa belum dapat disimpan di perangkat.',
+            en: 'Language preference could not be saved on this device.',
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _dispatchForegroundReminderAction(
@@ -130,7 +209,11 @@ class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
         _noticeController.show(
           context,
           type: DaisthNoticeType.error,
-          title: 'Tema belum dapat disimpan.',
+          title: DaisthLocalizations.text(
+            context,
+            id: 'Tema belum dapat disimpan.',
+            en: 'Theme preference could not be saved.',
+          ),
         );
       }
     }
@@ -153,17 +236,19 @@ class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    if (!_localeReady) {
+      return ColoredBox(color: DaisthTheme.light.scaffoldBackgroundColor);
+    }
     return MaterialApp.router(
       title: 'Daisth',
       debugShowCheckedModeBanner: false,
-      supportedLocales: DaisthTerminology.supportedLocales,
-      localeResolutionCallback: (locale, supportedLocales) {
-        final languageCode = locale?.languageCode.toLowerCase();
-        return supportedLocales.firstWhere(
-          (candidate) => candidate.languageCode == languageCode,
-          orElse: () => const Locale('en'),
-        );
-      },
+      locale: _effectiveLocale,
+      supportedLocales: DaisthLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: DaisthTheme.light,
       darkTheme: DaisthTheme.dark,
       themeMode: _themeMode,
@@ -171,6 +256,8 @@ class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
       builder: (context, child) => AppPreferencesScope(
         themeMode: _themeMode,
         onThemeModeChanged: _setThemeMode,
+        languagePreference: _languagePreference,
+        onLanguagePreferenceChanged: _setLanguagePreference,
         child: DaisthNoticeScope(
           controller: _noticeController,
           child: child ?? const SizedBox.shrink(),

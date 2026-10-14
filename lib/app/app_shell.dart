@@ -6,6 +6,7 @@ import '../core/design_system/components/daisth_notice_controller.dart';
 import '../core/design_system/tokens/daisth_radius.dart';
 import '../core/design_system/tokens/daisth_spacing.dart';
 import '../core/design_system/theme/daisth_theme_extension.dart';
+import '../core/localization/daisth_localizations.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
@@ -14,18 +15,30 @@ class AppShell extends StatelessWidget {
 
   final StatefulNavigationShell navigationShell;
   static const _destinations = [
-    _Destination('Today', PhosphorIconsRegular.house, PhosphorIconsFill.house),
+    _Destination(
+      'Today',
+      'Hari Ini',
+      PhosphorIconsRegular.house,
+      PhosphorIconsFill.house,
+    ),
     _Destination(
       'History',
+      'Riwayat',
       PhosphorIconsRegular.chartBar,
       PhosphorIconsFill.chartBar,
     ),
     _Destination(
       'Routines',
+      'Rutinitas',
       PhosphorIconsRegular.calendarCheck,
       PhosphorIconsFill.calendarCheck,
     ),
-    _Destination('Settings', PhosphorIconsRegular.gear, PhosphorIconsFill.gear),
+    _Destination(
+      'Settings',
+      'Pengaturan',
+      PhosphorIconsRegular.gear,
+      PhosphorIconsFill.gear,
+    ),
   ];
 
   @override
@@ -88,7 +101,7 @@ class AppShell extends StatelessWidget {
                         Expanded(
                           child: _NavigationItem(
                             key: ValueKey(
-                              'navigation-${_destinations[index].label.toLowerCase()}',
+                              'navigation-${_destinations[index].enLabel.toLowerCase()}',
                             ),
                             destination: _destinations[index],
                             selected: navigationShell.currentIndex == index,
@@ -112,9 +125,10 @@ class AppShell extends StatelessWidget {
 }
 
 class _Destination {
-  const _Destination(this.label, this.icon, this.selectedIcon);
+  const _Destination(this.enLabel, this.idLabel, this.icon, this.selectedIcon);
 
-  final String label;
+  final String enLabel;
+  final String idLabel;
   final IconData icon;
   final IconData selectedIcon;
 }
@@ -134,13 +148,18 @@ class _NavigationItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final label = DaisthLocalizations.text(
+      context,
+      id: destination.idLabel,
+      en: destination.enLabel,
+    );
     final color = selected
         ? theme.colorScheme.primary
         : theme.colorScheme.onSurfaceVariant;
     return Semantics(
       button: true,
       selected: selected,
-      label: destination.label,
+      label: label,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(DaisthRadius.large),
@@ -154,7 +173,7 @@ class _NavigationItem extends StatelessWidget {
                 Icon(
                   selected ? destination.selectedIcon : destination.icon,
                   key: ValueKey(
-                    'navigation-icon-${destination.label.toLowerCase()}',
+                    'navigation-icon-${destination.enLabel.toLowerCase()}',
                   ),
                   color: color,
                   size: 20,
@@ -162,7 +181,7 @@ class _NavigationItem extends StatelessWidget {
                 const SizedBox(height: 3),
                 AnimatedContainer(
                   key: ValueKey(
-                    'navigation-label-${destination.label.toLowerCase()}',
+                    'navigation-label-${destination.enLabel.toLowerCase()}',
                   ),
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOutCubic,
@@ -177,7 +196,7 @@ class _NavigationItem extends StatelessWidget {
                     borderRadius: BorderRadius.circular(DaisthRadius.pill),
                   ),
                   child: Text(
-                    destination.label,
+                    label,
                     maxLines: 1,
                     softWrap: false,
                     overflow: TextOverflow.ellipsis,

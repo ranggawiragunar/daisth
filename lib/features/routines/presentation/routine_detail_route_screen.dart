@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/dependencies/app_dependencies.dart';
 import '../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../core/time/domain/models/calendar_day.dart';
+import '../../../core/localization/daisth_localizations.dart';
 import '../data/resolvers/routine_resolver.dart';
 import 'routine_detail_screen.dart';
 
@@ -35,7 +36,17 @@ class _RoutineDetailRouteScreenState extends State<RoutineDetailRouteScreen> {
     future: _routine,
     builder: (context, snapshot) {
       if (snapshot.connectionState != ConnectionState.done) {
-        return const Scaffold(body: Center(child: Text('Memuat routine...')));
+        return Scaffold(
+          body: Center(
+            child: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Memuat rutinitas…',
+                en: 'Loading routine…',
+              ),
+            ),
+          ),
+        );
       }
       final resolved = snapshot.data;
       if (snapshot.hasError || resolved == null) {

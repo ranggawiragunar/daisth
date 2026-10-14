@@ -8,7 +8,7 @@ import 'package:daisth/core/persistence/data/schema/database_schema.dart';
 import '../support/test_persistence.dart';
 
 void main() {
-  test('v5 to v6 adds sync tables and preserves existing rows', () async {
+  test('v5 to v7 adds sync tables and preserves existing rows', () async {
     sqfliteFfiInit();
     final directory = await Directory.systemTemp.createTemp('daisth-v5-');
     addTearDown(() => directory.delete(recursive: true));
@@ -56,7 +56,8 @@ void main() {
     addTearDown(service.close);
     final db = await service.open();
 
-    expect(Sqflite.firstIntValue(await db.rawQuery('PRAGMA user_version')), 6);
+    expect(Sqflite.firstIntValue(await db.rawQuery('PRAGMA user_version')), 7);
+    expect((await db.query('app_settings')).single['language_mode'], 'system');
     expect((await db.query('routine_records')).single['status'], 'completed');
     expect((await db.query('app_settings')).single['theme_mode'], 'dark');
     expect(await db.query(DatabaseSchema.syncMetadata), isEmpty);

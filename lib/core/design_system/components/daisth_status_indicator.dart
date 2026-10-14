@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../theme/daisth_theme_extension.dart';
+import '../../localization/daisth_localizations.dart';
 
 class DaisthStatusIndicator extends StatelessWidget {
   const DaisthStatusIndicator({
@@ -24,23 +25,46 @@ class DaisthStatusIndicator extends StatelessWidget {
     RoutineStatus.notToday => PhosphorIconsRegular.minusCircle,
   };
 
-  String get _label => switch (status) {
-    RoutineStatus.completed => 'Completed',
-    RoutineStatus.partial => 'Partially completed',
-    RoutineStatus.due => 'Due now',
-    RoutineStatus.upcoming => 'Upcoming',
-    RoutineStatus.unrecorded => 'Not recorded',
-    RoutineStatus.notToday => 'Not scheduled today',
-  };
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final color = theme.extension<DaisthThemeExtension>()!.statusColor(status);
     final filled = status == RoutineStatus.completed;
+    final label = switch (status) {
+      RoutineStatus.completed => DaisthLocalizations.text(
+        context,
+        id: 'Selesai',
+        en: 'Completed',
+      ),
+      RoutineStatus.partial => DaisthLocalizations.text(
+        context,
+        id: 'Sebagian selesai',
+        en: 'Partially completed',
+      ),
+      RoutineStatus.due => DaisthLocalizations.text(
+        context,
+        id: 'Waktunya sekarang',
+        en: 'Due now',
+      ),
+      RoutineStatus.upcoming => DaisthLocalizations.text(
+        context,
+        id: 'Akan datang',
+        en: 'Upcoming',
+      ),
+      RoutineStatus.unrecorded => DaisthLocalizations.text(
+        context,
+        id: 'Belum tercatat',
+        en: 'Not recorded',
+      ),
+      RoutineStatus.notToday => DaisthLocalizations.text(
+        context,
+        id: 'Tidak dijadwalkan hari ini',
+        en: 'Not scheduled today',
+      ),
+    };
 
     return Semantics(
-      label: _label,
+      label: label,
       child: SizedBox(
         width: size,
         height: size,

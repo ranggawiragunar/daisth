@@ -26,6 +26,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
     required this.prayerScheduleSession,
     this.appSettingsRepository,
     this.reminderStateRepository,
+    this.languageCode = 'en',
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now {
     prayerScheduleSession.addListener(_onPrayerScheduleChanged);
@@ -40,6 +41,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
   final DateTime Function() _clock;
   final ReminderReschedulePolicy _reschedulePolicy =
       const ReminderReschedulePolicy();
+  String languageCode;
 
   bool remindersEnabled = false;
   bool isLoading = false;
@@ -218,8 +220,12 @@ class ReminderSettingsViewModel extends ChangeNotifier {
       Reminder(
         id: 'dhuha-primary-test-$dateKey',
         routineId: 'dhuha',
-        title: 'Uji aksi · Sholat Dhuha',
-        body: 'Notifikasi lokal dan aksi reminder berfungsi.',
+        title: languageCode == 'id'
+            ? 'Uji aksi · Salat Dhuha'
+            : 'Action test · Duha prayer',
+        body: languageCode == 'id'
+            ? 'Notifikasi lokal dan aksi pengingat berfungsi.'
+            : 'Local notifications and reminder actions are working.',
         scheduledAt: scheduledAt,
         priority: ReminderPriority.medium,
         dateKey: dateKey,
@@ -264,6 +270,14 @@ class ReminderSettingsViewModel extends ChangeNotifier {
       errorMessage = 'Pengaturan perangkat belum dapat diperbarui.';
       notifyListeners();
     }
+  }
+
+  Future<void> onLanguageChanged() async {
+    if (!remindersEnabled ||
+        permissionStatus != ReminderPermissionStatus.granted) {
+      return;
+    }
+    await _reschedule(now: _clock());
   }
 
   Future<void> refreshDeviceStatus() async {

@@ -30,7 +30,7 @@ void main() {
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller);
 
-    expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(find.text('Not started'), findsOneWidget);
     expect(find.text('Mark All Done'), findsOneWidget);
 
     await tester.ensureVisible(
@@ -92,14 +92,14 @@ void main() {
 
     await tester.tap(find.text('Not Today'));
     await _settle(tester);
-    expect(find.text('Tidak dilakukan hari ini?'), findsOneWidget);
-    final saveButton = find.text('Simpan');
+    expect(find.text('Not today?'), findsOneWidget);
+    final saveButton = find.text('Save');
     await tester.ensureVisible(saveButton);
     await tester.tap(saveButton);
     await _settle(tester);
 
-    expect(find.text('Tidak dilakukan hari ini'), findsOneWidget);
-    expect(find.text('Status routine diperbarui'), findsOneWidget);
+    expect(find.text('Not today'), findsOneWidget);
+    expect(find.text('Routine status updated'), findsOneWidget);
     await _dismissNotice(tester, controller);
   });
 
@@ -112,11 +112,11 @@ void main() {
 
     await tester.tap(find.text('Not Today'));
     await _settle(tester);
-    await tester.tap(find.text('Bepergian'));
-    await tester.tap(find.text('Simpan'));
+    await tester.tap(find.text('Travelling'));
+    await tester.tap(find.text('Save'));
     await _settle(tester);
 
-    expect(find.text('Alasan: Bepergian'), findsOneWidget);
+    expect(find.text('Reason: Travelling'), findsOneWidget);
     await _dismissNotice(tester, controller);
   });
 
@@ -243,14 +243,14 @@ void main() {
     await tester.ensureVisible(find.text('Night Prayer'));
     await tester.tap(find.text('Night Prayer'));
     await _settle(tester);
-    expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(find.text('Not started'), findsOneWidget);
     expect(await tester.binding.handlePopRoute(), isTrue);
     await _settle(tester);
 
     await tester.ensureVisible(find.text('Duha'));
     await tester.tap(find.text('Duha'));
     await _settle(tester);
-    expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(find.text('Not started'), findsOneWidget);
     expect(find.text('Duha'), findsOneWidget);
     expect(find.text('2 rakaat'), findsOneWidget);
   });
@@ -267,7 +267,7 @@ void main() {
     expect(find.text('Guidance'), findsOneWidget);
     await tester.tap(find.text('Open Reading'));
     await _settle(tester);
-    expect(find.text('Reader segera hadir'), findsOneWidget);
+    expect(find.text('Reader is coming soon'), findsOneWidget);
     await _dismissNotice(tester, controller);
   });
 

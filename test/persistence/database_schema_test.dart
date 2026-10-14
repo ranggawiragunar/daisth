@@ -7,14 +7,14 @@ import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
 import '../support/test_persistence.dart';
 
 void main() {
-  test('creates schema v6 tables and leaves onboarding incomplete', () async {
+  test('creates schema v7 tables and leaves onboarding incomplete', () async {
     final persistence = await TestPersistence.create();
     addTearDown(persistence.dispose);
 
     final db = await persistence.database.open();
     expect(
       (await db.rawQuery('PRAGMA user_version')).single['user_version'],
-      6,
+      7,
     );
     final tables = await db.rawQuery(
       "SELECT name FROM sqlite_master WHERE type = 'table'",

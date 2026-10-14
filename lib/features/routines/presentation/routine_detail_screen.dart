@@ -14,6 +14,7 @@ import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/theme/daisth_theme_extension.dart';
 import '../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../core/localization/daisth_localizations.dart';
 import '../../../core/localization/daisth_terminology.dart';
 import '../../../core/time/domain/models/calendar_day.dart';
 import '../../prayer_times/domain/models/prayer_name.dart';
@@ -103,7 +104,24 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
       _lastDisplayedError = error;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _showNotice(type: DaisthNoticeType.error, title: error);
+          _showNotice(
+            type: DaisthNoticeType.error,
+            title: switch (error) {
+              'Progress routine belum dapat dimuat.' =>
+                DaisthLocalizations.text(
+                  context,
+                  id: error,
+                  en: 'Routine progress could not be loaded.',
+                ),
+              'Progress routine belum dapat disimpan. Coba lagi.' =>
+                DaisthLocalizations.text(
+                  context,
+                  id: error,
+                  en: 'Routine progress could not be saved. Try again.',
+                ),
+              _ => error,
+            },
+          );
         }
       });
     } else if (error == null) {
@@ -120,13 +138,30 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     super.dispose();
   }
 
-  String get _statusLabel => switch (_completionState) {
+  String _statusLabel(BuildContext context) => switch (_completionState) {
     routine_domain.RoutineStatus.pending =>
-      widget.historical ? 'Unrecorded' : 'Belum dimulai',
-    routine_domain.RoutineStatus.partial =>
-      'Partial · $_completedRequiredCount of $_requiredCount',
-    routine_domain.RoutineStatus.completed => _completedStatusLabel,
-    routine_domain.RoutineStatus.notToday => 'Tidak dilakukan hari ini',
+      widget.historical
+          ? DaisthLocalizations.text(
+              context,
+              id: 'Belum tercatat',
+              en: 'Unrecorded',
+            )
+          : DaisthLocalizations.text(
+              context,
+              id: 'Belum dimulai',
+              en: 'Not started',
+            ),
+    routine_domain.RoutineStatus.partial => DaisthLocalizations.text(
+      context,
+      id: 'Sebagian · $_completedRequiredCount dari $_requiredCount',
+      en: 'Partial · $_completedRequiredCount of $_requiredCount',
+    ),
+    routine_domain.RoutineStatus.completed => _completedStatusLabel(context),
+    routine_domain.RoutineStatus.notToday => DaisthLocalizations.text(
+      context,
+      id: 'Tidak dilakukan hari ini',
+      en: 'Not today',
+    ),
   };
 
   String? get _scheduledPrayerTime {
@@ -149,14 +184,26 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
 
   bool get _isMandatoryPrayer => _prayerForRoutine(_routine.id) != null;
 
-  String get _completedStatusLabel {
+  String _completedStatusLabel(BuildContext context) {
     if (_routine.id == 'dhuha') {
-      return 'Completed · ${_viewModel.completedRakaat} rakaat';
+      return DaisthLocalizations.text(
+        context,
+        id: 'Selesai · ${_viewModel.completedRakaat} rakaat',
+        en: 'Completed · ${_viewModel.completedRakaat} rakaat',
+      );
     }
     if (_routine.id == 'zuhur' && _viewModel.justCompleted) {
-      return 'Recorded just now';
+      return DaisthLocalizations.text(
+        context,
+        id: 'Baru saja dicatat',
+        en: 'Recorded just now',
+      );
     }
-    return 'Completed · $_completedRequiredCount of $_requiredCount';
+    return DaisthLocalizations.text(
+      context,
+      id: 'Selesai · $_completedRequiredCount dari $_requiredCount',
+      en: 'Completed · $_completedRequiredCount of $_requiredCount',
+    );
   }
 
   void _showNotice({
@@ -182,11 +229,17 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     HapticFeedback.mediumImpact();
     _showNotice(
       type: DaisthNoticeType.success,
-      title: '$_displayRoutineTitle recorded',
+      title: DaisthLocalizations.text(
+        context,
+        id: '$_displayRoutineTitle dicatat',
+        en: '$_displayRoutineTitle recorded',
+      ),
     );
   }
 
   Future<void> _markAllRemaining() async {
+    final routineTitle = _displayRoutineTitle;
+    final isEnglish = DaisthLocalizations.isEnglish(context);
     final completed = _routine.id == 'penutup-hari'
         ? await _viewModel.markRequiredStepsDone()
         : await _viewModel.markAllRemaining();
@@ -195,17 +248,19 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     HapticFeedback.mediumImpact();
     _showNotice(
       type: DaisthNoticeType.success,
-      title: '$_displayRoutineTitle recorded',
+      title: isEnglish ? '$routineTitle recorded' : '$routineTitle dicatat',
     );
   }
 
   Future<void> _markSimplePrayerDone() async {
+    final routineTitle = _displayRoutineTitle;
+    final isEnglish = DaisthLocalizations.isEnglish(context);
     if (!await _viewModel.markRequiredStepsDone()) return;
     if (widget.historical) return;
     HapticFeedback.mediumImpact();
     _showNotice(
       type: DaisthNoticeType.success,
-      title: '$_displayRoutineTitle recorded',
+      title: isEnglish ? '$routineTitle recorded' : '$routineTitle dicatat',
     );
   }
 
@@ -213,11 +268,15 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     final result = await showNotTodaySheet(context);
     if (!mounted || result == null) return;
     final didSave = await _viewModel.markNotToday(reason: result.reason);
-    if (!didSave) return;
+    if (!didSave || !mounted) return;
     if (widget.historical) return;
     _showNotice(
       type: DaisthNoticeType.neutral,
-      title: 'Status routine diperbarui',
+      title: DaisthLocalizations.text(
+        context,
+        id: 'Status rutinitas diperbarui',
+        en: 'Routine status updated',
+      ),
       message: result.reason,
     );
   }
@@ -235,8 +294,14 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     );
   }
 
-  void _openReader() =>
-      _showNotice(type: DaisthNoticeType.info, title: 'Reader segera hadir');
+  void _openReader() => _showNotice(
+    type: DaisthNoticeType.info,
+    title: DaisthLocalizations.text(
+      context,
+      id: 'Reader segera hadir',
+      en: 'Reader is coming soon',
+    ),
+  );
 
   void _openReaderContent(String? contentId) {
     if (contentId == null) {
@@ -256,8 +321,18 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   void _onMenuSelected(String value) {
     _showNotice(
       type: DaisthNoticeType.info,
-      title: 'Feature coming soon',
-      message: value == 'edit' ? 'Edit Routine akan tersedia nanti.' : null,
+      title: DaisthLocalizations.text(
+        context,
+        id: 'Fitur segera hadir',
+        en: 'Feature coming soon',
+      ),
+      message: value == 'edit'
+          ? DaisthLocalizations.text(
+              context,
+              id: 'Edit rutinitas akan tersedia nanti.',
+              en: 'Routine editing will be available later.',
+            )
+          : null,
     );
   }
 
@@ -359,7 +434,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                               ),
                               const SizedBox(height: DaisthSpacing.xl),
                               _RoutineProgressSummary(
-                                status: _statusLabel,
+                                status: _statusLabel(context),
                                 completedRequired: _completedRequiredCount,
                                 requiredCount: _requiredCount,
                                 progress: _requiredCount == 0
@@ -407,7 +482,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
               ),
             ),
           ),
-          _buildBottomActions(theme, extension),
+          _buildBottomActions(context, theme, extension),
         ],
       ),
     );
@@ -468,14 +543,25 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     if (!_allRequiredDone) {
       _showNotice(
         type: DaisthNoticeType.info,
-        title: 'Selesaikan sholat terlebih dahulu',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Selesaikan salat terlebih dahulu',
+          en: 'Complete the prayer first',
+        ),
       );
       return;
     }
     if (_steps.any(
       (step) => step.id == 'post-prayer-dhikr' && step.completed,
     )) {
-      _showNotice(type: DaisthNoticeType.info, title: 'Zikir sudah tercatat');
+      _showNotice(
+        type: DaisthNoticeType.info,
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Zikir sudah tercatat',
+          en: 'Zikir already recorded',
+        ),
+      );
       return;
     }
     final completed = await context.push<bool>(
@@ -485,7 +571,11 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     await _viewModel.completeOptionalStep('post-prayer-dhikr');
   }
 
-  Widget _buildBottomActions(ThemeData theme, DaisthThemeExtension extension) {
+  Widget _buildBottomActions(
+    BuildContext context,
+    ThemeData theme,
+    DaisthThemeExtension extension,
+  ) {
     final isSimplePrayer = _isMandatoryPrayer;
     final showPrimary =
         _completionState != routine_domain.RoutineStatus.notToday &&
@@ -505,12 +595,28 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     }
 
     final label = _routine.steps.isEmpty
-        ? 'Mark Done'
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Tandai Selesai',
+            en: 'Mark Done',
+          )
         : isSimplePrayer
-        ? 'Mark $_displayRoutineTitle Done'
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Tandai $_displayRoutineTitle Selesai',
+            en: 'Mark $_displayRoutineTitle Done',
+          )
         : _steps.any((step) => step.completed)
-        ? 'Mark Remaining Done'
-        : 'Mark All Done';
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Tandai Sisanya Selesai',
+            en: 'Mark Remaining Done',
+          )
+        : DaisthLocalizations.text(
+            context,
+            id: 'Tandai Semua Selesai',
+            en: 'Mark All Done',
+          );
     return SafeArea(
       top: false,
       child: Container(
@@ -535,7 +641,13 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                     onPressed: _viewModel.isLoading || _viewModel.isSaving
                         ? null
                         : _confirmClearRecord,
-                    child: const Text('Clear record'),
+                    child: Text(
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Hapus catatan',
+                        en: 'Clear record',
+                      ),
+                    ),
                   ),
                 if (showPrimary)
                   SizedBox(
@@ -559,7 +671,13 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                       foregroundColor: theme.colorScheme.onSurfaceVariant,
                       minimumSize: const Size(44, 44),
                     ),
-                    child: const Text('Not Today'),
+                    child: Text(
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Tidak Hari Ini',
+                        en: 'Not Today',
+                      ),
+                    ),
                   ),
                 ],
               ],
@@ -575,20 +693,42 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     final shouldClear = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear this record?'),
+        title: Text(
+          DaisthLocalizations.text(
+            context,
+            id: 'Hapus catatan ini?',
+            en: 'Clear this record?',
+          ),
+        ),
         content: Text(
           mandatory
-              ? 'This day will return to Unrecorded.'
-              : "This routine will be removed from this day's history.",
+              ? DaisthLocalizations.text(
+                  context,
+                  id: 'Hari ini akan kembali menjadi Belum tercatat.',
+                  en: 'This day will return to Unrecorded.',
+                )
+              : DaisthLocalizations.text(
+                  context,
+                  id: 'Rutinitas ini akan dihapus dari riwayat hari tersebut.',
+                  en: "This routine will be removed from this day's history.",
+                ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(
+              DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel'),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Clear record'),
+            child: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Hapus catatan',
+                en: 'Clear record',
+              ),
+            ),
           ),
         ],
       ),
@@ -617,11 +757,22 @@ class _DetailTopBar extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Text('Routine Detail', style: theme.textTheme.titleMedium),
+          Text(
+            DaisthLocalizations.text(
+              context,
+              id: 'Detail Rutinitas',
+              en: 'Routine Detail',
+            ),
+            style: theme.textTheme.titleMedium,
+          ),
           Row(
             children: [
               IconButton(
-                tooltip: 'Back',
+                tooltip: DaisthLocalizations.text(
+                  context,
+                  id: 'Kembali',
+                  en: 'Back',
+                ),
                 onPressed: () {
                   if (context.canPop()) {
                     context.pop();
@@ -633,11 +784,33 @@ class _DetailTopBar extends StatelessWidget {
               ),
               const Spacer(),
               PopupMenuButton<String>(
-                tooltip: 'More options',
+                tooltip: DaisthLocalizations.text(
+                  context,
+                  id: 'Opsi lainnya',
+                  en: 'More options',
+                ),
                 onSelected: onMenuSelected,
-                itemBuilder: (context) => const [
-                  PopupMenuItem(value: 'edit', child: Text('Edit Routine')),
-                  PopupMenuItem(value: 'history', child: Text('View History')),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Text(
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Edit Rutinitas',
+                        en: 'Edit Routine',
+                      ),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'history',
+                    child: Text(
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Lihat Riwayat',
+                        en: 'View History',
+                      ),
+                    ),
+                  ),
                 ],
                 icon: const Icon(PhosphorIconsRegular.dotsThreeVertical),
               ),
@@ -701,13 +874,21 @@ class RoutineUnavailableScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: DaisthSpacing.lg),
                   Text(
-                    'Routine tidak tersedia',
+                    DaisthLocalizations.text(
+                      context,
+                      id: 'Rutinitas tidak tersedia',
+                      en: 'Routine unavailable',
+                    ),
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleLarge,
                   ),
                   const SizedBox(height: DaisthSpacing.sm),
                   Text(
-                    'Routine ini tidak dapat ditemukan.',
+                    DaisthLocalizations.text(
+                      context,
+                      id: 'Rutinitas ini tidak dapat ditemukan.',
+                      en: 'This routine could not be found.',
+                    ),
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
@@ -715,7 +896,11 @@ class RoutineUnavailableScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: DaisthSpacing.xl),
                   DaisthButton(
-                    label: 'Kembali',
+                    label: DaisthLocalizations.text(
+                      context,
+                      id: 'Kembali',
+                      en: 'Back',
+                    ),
                     onPressed: () {
                       if (context.canPop()) {
                         context.pop();
@@ -762,7 +947,11 @@ class _RoutineProgressSummary extends StatelessWidget {
             children: [
               Expanded(child: Text(status, style: theme.textTheme.titleSmall)),
               Text(
-                '$completedRequired of $requiredCount completed',
+                DaisthLocalizations.text(
+                  context,
+                  id: '$completedRequired dari $requiredCount selesai',
+                  en: '$completedRequired of $requiredCount completed',
+                ),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -774,7 +963,11 @@ class _RoutineProgressSummary extends StatelessWidget {
           if (notTodayReason != null) ...[
             const SizedBox(height: DaisthSpacing.sm),
             Text(
-              'Alasan: $notTodayReason',
+              DaisthLocalizations.text(
+                context,
+                id: 'Alasan: $notTodayReason',
+                en: 'Reason: ${_localizedNotTodayReason(notTodayReason!)}',
+              ),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -785,3 +978,12 @@ class _RoutineProgressSummary extends StatelessWidget {
     );
   }
 }
+
+String _localizedNotTodayReason(String reason) => switch (reason) {
+  'Ketiduran' => 'Overslept',
+  'Tidak sempat' => 'Ran out of time',
+  'Bepergian' => 'Travelling',
+  'Kondisi fisik' => 'Physical condition',
+  'Lainnya' => 'Other',
+  _ => reason,
+};

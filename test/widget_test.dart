@@ -150,7 +150,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Calculation'), findsOneWidget);
     expect(find.text('KEMENAG'), findsOneWidget);
-    expect(find.text('Izinkan lokasi'), findsOneWidget);
+    expect(find.text('Allow location'), findsOneWidget);
     expect(find.textContaining('latitude'), findsNothing);
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -162,7 +162,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('settings-privacy')));
     await tester.pumpAndSettle();
     expect(find.text('Data & Privacy'), findsOneWidget);
-    expect(find.textContaining('opsional'), findsOneWidget);
+    expect(find.textContaining('optional'), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
 

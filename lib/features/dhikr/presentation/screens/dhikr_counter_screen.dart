@@ -7,6 +7,7 @@ import '../../../../app/router/route_paths.dart';
 import '../../../../core/design_system/components/daisth_button.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../../core/localization/daisth_terminology.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../../../reader/presentation/widgets/reader_typography.dart';
 import '../../domain/models/dhikr_item.dart';
 import '../../domain/models/dhikr_sequence.dart';
@@ -76,16 +77,36 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
     final reset = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Reset sesi?'),
-        content: const Text('Hitungan sesi ini akan kembali ke awal.'),
+        title: Text(
+          DaisthLocalizations.text(
+            dialogContext,
+            id: 'Reset sesi?',
+            en: 'Reset session?',
+          ),
+        ),
+        content: Text(
+          DaisthLocalizations.text(
+            context,
+            id: 'Hitungan sesi ini akan kembali ke awal.',
+            en: 'This session count will return to the beginning.',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Batal'),
+            child: Text(
+              DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel'),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Reset sesi'),
+            child: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Reset sesi',
+                en: 'Reset session',
+              ),
+            ),
           ),
         ],
       ),
@@ -104,7 +125,13 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
     final shouldExit = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Keluar dari sesi?'),
+        title: Text(
+          DaisthLocalizations.text(
+            dialogContext,
+            id: 'Keluar dari sesi?',
+            en: 'Leave this session?',
+          ),
+        ),
         content: Text(
           isEnglish
               ? 'This Zikir session progress has not been saved.'
@@ -117,7 +144,13 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
           ),
           FilledButton.tonal(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Keluar'),
+            child: Text(
+              DaisthLocalizations.text(
+                dialogContext,
+                id: 'Keluar',
+                en: 'Leave',
+              ),
+            ),
           ),
         ],
       ),
@@ -153,19 +186,39 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            tooltip: 'Kembali',
+            tooltip: DaisthLocalizations.text(
+              context,
+              id: 'Kembali',
+              en: 'Back',
+            ),
             onPressed: _requestBack,
             icon: const Icon(PhosphorIconsRegular.arrowLeft),
           ),
-          title: Text('Zikir', style: theme.textTheme.titleMedium),
+          title: Text(
+            DaisthLocalizations.text(context, id: 'Zikir', en: 'Zikir'),
+            style: theme.textTheme.titleMedium,
+          ),
           actions: [
             PopupMenuButton<String>(
-              tooltip: 'Pilihan sesi',
+              tooltip: DaisthLocalizations.text(
+                context,
+                id: 'Pilihan sesi',
+                en: 'Session options',
+              ),
               onSelected: (value) {
                 if (value == 'reset') _resetSession();
               },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'reset', child: Text('Reset sesi')),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'reset',
+                  child: Text(
+                    DaisthLocalizations.text(
+                      context,
+                      id: 'Reset sesi',
+                      en: 'Reset session',
+                    ),
+                  ),
+                ),
               ],
               icon: const Icon(PhosphorIconsRegular.dotsThreeVertical),
             ),
@@ -277,7 +330,13 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
             key: const ValueKey('dhikr-undo'),
             onPressed: _viewModel.canUndo ? _undo : null,
             icon: const Icon(PhosphorIconsRegular.arrowCounterClockwise),
-            label: const Text('Undo count'),
+            label: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Batalkan hitungan',
+                en: 'Undo count',
+              ),
+            ),
             style: TextButton.styleFrom(
               minimumSize: const Size(44, 44),
               foregroundColor: theme.colorScheme.onSurfaceVariant,
@@ -308,7 +367,11 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
         ),
         const SizedBox(height: DaisthSpacing.xs),
         Text(
-          '${_viewModel.totalCount} hitungan selesai',
+          DaisthLocalizations.text(
+            context,
+            id: '${_viewModel.totalCount} hitungan selesai',
+            en: '${_viewModel.totalCount} counts completed',
+          ),
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: colors.onSurfaceVariant,
@@ -346,7 +409,10 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
         const SizedBox(height: DaisthSpacing.xxl),
         SizedBox(
           width: double.infinity,
-          child: DaisthButton(label: 'Selesai', onPressed: _finish),
+          child: DaisthButton(
+            label: DaisthLocalizations.text(context, id: 'Selesai', en: 'Done'),
+            onPressed: _finish,
+          ),
         ),
         Align(
           alignment: Alignment.center,
@@ -354,7 +420,13 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
             key: const ValueKey('dhikr-undo'),
             onPressed: _viewModel.canUndo ? _undo : null,
             icon: const Icon(PhosphorIconsRegular.arrowCounterClockwise),
-            label: const Text('Undo count'),
+            label: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Batalkan hitungan',
+                en: 'Undo count',
+              ),
+            ),
             style: TextButton.styleFrom(
               minimumSize: const Size(44, 44),
               foregroundColor: colors.onSurfaceVariant,
@@ -387,11 +459,14 @@ class DhikrUnavailableScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          tooltip: 'Kembali',
+          tooltip: DaisthLocalizations.text(context, id: 'Kembali', en: 'Back'),
           onPressed: goBack,
           icon: const Icon(PhosphorIconsRegular.arrowLeft),
         ),
-        title: Text('Zikir', style: theme.textTheme.titleMedium),
+        title: Text(
+          DaisthLocalizations.text(context, id: 'Zikir', en: 'Zikir'),
+          style: theme.textTheme.titleMedium,
+        ),
       ),
       body: SafeArea(
         child: Center(
@@ -412,7 +487,14 @@ class DhikrUnavailableScreen extends StatelessWidget {
                   style: theme.textTheme.titleLarge,
                 ),
                 const SizedBox(height: DaisthSpacing.lg),
-                DaisthButton(label: 'Kembali', onPressed: goBack),
+                DaisthButton(
+                  label: DaisthLocalizations.text(
+                    context,
+                    id: 'Kembali',
+                    en: 'Back',
+                  ),
+                  onPressed: goBack,
+                ),
               ],
             ),
           ),

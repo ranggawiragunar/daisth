@@ -8,6 +8,7 @@ import '../../../app/router/route_paths.dart';
 import '../../../core/design_system/assets/daisth_assets.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../core/localization/daisth_localizations.dart';
 import '../../../core/localization/daisth_terminology.dart';
 import '../../../core/location/domain/models/location_access_status.dart';
 import '../../../core/location/domain/repositories/location_repository.dart';
@@ -131,40 +132,111 @@ class _PrayerLocationSettingsScreenState
         widget.reminderSettings.deviceTimezone?.ianaName ?? _timezone;
     final locationLabel = switch (status) {
       LocationAccessStatus.granted when session.usedLastKnownLocation =>
-        'Lokasi terakhir tersedia',
+        DaisthLocalizations.text(
+          context,
+          id: 'Lokasi terakhir tersedia',
+          en: 'Last known location available',
+        ),
       LocationAccessStatus.granted when session.schedule != null =>
-        'Lokasi tersedia',
-      LocationAccessStatus.granted => 'Izin diberikan',
-      LocationAccessStatus.denied => 'Perlu izin lokasi',
-      LocationAccessStatus.deniedForever => 'Izin perlu diubah di Pengaturan',
-      LocationAccessStatus.serviceDisabled => 'Layanan lokasi tidak aktif',
-      null => 'Tidak tersedia',
+        DaisthLocalizations.text(
+          context,
+          id: 'Lokasi tersedia',
+          en: 'Location available',
+        ),
+      LocationAccessStatus.granted => DaisthLocalizations.text(
+        context,
+        id: 'Izin diberikan',
+        en: 'Permission granted',
+      ),
+      LocationAccessStatus.denied => DaisthLocalizations.text(
+        context,
+        id: 'Perlu izin lokasi',
+        en: 'Location permission needed',
+      ),
+      LocationAccessStatus.deniedForever => DaisthLocalizations.text(
+        context,
+        id: 'Izin perlu diubah di Pengaturan',
+        en: 'Change location permission in Settings',
+      ),
+      LocationAccessStatus.serviceDisabled => DaisthLocalizations.text(
+        context,
+        id: 'Layanan lokasi tidak aktif',
+        en: 'Location services are off',
+      ),
+      null => DaisthLocalizations.text(
+        context,
+        id: 'Tidak tersedia',
+        en: 'Unavailable',
+      ),
     };
 
     return _SettingsDetailScaffold(
-      title: 'Prayer & Location',
+      title: DaisthLocalizations.text(
+        context,
+        id: 'Waktu Salat & Lokasi',
+        en: 'Prayer & Location',
+      ),
       children: [
         DaisthSurface(
           child: Column(
             children: [
-              _ValueRow(label: 'Location', value: locationLabel),
+              _ValueRow(
+                label: DaisthLocalizations.text(
+                  context,
+                  id: 'Lokasi',
+                  en: 'Location',
+                ),
+                value: locationLabel,
+              ),
               const SizedBox(height: DaisthSpacing.md),
-              const _ValueRow(label: 'Calculation', value: 'KEMENAG'),
+              _ValueRow(
+                label: DaisthLocalizations.text(
+                  context,
+                  id: 'Perhitungan',
+                  en: 'Calculation',
+                ),
+                value: 'KEMENAG',
+              ),
               const SizedBox(height: DaisthSpacing.md),
               _ValueRow(
                 label: DaisthTerminology.prayerName(
                   'asar',
                   Localizations.localeOf(context),
                 ),
-                value: 'Shafi',
+                value: DaisthLocalizations.text(
+                  context,
+                  id: 'Syafi’i',
+                  en: 'Shafi',
+                ),
               ),
               const SizedBox(height: DaisthSpacing.md),
-              _ValueRow(label: 'Timezone', value: timezone ?? 'Tidak tersedia'),
+              _ValueRow(
+                label: DaisthLocalizations.text(
+                  context,
+                  id: 'Zona waktu',
+                  en: 'Timezone',
+                ),
+                value:
+                    timezone ??
+                    DaisthLocalizations.text(
+                      context,
+                      id: 'Tidak tersedia',
+                      en: 'Unavailable',
+                    ),
+              ),
               const SizedBox(height: DaisthSpacing.md),
               _ValueRow(
-                label: 'Jadwal terakhir diperbarui',
+                label: DaisthLocalizations.text(
+                  context,
+                  id: 'Jadwal terakhir diperbarui',
+                  en: 'Schedule last updated',
+                ),
                 value: session.lastUpdated == null
-                    ? 'Belum tersedia'
+                    ? DaisthLocalizations.text(
+                        context,
+                        id: 'Belum tersedia',
+                        en: 'Not available yet',
+                      )
                     : MaterialLocalizations.of(context).formatTimeOfDay(
                         TimeOfDay.fromDateTime(session.lastUpdated!.toLocal()),
                       ),
@@ -174,7 +246,11 @@ class _PrayerLocationSettingsScreenState
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Menggunakan lokasi terakhir yang tersedia.',
+                    DaisthLocalizations.text(
+                      context,
+                      id: 'Menggunakan lokasi terakhir yang tersedia.',
+                      en: 'Using the last known location.',
+                    ),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -186,7 +262,7 @@ class _PrayerLocationSettingsScreenState
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    _error!,
+                    _localizedSettingsError(context, _error!),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.error,
                     ),
@@ -204,7 +280,13 @@ class _PrayerLocationSettingsScreenState
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.refresh_rounded),
-                  label: const Text('Perbarui lokasi & waktu salat'),
+                  label: Text(
+                    DaisthLocalizations.text(
+                      context,
+                      id: 'Perbarui lokasi & waktu salat',
+                      en: 'Refresh location & prayer times',
+                    ),
+                  ),
                 ),
               ),
               if (status == LocationAccessStatus.denied) ...[
@@ -212,7 +294,13 @@ class _PrayerLocationSettingsScreenState
                 OutlinedButton.icon(
                   onPressed: _loading ? null : _requestLocation,
                   icon: const Icon(Icons.location_on_outlined),
-                  label: const Text('Izinkan lokasi'),
+                  label: Text(
+                    DaisthLocalizations.text(
+                      context,
+                      id: 'Izinkan lokasi',
+                      en: 'Allow location',
+                    ),
+                  ),
                 ),
               ],
               if (status == LocationAccessStatus.deniedForever ||
@@ -223,8 +311,16 @@ class _PrayerLocationSettingsScreenState
                   icon: const Icon(Icons.settings_outlined),
                   label: Text(
                     status == LocationAccessStatus.deniedForever
-                        ? 'Buka pengaturan aplikasi'
-                        : 'Buka pengaturan lokasi',
+                        ? DaisthLocalizations.text(
+                            context,
+                            id: 'Buka pengaturan aplikasi',
+                            en: 'Open app settings',
+                          )
+                        : DaisthLocalizations.text(
+                            context,
+                            id: 'Buka pengaturan lokasi',
+                            en: 'Open location settings',
+                          ),
                   ),
                 ),
               ],
@@ -233,7 +329,11 @@ class _PrayerLocationSettingsScreenState
         ),
         const SizedBox(height: DaisthSpacing.md),
         Text(
-          'Daisth menggunakan lokasi perangkat untuk menghitung waktu salat dan menemukan masjid terdekat. Koordinat tidak ditampilkan di sini.',
+          DaisthLocalizations.text(
+            context,
+            id: 'Daisth menggunakan lokasi perangkat untuk menghitung waktu salat dan menemukan masjid terdekat. Koordinat tidak ditampilkan di sini.',
+            en: 'Daisth uses your device location to calculate prayer times and find nearby Masjid and Mushola. Coordinates are not shown here.',
+          ),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -294,18 +394,36 @@ class _NotificationsSettingsScreenState
     final accepted = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Waktu presisi'),
-        content: const Text(
-          'Android dapat meminta izin tambahan agar pengingat lebih dekat dengan waktu yang dijadwalkan.',
+        title: Text(
+          DaisthLocalizations.text(
+            context,
+            id: 'Waktu presisi',
+            en: 'Precise reminders',
+          ),
+        ),
+        content: Text(
+          DaisthLocalizations.text(
+            context,
+            id: 'Android dapat meminta izin tambahan agar pengingat lebih dekat dengan waktu yang dijadwalkan.',
+            en: 'Android may request additional access so reminders can be delivered closer to their scheduled time.',
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Nanti'),
+            child: Text(
+              DaisthLocalizations.text(context, id: 'Nanti', en: 'Not now'),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Lanjutkan'),
+            child: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Lanjutkan',
+                en: 'Continue',
+              ),
+            ),
           ),
         ],
       ),
@@ -316,23 +434,55 @@ class _NotificationsSettingsScreenState
   @override
   Widget build(BuildContext context) {
     final permission = switch (vm.permissionStatus) {
-      ReminderPermissionStatus.granted => 'Allowed',
-      ReminderPermissionStatus.denied => 'Needs attention',
-      ReminderPermissionStatus.unavailable => 'Tidak tersedia',
+      ReminderPermissionStatus.granted => DaisthLocalizations.text(
+        context,
+        id: 'Diizinkan',
+        en: 'Allowed',
+      ),
+      ReminderPermissionStatus.denied => DaisthLocalizations.text(
+        context,
+        id: 'Perlu perhatian',
+        en: 'Needs attention',
+      ),
+      ReminderPermissionStatus.unavailable => DaisthLocalizations.text(
+        context,
+        id: 'Tidak tersedia',
+        en: 'Unavailable',
+      ),
     };
     final precise = switch (vm.exactAlarmStatus) {
-      ExactAlarmStatus.enabled => 'Precise timing',
-      ExactAlarmStatus.needsPermission => 'Standard timing',
-      ExactAlarmStatus.unavailable => 'Standard timing',
+      ExactAlarmStatus.enabled => DaisthLocalizations.text(
+        context,
+        id: 'Waktu presisi',
+        en: 'Precise timing',
+      ),
+      ExactAlarmStatus.needsPermission => DaisthLocalizations.text(
+        context,
+        id: 'Waktu standar',
+        en: 'Standard timing',
+      ),
+      ExactAlarmStatus.unavailable => DaisthLocalizations.text(
+        context,
+        id: 'Waktu standar',
+        en: 'Standard timing',
+      ),
     };
     final health = !vm.remindersEnabled
-        ? 'Off'
+        ? DaisthLocalizations.text(context, id: 'Nonaktif', en: 'Off')
         : vm.permissionStatus != ReminderPermissionStatus.granted
-        ? 'Needs attention'
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Perlu perhatian',
+            en: 'Needs attention',
+          )
         : precise;
 
     return _SettingsDetailScaffold(
-      title: 'Notifications',
+      title: DaisthLocalizations.text(
+        context,
+        id: 'Notifikasi',
+        en: 'Notifications',
+      ),
       children: [
         DaisthSurface(
           padding: const EdgeInsets.all(DaisthSpacing.lg),
@@ -343,13 +493,38 @@ class _NotificationsSettingsScreenState
               children: [
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Reminders'),
-                  subtitle: Text(vm.remindersEnabled ? 'On' : 'Off'),
+                  title: Text(
+                    DaisthLocalizations.text(
+                      context,
+                      id: 'Pengingat',
+                      en: 'Reminders',
+                    ),
+                  ),
+                  subtitle: Text(
+                    vm.remindersEnabled
+                        ? DaisthLocalizations.text(
+                            context,
+                            id: 'Aktif',
+                            en: 'On',
+                          )
+                        : DaisthLocalizations.text(
+                            context,
+                            id: 'Nonaktif',
+                            en: 'Off',
+                          ),
+                  ),
                   value: vm.remindersEnabled,
                   onChanged: vm.isLoading ? null : _toggle,
                 ),
                 const SizedBox(height: DaisthSpacing.sm),
-                _ValueRow(label: 'Notification permission', value: permission),
+                _ValueRow(
+                  label: DaisthLocalizations.text(
+                    context,
+                    id: 'Izin notifikasi',
+                    en: 'Notification permission',
+                  ),
+                  value: permission,
+                ),
                 if (vm.permissionStatus == ReminderPermissionStatus.denied) ...[
                   const SizedBox(height: DaisthSpacing.sm),
                   OutlinedButton.icon(
@@ -357,7 +532,13 @@ class _NotificationsSettingsScreenState
                         ? null
                         : vm.requestNotificationPermission,
                     icon: const Icon(Icons.settings_outlined),
-                    label: const Text('Izinkan notifikasi'),
+                    label: Text(
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Izinkan notifikasi',
+                        en: 'Allow notifications',
+                      ),
+                    ),
                   ),
                   TextButton(
                     onPressed: vm.isLoading
@@ -366,36 +547,80 @@ class _NotificationsSettingsScreenState
                             await vm.openNotificationSettings();
                             await vm.refreshPermissionStatus();
                           },
-                    child: const Text('Buka pengaturan aplikasi'),
+                    child: Text(
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Buka pengaturan aplikasi',
+                        en: 'Open app settings',
+                      ),
+                    ),
                   ),
                 ],
                 if (defaultTargetPlatform == TargetPlatform.android) ...[
                   const SizedBox(height: DaisthSpacing.md),
-                  _ValueRow(label: 'Timing', value: precise),
+                  _ValueRow(
+                    label: DaisthLocalizations.text(
+                      context,
+                      id: 'Waktu',
+                      en: 'Timing',
+                    ),
+                    value: precise,
+                  ),
                   if (vm.exactAlarmStatus == ExactAlarmStatus.needsPermission)
                     OutlinedButton.icon(
                       onPressed: vm.isLoading ? null : _requestPrecise,
                       icon: const Icon(Icons.schedule_outlined),
-                      label: const Text('Aktifkan waktu presisi'),
+                      label: Text(
+                        DaisthLocalizations.text(
+                          context,
+                          id: 'Aktifkan waktu presisi',
+                          en: 'Enable precise timing',
+                        ),
+                      ),
                     ),
                 ],
                 const SizedBox(height: DaisthSpacing.md),
                 _ValueRow(
-                  label: 'Timezone',
-                  value: vm.deviceTimezone?.ianaName ?? 'Tidak tersedia',
+                  label: DaisthLocalizations.text(
+                    context,
+                    id: 'Zona waktu',
+                    en: 'Timezone',
+                  ),
+                  value:
+                      vm.deviceTimezone?.ianaName ??
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Tidak tersedia',
+                        en: 'Unavailable',
+                      ),
                 ),
                 const SizedBox(height: DaisthSpacing.md),
-                _ValueRow(label: 'Reminder Health', value: health),
+                _ValueRow(
+                  label: DaisthLocalizations.text(
+                    context,
+                    id: 'Kesehatan Pengingat',
+                    en: 'Reminder Health',
+                  ),
+                  value: health,
+                ),
                 const SizedBox(height: DaisthSpacing.md),
                 _ValueRow(
-                  label: 'Pengingat mendatang',
+                  label: DaisthLocalizations.text(
+                    context,
+                    id: 'Pengingat mendatang',
+                    en: 'Upcoming reminders',
+                  ),
                   value: '${vm.pendingReminders.length}',
                 ),
                 if (vm.lastReminderAction != null) ...[
                   const SizedBox(height: DaisthSpacing.md),
                   _ValueRow(
-                    label: 'Aksi terakhir',
-                    value: _actionLabel(vm.lastReminderAction!),
+                    label: DaisthLocalizations.text(
+                      context,
+                      id: 'Aksi terakhir',
+                      en: 'Last action',
+                    ),
+                    value: _actionLabel(context, vm.lastReminderAction!),
                   ),
                 ],
                 const SizedBox(height: DaisthSpacing.md),
@@ -403,12 +628,18 @@ class _NotificationsSettingsScreenState
                   onPressed: () =>
                       _showPendingReminders(context, vm.todayPendingReminders),
                   icon: const Icon(Icons.event_note_outlined),
-                  label: Text('Jadwal hari ini · ${vm.scheduledTodayCount}'),
+                  label: Text(
+                    DaisthLocalizations.text(
+                      context,
+                      id: 'Jadwal hari ini · ${vm.scheduledTodayCount}',
+                      en: "Today's schedule · ${vm.scheduledTodayCount}",
+                    ),
+                  ),
                 ),
                 if (vm.errorMessage != null) ...[
                   const SizedBox(height: DaisthSpacing.sm),
                   Text(
-                    vm.errorMessage!,
+                    _localizedSettingsError(context, vm.errorMessage!),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -422,7 +653,13 @@ class _NotificationsSettingsScreenState
                         ? null
                         : () => unawaited(vm.sendTestReminder()),
                     icon: const Icon(Icons.notifications_active_outlined),
-                    label: const Text('Kirim notifikasi uji'),
+                    label: Text(
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Kirim notifikasi uji',
+                        en: 'Send test reminder',
+                      ),
+                    ),
                   ),
                 ],
               ],
@@ -438,34 +675,60 @@ void _showPendingReminders(BuildContext context, List<Reminder> reminders) {
   showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
-    builder: (context) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          DaisthSpacing.screenHorizontal,
-          DaisthSpacing.sm,
-          DaisthSpacing.screenHorizontal,
-          DaisthSpacing.xl,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    isScrollControlled: true,
+    builder: (context) => DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.62,
+      minChildSize: 0.35,
+      maxChildSize: 0.9,
+      builder: (context, scrollController) => SafeArea(
+        child: ListView(
+          controller: scrollController,
+          padding: const EdgeInsets.fromLTRB(
+            DaisthSpacing.screenHorizontal,
+            DaisthSpacing.sm,
+            DaisthSpacing.screenHorizontal,
+            DaisthSpacing.xl,
+          ),
           children: [
             Text(
-              'Jadwal hari ini',
+              DaisthLocalizations.text(
+                context,
+                id: 'Jadwal hari ini',
+                en: "Today's schedule",
+              ),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: DaisthSpacing.md),
             if (reminders.isEmpty)
-              const Text('Tidak ada pengingat mendatang hari ini.')
+              Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Tidak ada pengingat mendatang hari ini.',
+                  en: 'No upcoming reminders today.',
+                ),
+              )
             else
               for (final reminder in reminders)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(reminder.title),
+                  title: Text(reminder.title, maxLines: 2),
                   subtitle: Text(switch (reminder.type) {
-                    ReminderType.primary => 'Pengingat utama',
-                    ReminderType.followUp => 'Pengingat lanjutan',
-                    ReminderType.snooze => 'Pengingat tunda',
+                    ReminderType.primary => DaisthLocalizations.text(
+                      context,
+                      id: 'Pengingat utama',
+                      en: 'Primary reminder',
+                    ),
+                    ReminderType.followUp => DaisthLocalizations.text(
+                      context,
+                      id: 'Pengingat lanjutan',
+                      en: 'Follow-up reminder',
+                    ),
+                    ReminderType.snooze => DaisthLocalizations.text(
+                      context,
+                      id: 'Pengingat tunda',
+                      en: 'Snoozed reminder',
+                    ),
                   }),
                   trailing: Text(
                     '${reminder.scheduledAt.hour.toString().padLeft(2, '0')}:${reminder.scheduledAt.minute.toString().padLeft(2, '0')}',
@@ -478,11 +741,15 @@ void _showPendingReminders(BuildContext context, List<Reminder> reminders) {
   );
 }
 
-String _actionLabel(String value) => switch (value) {
-  'done' => 'Selesai',
-  'snooze' => 'Ditunda',
-  'open' => 'Dibuka',
-  _ => 'Terakhir diperbarui',
+String _actionLabel(BuildContext context, String value) => switch (value) {
+  'done' => DaisthLocalizations.text(context, id: 'Selesai', en: 'Done'),
+  'snooze' => DaisthLocalizations.text(context, id: 'Ditunda', en: 'Snoozed'),
+  'open' => DaisthLocalizations.text(context, id: 'Dibuka', en: 'Opened'),
+  _ => DaisthLocalizations.text(
+    context,
+    id: 'Terakhir diperbarui',
+    en: 'Last updated',
+  ),
 };
 
 class DataPrivacySettingsScreen extends StatelessWidget {
@@ -490,28 +757,54 @@ class DataPrivacySettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _SettingsDetailScaffold(
-    title: 'Data & Privacy',
+    title: DaisthLocalizations.text(
+      context,
+      id: 'Data & Privasi',
+      en: 'Data & Privacy',
+    ),
     children: [
       DaisthSurface(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text('Data Daisth'),
+          children: [
+            Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Data Daisth',
+                en: 'Daisth data',
+              ),
+            ),
             SizedBox(height: DaisthSpacing.sm),
             Text(
-              'Rutinitas, riwayat, dan Reflection tersimpan di perangkat ini secara default.',
+              DaisthLocalizations.text(
+                context,
+                id: 'Rutinitas, riwayat, dan Reflection tersimpan di perangkat ini secara default.',
+                en: 'Routines, History, and Reflection are stored on this device by default.',
+              ),
             ),
             SizedBox(height: DaisthSpacing.md),
             Text(
-              'Sinkronisasi cloud bersifat opsional. Jika diaktifkan, rutinitas, riwayat, dan isi Reflection disinkronkan secara privat ke Firestore di bawah UID akun yang terhubung.',
+              DaisthLocalizations.text(
+                context,
+                id: 'Sinkronisasi cloud bersifat opsional. Jika diaktifkan, rutinitas, riwayat, dan isi Reflection disinkronkan secara privat ke Firestore di bawah UID akun yang terhubung.',
+                en: 'Cloud sync is optional. When enabled, routines, History, and Reflection are privately synced to Firestore under the linked account UID.',
+              ),
             ),
             SizedBox(height: DaisthSpacing.md),
             Text(
-              'Lokasi diproses di perangkat untuk menghitung waktu salat. Saat mencari masjid terdekat, koordinat dikirim ke layanan OpenStreetMap/Overpass. Jika kamu membuka navigasi, koordinat tujuan masjid diteruskan ke Google Maps. Daisth tidak menyimpan koordinat lokasi di Firestore.',
+              DaisthLocalizations.text(
+                context,
+                id: 'Lokasi diproses di perangkat untuk menghitung waktu salat. Saat mencari masjid terdekat, koordinat dikirim ke layanan OpenStreetMap/Overpass. Jika kamu membuka navigasi, koordinat tujuan masjid diteruskan ke Google Maps. Daisth tidak menyimpan koordinat lokasi di Firestore.',
+                en: 'Location is processed on-device to calculate prayer times. When you search for nearby Masjid or Mushola, coordinates are sent to OpenStreetMap/Overpass. Opening navigation shares the destination coordinates with Google Maps. Daisth does not store location coordinates in Firestore.',
+              ),
             ),
             SizedBox(height: DaisthSpacing.md),
             Text(
-              'Catatan Reflection tidak dimasukkan ke payload notifikasi. Daisth saat ini tidak menyertakan Firebase Analytics.',
+              DaisthLocalizations.text(
+                context,
+                id: 'Catatan Reflection tidak dimasukkan ke payload notifikasi. Daisth saat ini tidak menyertakan Firebase Analytics.',
+                en: 'Reflection notes are not included in notification payloads. Daisth does not currently include Firebase Analytics.',
+              ),
             ),
           ],
         ),
@@ -523,8 +816,20 @@ class DataPrivacySettingsScreen extends StatelessWidget {
           color: Colors.transparent,
           child: ListTile(
             leading: const Icon(Icons.person_outline_rounded),
-            title: const Text('Account & Sync'),
-            subtitle: const Text('Kelola akun cloud dan sinkronisasi'),
+            title: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Akun & Sinkronisasi',
+                en: 'Account & Sync',
+              ),
+            ),
+            subtitle: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Kelola akun cloud dan sinkronisasi',
+                en: 'Manage your cloud account and sync',
+              ),
+            ),
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => context.push(RoutePaths.account),
           ),
@@ -539,7 +844,11 @@ class AboutDaisthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _SettingsDetailScaffold(
-    title: 'About Daisth',
+    title: DaisthLocalizations.text(
+      context,
+      id: 'Tentang Daisth',
+      en: 'About Daisth',
+    ),
     children: [
       DaisthSurface(
         child: Column(
@@ -547,7 +856,11 @@ class AboutDaisthScreen extends StatelessWidget {
             Image.asset(DaisthAssets.wordmark, height: 44, fit: BoxFit.contain),
             const SizedBox(height: DaisthSpacing.md),
             Text(
-              'Stay consistent in what matters.',
+              DaisthLocalizations.text(
+                context,
+                id: 'Tetap konsisten pada hal yang berarti.',
+                en: 'Stay consistent in what matters.',
+              ),
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -560,12 +873,22 @@ class AboutDaisthScreen extends StatelessWidget {
           color: Colors.transparent,
           child: ListTile(
             leading: const Icon(Icons.article_outlined),
-            title: const Text('Open-source licenses'),
+            title: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Lisensi sumber terbuka',
+                en: 'Open-source licenses',
+              ),
+            ),
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => showLicensePage(
               context: context,
               applicationName: 'Daisth',
-              applicationLegalese: 'Stay consistent in what matters.',
+              applicationLegalese: DaisthLocalizations.text(
+                context,
+                id: 'Tetap konsisten pada hal yang berarti.',
+                en: 'Stay consistent in what matters.',
+              ),
               applicationIcon: Padding(
                 padding: const EdgeInsets.all(DaisthSpacing.sm),
                 child: Image.asset(DaisthAssets.mark, width: 40, height: 40),
@@ -578,6 +901,82 @@ class AboutDaisthScreen extends StatelessWidget {
   );
 }
 
+String _localizedSettingsError(
+  BuildContext context,
+  String message,
+) => switch (message) {
+  'Status perangkat tidak tersedia.' => DaisthLocalizations.text(
+    context,
+    id: message,
+    en: 'Device status is unavailable.',
+  ),
+  'Jadwal belum dapat diperbarui. Periksa izin dan lokasi.' =>
+    DaisthLocalizations.text(
+      context,
+      id: message,
+      en: 'The schedule could not be refreshed. Check location access and try again.',
+    ),
+  'Jadwal belum dapat diperbarui. Coba lagi.' => DaisthLocalizations.text(
+    context,
+    id: message,
+    en: 'The schedule could not be refreshed. Try again.',
+  ),
+  'Izin lokasi belum dapat diperbarui.' => DaisthLocalizations.text(
+    context,
+    id: message,
+    en: 'Location access could not be updated.',
+  ),
+  'Pengaturan pengingat belum dapat dimuat.' => DaisthLocalizations.text(
+    context,
+    id: message,
+    en: 'Reminder settings could not be loaded.',
+  ),
+  'Izinkan notifikasi agar pengingat dapat dijadwalkan.' =>
+    DaisthLocalizations.text(
+      context,
+      id: message,
+      en: 'Allow notifications to schedule reminders.',
+    ),
+  'Pengingat belum dapat dijadwalkan. Coba lagi nanti.' =>
+    DaisthLocalizations.text(
+      context,
+      id: message,
+      en: 'Reminders could not be scheduled. Try again later.',
+    ),
+  'Pengingat belum dapat dinonaktifkan. Coba lagi.' => DaisthLocalizations.text(
+    context,
+    id: message,
+    en: 'Reminders could not be turned off. Try again.',
+  ),
+  'Pengaturan pengingat presisi belum dapat dibuka.' =>
+    DaisthLocalizations.text(
+      context,
+      id: message,
+      en: 'Precise reminder settings could not be opened.',
+    ),
+  'Status notifikasi belum dapat diperbarui.' => DaisthLocalizations.text(
+    context,
+    id: message,
+    en: 'Notification status could not be refreshed.',
+  ),
+  'Izin notifikasi belum dapat diperbarui.' => DaisthLocalizations.text(
+    context,
+    id: message,
+    en: 'Notification permission could not be updated.',
+  ),
+  'Pengaturan perangkat belum dapat diperbarui.' => DaisthLocalizations.text(
+    context,
+    id: message,
+    en: 'Device settings could not be refreshed.',
+  ),
+  'Pengingat belum dapat diperbarui.' => DaisthLocalizations.text(
+    context,
+    id: message,
+    en: 'Reminders could not be refreshed.',
+  ),
+  _ => message,
+};
+
 class _SettingsDetailScaffold extends StatelessWidget {
   const _SettingsDetailScaffold({required this.title, required this.children});
 
@@ -586,7 +985,13 @@ class _SettingsDetailScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(title), centerTitle: true),
+    appBar: AppBar(
+      title: Text(
+        title,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(fontSize: 16),
+      ),
+      centerTitle: true,
+    ),
     body: SafeArea(
       child: Align(
         alignment: Alignment.topCenter,

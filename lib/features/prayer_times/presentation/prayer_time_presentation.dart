@@ -33,30 +33,56 @@ abstract final class PrayerTimePresentation {
     PrayerName.sunrise => 'dhuha',
   };
 
-  static String date(DateTime value) {
-    const weekdays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
+  static String date(DateTime value, [Locale locale = const Locale('en')]) {
+    final english = locale.languageCode != 'id';
+    final weekdays = english
+        ? const [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+            'Sunday',
+          ]
+        : const [
+            'Senin',
+            'Selasa',
+            'Rabu',
+            'Kamis',
+            'Jumat',
+            'Sabtu',
+            'Minggu',
+          ];
+    final months = english
+        ? const [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+          ]
+        : const [
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember',
+          ];
     return '${weekdays[value.weekday - 1]}, ${value.day} ${months[value.month - 1]}';
   }
 }

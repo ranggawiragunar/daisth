@@ -10,6 +10,7 @@ import '../../../../core/design_system/components/daisth_button.dart';
 import '../../../../core/design_system/components/daisth_empty_state.dart';
 import '../../../../core/design_system/components/daisth_surface.dart';
 import '../../../../core/localization/daisth_terminology.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../../core/time/domain/models/calendar_day.dart';
 import '../../data/resolvers/history_routine_resolver_data.dart';
@@ -96,13 +97,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
         body: DaisthEmptyState(
           imageAsset: 'assets/empty_states/empty_history_2048.png',
           bottomContentPadding: widget.bottomContentPadding,
-          title: 'No history yet',
-          description: 'Your recorded routines will appear here over time.',
+          title: DaisthLocalizations.text(
+            context,
+            id: 'Belum ada riwayat',
+            en: 'No history yet',
+          ),
+          description: DaisthLocalizations.text(
+            context,
+            id: 'Catatan rutinitasmu akan muncul di sini seiring waktu.',
+            en: 'Your recorded routines will appear here over time.',
+          ),
         ),
       );
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('History'), centerTitle: false),
+      appBar: AppBar(
+        title: Text(
+          DaisthLocalizations.text(context, id: 'Riwayat', en: 'History'),
+        ),
+        centerTitle: false,
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 680),
@@ -126,7 +140,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         : TextButton.icon(
                             onPressed: _model.loadEarlier,
                             icon: const Icon(PhosphorIconsRegular.arrowDown),
-                            label: const Text('Load earlier'),
+                            label: Text(
+                              DaisthLocalizations.text(
+                                context,
+                                id: 'Muat lebih lama',
+                                en: 'Load earlier',
+                              ),
+                            ),
                           ),
                   ),
                 );
@@ -136,7 +156,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 DateTime.now(),
               ).addDays(-1);
               final dateLabel = item.day == yesterday
-                  ? 'Yesterday'
+                  ? DaisthLocalizations.text(
+                      context,
+                      id: 'Kemarin',
+                      en: 'Yesterday',
+                    )
                   : MaterialLocalizations.of(
                       context,
                     ).formatMediumDate(item.day.toDateTime());
@@ -155,7 +179,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           : Padding(
               padding: const EdgeInsets.all(DaisthSpacing.md),
               child: Text(
-                _model.errorMessage!,
+                _localizedHistoryError(context, _model.errorMessage!),
                 style: theme.textTheme.bodySmall,
               ),
             ),
@@ -240,7 +264,11 @@ class _HistoryDayScreenState extends State<HistoryDayScreen> {
           if (snapshot.hasError || !snapshot.hasData) {
             return Scaffold(
               body: _ErrorState(
-                message: 'History belum dapat dimuat.',
+                message: DaisthLocalizations.text(
+                  context,
+                  id: 'Riwayat belum dapat dimuat.',
+                  en: 'History could not be loaded.',
+                ),
                 onRetry: _model!.reload,
               ),
             );
@@ -253,7 +281,15 @@ class _HistoryDayScreenState extends State<HistoryDayScreen> {
               .where((entry) => !entry.isMandatory)
               .toList();
           return Scaffold(
-            appBar: AppBar(title: const Text('Day Detail')),
+            appBar: AppBar(
+              title: Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Detail Hari',
+                  en: 'Day Detail',
+                ),
+              ),
+            ),
             body: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 680),
@@ -274,15 +310,23 @@ class _HistoryDayScreenState extends State<HistoryDayScreen> {
                     const SizedBox(height: DaisthSpacing.xl),
                     if (historyDay.entries.isEmpty &&
                         historyDay.reflection == null)
-                      const Text(
-                        'No local history is available for this date.',
+                      Text(
+                        DaisthLocalizations.text(
+                          context,
+                          id: 'Tidak ada riwayat lokal untuk tanggal ini.',
+                          en: 'No local history is available for this date.',
+                        ),
                       ),
                     for (final entry in mandatory)
                       _HistoryEntryTile(entry: entry, day: _day!),
                     if (other.isNotEmpty) ...[
                       const SizedBox(height: DaisthSpacing.lg),
                       Text(
-                        'Other recorded routines',
+                        DaisthLocalizations.text(
+                          context,
+                          id: 'Rutinitas lain yang tercatat',
+                          en: 'Other recorded routines',
+                        ),
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: DaisthSpacing.sm),
@@ -291,7 +335,11 @@ class _HistoryDayScreenState extends State<HistoryDayScreen> {
                     ],
                     const SizedBox(height: DaisthSpacing.lg),
                     Text(
-                      'Reflection',
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Refleksi',
+                        en: 'Reflection',
+                      ),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: DaisthSpacing.sm),
@@ -326,8 +374,12 @@ class _HistoryReflectionTile extends StatelessWidget {
         children: [
           Text(
             reflection == null
-                ? 'No reflection recorded.'
-                : _rhythmLabel(reflection!.rhythm),
+                ? DaisthLocalizations.text(
+                    context,
+                    id: 'Belum ada refleksi.',
+                    en: 'No reflection recorded.',
+                  )
+                : _rhythmLabel(context, reflection!.rhythm),
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           if (reflection?.note case final note?) ...[
@@ -347,11 +399,24 @@ class _HistoryReflectionTile extends StatelessWidget {
   );
 }
 
-String _rhythmLabel(ReflectionRhythm rhythm) => switch (rhythm) {
-  ReflectionRhythm.steady => 'Terasa mengalir',
-  ReflectionRhythm.mixed => 'Naik turun',
-  ReflectionRhythm.heavy => 'Terasa berat',
-};
+String _rhythmLabel(BuildContext context, ReflectionRhythm rhythm) =>
+    switch (rhythm) {
+      ReflectionRhythm.steady => DaisthLocalizations.text(
+        context,
+        id: 'Terasa mengalir',
+        en: 'Felt steady',
+      ),
+      ReflectionRhythm.mixed => DaisthLocalizations.text(
+        context,
+        id: 'Naik turun',
+        en: 'Up and down',
+      ),
+      ReflectionRhythm.heavy => DaisthLocalizations.text(
+        context,
+        id: 'Terasa berat',
+        en: 'Felt heavy',
+      ),
+    };
 
 class _HistoryDayCard extends StatelessWidget {
   const _HistoryDayCard({
@@ -376,7 +441,7 @@ class _HistoryDayCard extends StatelessWidget {
                 Text(label, style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: DaisthSpacing.xs),
                 Text(
-                  _summaryText(day.summary),
+                  _summaryText(context, day.summary),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -421,7 +486,7 @@ class _HistoryEntryTile extends StatelessWidget {
               ),
             ),
             Text(
-              _statusText(entry.status),
+              _statusText(context, entry.status),
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: _statusColor(context, entry.status),
               ),
@@ -458,14 +523,45 @@ class _ErrorState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(message, textAlign: TextAlign.center),
+          Text(
+            _localizedHistoryError(context, message),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: DaisthSpacing.md),
-          DaisthButton(label: 'Try again', onPressed: onRetry),
+          DaisthButton(
+            label: DaisthLocalizations.text(
+              context,
+              id: 'Coba lagi',
+              en: 'Try again',
+            ),
+            onPressed: onRetry,
+          ),
         ],
       ),
     ),
   );
 }
+
+String _localizedHistoryError(BuildContext context, String message) =>
+    switch (message) {
+      'History belum dapat dimuat. Coba lagi.' => DaisthLocalizations.text(
+        context,
+        id: message,
+        en: 'History could not be loaded. Try again.',
+      ),
+      'History sebelumnya belum dapat dimuat. Coba lagi.' =>
+        DaisthLocalizations.text(
+          context,
+          id: message,
+          en: 'Earlier history could not be loaded. Try again.',
+        ),
+      'History belum dapat dimuat.' => DaisthLocalizations.text(
+        context,
+        id: message,
+        en: 'History could not be loaded.',
+      ),
+      _ => message,
+    };
 
 class _InvalidHistoryRoute extends StatelessWidget {
   @override
@@ -474,11 +570,23 @@ class _InvalidHistoryRoute extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Tanggal history tidak valid.'),
+          Text(
+            DaisthLocalizations.text(
+              context,
+              id: 'Tanggal riwayat tidak valid.',
+              en: 'This history date is invalid.',
+            ),
+          ),
           const SizedBox(height: DaisthSpacing.md),
           TextButton(
             onPressed: () => context.go(RoutePaths.history),
-            child: const Text('Kembali ke History'),
+            child: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Kembali ke Riwayat',
+                en: 'Back to History',
+              ),
+            ),
           ),
         ],
       ),
@@ -486,12 +594,29 @@ class _InvalidHistoryRoute extends StatelessWidget {
   );
 }
 
-String _statusText(HistoryRoutineStatus status) => switch (status) {
-  HistoryRoutineStatus.completed => 'Completed',
-  HistoryRoutineStatus.partial => 'Partial',
-  HistoryRoutineStatus.notToday => 'Not Today',
-  HistoryRoutineStatus.unrecorded => 'Unrecorded',
-};
+String _statusText(BuildContext context, HistoryRoutineStatus status) =>
+    switch (status) {
+      HistoryRoutineStatus.completed => DaisthLocalizations.text(
+        context,
+        id: 'Selesai',
+        en: 'Completed',
+      ),
+      HistoryRoutineStatus.partial => DaisthLocalizations.text(
+        context,
+        id: 'Sebagian',
+        en: 'Partial',
+      ),
+      HistoryRoutineStatus.notToday => DaisthLocalizations.text(
+        context,
+        id: 'Tidak Hari Ini',
+        en: 'Not Today',
+      ),
+      HistoryRoutineStatus.unrecorded => DaisthLocalizations.text(
+        context,
+        id: 'Belum Dicatat',
+        en: 'Unrecorded',
+      ),
+    };
 
 Color _statusColor(BuildContext context, HistoryRoutineStatus status) {
   final colors = Theme.of(context).colorScheme;
@@ -503,11 +628,27 @@ Color _statusColor(BuildContext context, HistoryRoutineStatus status) {
   };
 }
 
-String _summaryText(HistorySummary summary) {
+String _summaryText(BuildContext context, HistorySummary summary) {
   final parts = <String>[];
-  if (summary.completed > 0) parts.add('${summary.completed} completed');
-  if (summary.partial > 0) parts.add('${summary.partial} partial');
-  if (summary.notToday > 0) parts.add('${summary.notToday} not today');
-  if (summary.unrecorded > 0) parts.add('${summary.unrecorded} unrecorded');
+  if (summary.completed > 0) {
+    parts.add(
+      '${summary.completed} ${DaisthLocalizations.text(context, id: 'selesai', en: 'completed')}',
+    );
+  }
+  if (summary.partial > 0) {
+    parts.add(
+      '${summary.partial} ${DaisthLocalizations.text(context, id: 'sebagian', en: 'partial')}',
+    );
+  }
+  if (summary.notToday > 0) {
+    parts.add(
+      '${summary.notToday} ${DaisthLocalizations.text(context, id: 'tidak hari ini', en: 'not today')}',
+    );
+  }
+  if (summary.unrecorded > 0) {
+    parts.add(
+      '${summary.unrecorded} ${DaisthLocalizations.text(context, id: 'belum dicatat', en: 'unrecorded')}',
+    );
+  }
   return parts.join(' · ');
 }

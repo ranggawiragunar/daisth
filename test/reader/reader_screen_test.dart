@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:daisth/app/app_preferences_scope.dart';
@@ -214,6 +215,13 @@ class _ReaderRouterHarness {
   late final GoRouter router;
 
   Widget get app => MaterialApp.router(
+    locale: const Locale('id'),
+    supportedLocales: const [Locale('id'), Locale('en')],
+    localizationsDelegates: const [
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
     theme: DaisthTheme.light,
     darkTheme: DaisthTheme.dark,
     themeMode: themeMode,

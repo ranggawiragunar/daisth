@@ -1,7 +1,7 @@
 # Local persistence
 
 Daisth stores local app state in `daisth.db`, managed by
-`DaisthDatabaseService`. The database currently uses schema version 5 and
+`DaisthDatabaseService`. The database currently uses schema version 7 and
 SQLite migrations through `onCreate` and `onUpgrade`.
 
 ## Stored data
@@ -9,7 +9,7 @@ SQLite migrations through `onCreate` and `onUpgrade`.
 - `routine_records` stores a routine's status, completion instant, first
   recorded instant, last updated instant, and optional Not Today reason.
 - `routine_step_records` stores each step's completion state and timestamps.
-- `app_settings` stores theme/reminder preferences and nullable
+- `app_settings` stores theme, language, and reminder preferences and nullable
   `onboarding_version`.
 - `routine_reminder_states` stores one row per routine and calendar day,
   including snooze time, follow-up schedule/suppression, and the last action.
@@ -72,7 +72,7 @@ session tokens are owned by Firebase Auth and are never stored in SQLite.
 The development rebrand changed the database filename and application
 identifier before release. No copy or migration from the previous development
 database is included; a rebranded development install starts with a fresh local
-database; existing Daisth installs upgrade in place to schema version 5.
+database.
 
 This phase does not persist Dhikr counter position, location coordinates,
 mosque results or cache entries, Reader presentation state, or remote account
@@ -87,6 +87,10 @@ add outbox rows in the same SQLite transaction before and after account
 linking; the coordinator gates cloud work until explicit linking. Keeping
 pre-link deletions allows first sync to merge tombstones.
 `routine_reminder_states` and `app_settings` remain local.
+
+Schema v7 adds `app_settings.language_mode` with stable values `system`, `id`,
+and `en`, defaulting to `system`. Existing v6 databases upgrade additively;
+language remains device-local and is excluded from Firestore sync.
 
 `RoutineRecordRepository` provides
 indexed `date_key` day/range reads for routine records and step records, plus

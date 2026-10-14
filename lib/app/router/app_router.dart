@@ -222,6 +222,9 @@ GoRouter createAppRouter({
                 return SettingsPlaceholderScreen(
                   themeMode: preferences.themeMode,
                   onThemeModeChanged: preferences.onThemeModeChanged,
+                  languagePreference: preferences.languagePreference,
+                  onLanguagePreferenceChanged:
+                      preferences.onLanguagePreferenceChanged,
                   bottomContentPadding: AppShell.contentBottomPadding,
                 );
               },

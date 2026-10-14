@@ -6,6 +6,7 @@ import '../../../core/design_system/components/daisth_notice.dart';
 import '../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../core/localization/daisth_localizations.dart';
 import '../domain/models/auth_session.dart';
 import '../domain/models/auth_user.dart';
 import '../domain/use_cases/delete_account_use_case.dart';
@@ -66,18 +67,32 @@ class _AccountScreenState extends State<AccountScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Keluar dari akun?'),
-        content: const Text(
-          'Data yang tersimpan di perangkat ini tidak akan dihapus.',
+        title: Text(
+          DaisthLocalizations.text(
+            context,
+            id: 'Keluar dari akun?',
+            en: 'Sign out?',
+          ),
+        ),
+        content: Text(
+          DaisthLocalizations.text(
+            context,
+            id: 'Data yang tersimpan di perangkat ini tidak akan dihapus.',
+            en: 'Data stored on this device will not be deleted.',
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
+            child: Text(
+              DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel'),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Keluar'),
+            child: Text(
+              DaisthLocalizations.text(context, id: 'Keluar', en: 'Sign out'),
+            ),
           ),
         ],
       ),
@@ -102,14 +117,26 @@ class _AccountScreenState extends State<AccountScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus akun Daisth?'),
+        title: Text(
+          DaisthLocalizations.text(
+            context,
+            id: 'Hapus akun Daisth?',
+            en: 'Delete Daisth account?',
+          ),
+        ),
         content: Text(
-          'Data Daisth di cloud untuk akun ini akan dihapus permanen. Data di perangkat tetap ada. Anda akan diminta memverifikasi akun $providerName sebelum penghapusan.',
+          DaisthLocalizations.text(
+            context,
+            id: 'Data Daisth di cloud untuk akun ini akan dihapus permanen. Data di perangkat tetap ada. Anda akan diminta memverifikasi akun $providerName sebelum penghapusan.',
+            en: 'Daisth cloud data for this account will be permanently deleted. Device data will remain. You will be asked to verify your $providerName account before deletion.',
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
+            child: Text(
+              DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel'),
+            ),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -117,7 +144,13 @@ class _AccountScreenState extends State<AccountScreen> {
               foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Hapus akun'),
+            child: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Hapus akun',
+                en: 'Delete account',
+              ),
+            ),
           ),
         ],
       ),
@@ -142,18 +175,32 @@ class _AccountScreenState extends State<AccountScreen> {
     final activate = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Aktifkan sinkronisasi?'),
+        title: Text(
+          DaisthLocalizations.text(
+            context,
+            id: 'Aktifkan sinkronisasi?',
+            en: 'Turn on sync?',
+          ),
+        ),
         content: Text(
-          'Data Daisth di perangkat ini akan ditautkan ke $email dan digabungkan dengan data Daisth yang sudah tersimpan pada akun tersebut. Data lokal tidak akan dihapus.',
+          DaisthLocalizations.text(
+            context,
+            id: 'Data Daisth di perangkat ini akan ditautkan ke $email dan digabungkan dengan data Daisth yang sudah tersimpan pada akun tersebut. Data lokal tidak akan dihapus.',
+            en: 'Daisth data on this device will be linked to $email and combined with Daisth data already stored in that account. Local data will not be deleted.',
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
+            child: Text(
+              DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel'),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Aktifkan'),
+            child: Text(
+              DaisthLocalizations.text(context, id: 'Aktifkan', en: 'Turn on'),
+            ),
           ),
         ],
       ),
@@ -185,31 +232,61 @@ class _AccountScreenState extends State<AccountScreen> {
     String title;
     String body;
     if (mismatch || vm.status == SyncStatus.accountMismatch) {
-      title = 'Akun Daisth berbeda';
-      body =
-          'Data di perangkat ini ditautkan ke akun Daisth lain. Tidak ada data yang dipindahkan ke akun ini. Sinkronisasi dihentikan agar data tidak tercampur. Masuk dengan akun yang sebelumnya ditautkan untuk melanjutkan.';
+      title = DaisthLocalizations.text(
+        context,
+        id: 'Akun Daisth berbeda',
+        en: 'Different Daisth account',
+      );
+      body = DaisthLocalizations.text(
+        context,
+        id: 'Data di perangkat ini ditautkan ke akun Daisth lain. Tidak ada data yang dipindahkan ke akun ini. Sinkronisasi dihentikan agar data tidak tercampur. Masuk dengan akun yang sebelumnya ditautkan untuk melanjutkan.',
+        en: 'Data on this device is linked to another Daisth account. No data was moved to this account. Sync is paused to keep data separate. Sign in with the previously linked account to continue.',
+      );
     } else if (!linked) {
-      title = 'Sinkronisasi belum diaktifkan';
-      body =
-          'Data tetap tersimpan di perangkat. Tautkan ke akun Google untuk menggabungkan data dengan aman.';
+      title = DaisthLocalizations.text(
+        context,
+        id: 'Sinkronisasi belum diaktifkan',
+        en: 'Sync is not enabled',
+      );
+      body = DaisthLocalizations.text(
+        context,
+        id: 'Data tetap tersimpan di perangkat. Tautkan ke akun Google untuk menggabungkan data dengan aman.',
+        en: 'Your data remains on this device. Link a Google account to safely combine your data.',
+      );
     } else {
       title = switch (vm.status) {
-        SyncStatus.syncing => 'Menyinkronkan data…',
+        SyncStatus.syncing => DaisthLocalizations.text(
+          context,
+          id: 'Menyinkronkan data…',
+          en: 'Syncing data…',
+        ),
         SyncStatus.error ||
         SyncStatus.offline ||
         SyncStatus.unavailable => 'Sinkronisasi tertunda',
-        _ => 'Sinkronisasi aktif',
+        _ => DaisthLocalizations.text(
+          context,
+          id: 'Sinkronisasi aktif',
+          en: 'Sync is active',
+        ),
       };
       body = state?.lastErrorCode != null
-          ? 'Data lokal tetap aman. Periksa koneksi atau coba sinkronkan lagi.'
-          : '${state?.pendingCount ?? 0} perubahan menunggu sinkronisasi.';
+          ? DaisthLocalizations.text(
+              context,
+              id: 'Data lokal tetap aman. Periksa koneksi atau coba sinkronkan lagi.',
+              en: 'Your local data is safe. Check your connection or try syncing again.',
+            )
+          : DaisthLocalizations.text(
+              context,
+              id: '${state?.pendingCount ?? 0} perubahan menunggu sinkronisasi.',
+              en: '${state?.pendingCount ?? 0} changes are waiting to sync.',
+            );
       if (state?.lastSuccessfulSyncAtUtc case final time?) {
         final localTime = time.toLocal();
         final clock = MaterialLocalizations.of(
           context,
         ).formatTimeOfDay(TimeOfDay.fromDateTime(localTime));
         body +=
-            '\nTerakhir disinkronkan ${MaterialLocalizations.of(context).formatMediumDate(localTime)}, $clock.';
+            '\n${DaisthLocalizations.text(context, id: 'Terakhir disinkronkan', en: 'Last synced')} ${MaterialLocalizations.of(context).formatMediumDate(localTime)}, $clock.';
       }
     }
     return DaisthSurface(
@@ -226,7 +303,13 @@ class _AccountScreenState extends State<AccountScreen> {
             FilledButton.icon(
               onPressed: busy ? null : () => _activateSync(session),
               icon: const Icon(Icons.cloud_sync_outlined),
-              label: const Text('Aktifkan sinkronisasi'),
+              label: Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Aktifkan sinkronisasi',
+                  en: 'Turn on sync',
+                ),
+              ),
             )
           else
             OutlinedButton.icon(
@@ -237,7 +320,13 @@ class _AccountScreenState extends State<AccountScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.sync_rounded),
-              label: const Text('Sinkronkan sekarang'),
+              label: Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Sinkronkan sekarang',
+                  en: 'Sync now',
+                ),
+              ),
             ),
         ],
       ),
@@ -249,7 +338,7 @@ class _AccountScreenState extends State<AccountScreen> {
     widget.notices.show(
       context,
       type: success ? DaisthNoticeType.success : DaisthNoticeType.error,
-      title: vm.message ?? (success ? 'Selesai.' : 'Terjadi kendala.'),
+      title: _authMessage(context, vm.message, success),
     );
   }
 
@@ -261,7 +350,12 @@ class _AccountScreenState extends State<AccountScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Account'), centerTitle: true),
+      appBar: AppBar(
+        title: Text(
+          DaisthLocalizations.text(context, id: 'Akun', en: 'Account'),
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: Align(
           alignment: Alignment.topCenter,
@@ -276,19 +370,33 @@ class _AccountScreenState extends State<AccountScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Layanan akun belum tersedia saat ini.',
+                          DaisthLocalizations.text(
+                            context,
+                            id: 'Layanan akun belum tersedia saat ini.',
+                            en: 'Account services are currently unavailable.',
+                          ),
                           style: theme.textTheme.titleMedium,
                         ),
                         const SizedBox(height: DaisthSpacing.sm),
                         Text(
-                          'Daisth tetap bisa digunakan dengan data yang tersimpan di perangkat.',
+                          DaisthLocalizations.text(
+                            context,
+                            id: 'Daisth tetap bisa digunakan dengan data yang tersimpan di perangkat.',
+                            en: 'You can keep using Daisth with data stored on this device.',
+                          ),
                           style: theme.textTheme.bodyMedium,
                         ),
                         const SizedBox(height: DaisthSpacing.md),
                         TextButton.icon(
                           onPressed: loading ? null : _retryAvailability,
                           icon: const Icon(Icons.refresh_rounded),
-                          label: const Text('Coba lagi'),
+                          label: Text(
+                            DaisthLocalizations.text(
+                              context,
+                              id: 'Coba lagi',
+                              en: 'Try again',
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -299,12 +407,20 @@ class _AccountScreenState extends State<AccountScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          'Daisth tetap bisa digunakan tanpa akun.',
+                          DaisthLocalizations.text(
+                            context,
+                            id: 'Daisth tetap bisa digunakan tanpa akun.',
+                            en: 'You can use Daisth without an account.',
+                          ),
                           style: theme.textTheme.titleMedium,
                         ),
                         const SizedBox(height: DaisthSpacing.sm),
                         Text(
-                          'Hubungkan akun untuk menggunakan fitur berbasis akun saat tersedia.',
+                          DaisthLocalizations.text(
+                            context,
+                            id: 'Hubungkan akun untuk menggunakan fitur berbasis akun saat tersedia.',
+                            en: 'Connect an account to use account features when available.',
+                          ),
                           style: theme.textTheme.bodyMedium,
                         ),
                         const SizedBox(height: DaisthSpacing.lg),
@@ -329,7 +445,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                   ),
                                 )
                               : const Icon(Icons.account_circle_outlined),
-                          label: const Text('Lanjutkan dengan Google'),
+                          label: Text(
+                            DaisthLocalizations.text(
+                              context,
+                              id: 'Lanjutkan dengan Google',
+                              en: 'Continue with Google',
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -378,7 +500,13 @@ class _AccountScreenState extends State<AccountScreen> {
                           children: [
                             OutlinedButton(
                               onPressed: loading ? null : _signOut,
-                              child: const Text('Keluar'),
+                              child: Text(
+                                DaisthLocalizations.text(
+                                  context,
+                                  id: 'Keluar',
+                                  en: 'Sign out',
+                                ),
+                              ),
                             ),
                             const SizedBox(height: DaisthSpacing.sm),
                             if (widget.deleteAccountUseCase != null)
@@ -402,7 +530,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                         ),
                                       )
                                     : const Icon(Icons.delete_outline_rounded),
-                                label: const Text('Hapus akun Daisth'),
+                                label: Text(
+                                  DaisthLocalizations.text(
+                                    context,
+                                    id: 'Hapus akun Daisth',
+                                    en: 'Delete Daisth account',
+                                  ),
+                                ),
                               ),
                           ],
                         ),
@@ -447,4 +581,50 @@ class _AccountAvatar extends StatelessWidget {
       ),
     );
   }
+}
+
+String _authMessage(BuildContext context, String? message, bool success) {
+  if (message == null) {
+    return DaisthLocalizations.text(
+      context,
+      id: success ? 'Selesai.' : 'Terjadi kendala.',
+      en: success ? 'Done.' : 'Something went wrong.',
+    );
+  }
+  if (!DaisthLocalizations.isEnglish(context)) return message;
+  return switch (message) {
+    'Akun Google berhasil dihubungkan.' => 'Google account connected.',
+    'Akun Apple berhasil dihubungkan.' => 'Apple account connected.',
+    'Berhasil keluar.' => 'Signed out.',
+    'Layanan akun siap.' => 'Account services are ready.',
+    'Akun Daisth telah dihapus. Data di perangkat tetap ada.' =>
+      'Daisth account deleted. Device data remains.',
+    'Koneksi tidak tersedia. Coba lagi saat terhubung ke internet.' =>
+      'No connection. Try again when you are online.',
+    'Pilihan akun belum dapat digunakan. Coba lagi nanti.' =>
+      'This sign-in option is unavailable. Try again later.',
+    'Akun ini tidak dapat digunakan. Coba pilih akun lain.' =>
+      'This account cannot be used. Try another account.',
+    'Akun ini tidak dapat digunakan.' => 'This account cannot be used.',
+    'Terlalu banyak percobaan. Coba lagi nanti.' =>
+      'Too many attempts. Try again later.',
+    'Verifikasi ulang akun untuk melanjutkan.' =>
+      'Re-authenticate your account to continue.',
+    'Layanan akun belum tersedia. Daisth tetap bisa digunakan.' =>
+      'Account services are unavailable. You can keep using Daisth.',
+    'Terjadi kendala. Coba lagi.' => 'Something went wrong. Try again.',
+    'Gunakan akun yang saat ini terhubung ke Daisth.' =>
+      'Use the account currently connected to Daisth.',
+    'Verifikasi ulang akun Daisth, lalu coba lagi.' =>
+      'Re-authenticate your Daisth account and try again.',
+    'Akun belum dapat dihapus. Data di perangkat tetap aman. Coba lagi saat koneksi tersedia.' =>
+      'The account could not be deleted. Device data is safe. Try again when you are online.',
+    'Akun belum dapat dihapus. Data di perangkat tetap aman. Coba lagi.' =>
+      'The account could not be deleted. Device data is safe. Try again.',
+    'Penghapusan belum selesai. Data cloud mungkin sudah terhapus, tetapi akun masih aktif karena akses Apple belum dapat dicabut. Coba lagi.' =>
+      'Deletion is incomplete. Cloud data may be deleted, but the account remains active because Apple access could not be revoked. Try again.',
+    'Layanan akun belum tersedia. Data di perangkat tetap aman.' =>
+      'Account services are unavailable. Device data is safe.',
+    _ => message,
+  };
 }

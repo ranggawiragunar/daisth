@@ -14,7 +14,7 @@ import '../models/reminder_priority.dart';
 class BuildTodayReminderPlanUseCase {
   BuildTodayReminderPlanUseCase({this.languageCode = 'id'});
 
-  final String languageCode;
+  String languageCode;
 
   bool get _english => languageCode.toLowerCase() == 'en';
 

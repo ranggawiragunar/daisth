@@ -10,6 +10,7 @@ import '../../../../core/design_system/components/daisth_notice_controller.dart'
 import '../../../../core/design_system/components/daisth_surface.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../../core/time/domain/models/calendar_day.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../../domain/models/reflection_rhythm.dart';
 import '../../domain/use_cases/clear_daily_reflection_use_case.dart';
 import '../../domain/use_cases/get_daily_reflection_use_case.dart';
@@ -84,7 +85,11 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
       widget.noticeController.show(
         context,
         type: DaisthNoticeType.success,
-        title: 'Refleksi tersimpan.',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Refleksi tersimpan.',
+          en: 'Reflection saved.',
+        ),
       );
     } else if (_model.errorMessage != null) {
       _showError(_model.errorMessage!);
@@ -95,20 +100,42 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus refleksi ini?'),
+        title: Text(
+          DaisthLocalizations.text(
+            context,
+            id: 'Hapus refleksi ini?',
+            en: 'Delete this reflection?',
+          ),
+        ),
         content: Text(
           widget.historical
-              ? 'Catatan refleksi untuk ${_formattedDay(context)} akan dihapus. Catatan rutinitas tetap tersimpan.'
-              : 'Catatan refleksi untuk hari ini akan dihapus. Catatan rutinitas tetap tersimpan.',
+              ? DaisthLocalizations.text(
+                  context,
+                  id: 'Catatan refleksi untuk ${_formattedDay(context)} akan dihapus. Catatan rutinitas tetap tersimpan.',
+                  en: 'The reflection for ${_formattedDay(context)} will be deleted. Routine records will remain.',
+                )
+              : DaisthLocalizations.text(
+                  context,
+                  id: 'Catatan refleksi untuk hari ini akan dihapus. Catatan rutinitas tetap tersimpan.',
+                  en: "Today's reflection will be deleted. Routine records will remain.",
+                ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
+            child: Text(
+              DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel'),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Hapus refleksi'),
+            child: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Hapus refleksi',
+                en: 'Delete reflection',
+              ),
+            ),
           ),
         ],
       ),
@@ -121,7 +148,11 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
       widget.noticeController.show(
         context,
         type: DaisthNoticeType.success,
-        title: 'Refleksi dihapus.',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Refleksi dihapus.',
+          en: 'Reflection deleted.',
+        ),
       );
     } else if (_model.errorMessage != null) {
       _showError(_model.errorMessage!);
@@ -132,16 +163,36 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
     final discard = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Perubahan belum disimpan'),
-        content: const Text('Keluar tanpa menyimpan refleksi ini?'),
+        title: Text(
+          DaisthLocalizations.text(
+            context,
+            id: 'Perubahan belum disimpan',
+            en: 'Unsaved changes',
+          ),
+        ),
+        content: Text(
+          DaisthLocalizations.text(
+            context,
+            id: 'Keluar tanpa menyimpan refleksi ini?',
+            en: 'Leave without saving this reflection?',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Tetap di sini'),
+            child: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Tetap di sini',
+                en: 'Stay here',
+              ),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Keluar'),
+            child: Text(
+              DaisthLocalizations.text(context, id: 'Keluar', en: 'Leave'),
+            ),
           ),
         ],
       ),
@@ -152,7 +203,24 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
   void _showError(String message) => widget.noticeController.show(
     context,
     type: DaisthNoticeType.error,
-    title: message,
+    title: switch (message) {
+      'Refleksi belum dapat dimuat. Coba lagi.' => DaisthLocalizations.text(
+        context,
+        id: message,
+        en: 'Reflection could not be loaded. Try again.',
+      ),
+      'Refleksi belum dapat disimpan. Coba lagi.' => DaisthLocalizations.text(
+        context,
+        id: message,
+        en: 'Reflection could not be saved. Try again.',
+      ),
+      'Refleksi belum dapat dihapus. Coba lagi.' => DaisthLocalizations.text(
+        context,
+        id: message,
+        en: 'Reflection could not be deleted. Try again.',
+      ),
+      _ => message,
+    },
   );
 
   String _formattedDay(BuildContext context) => MaterialLocalizations.of(
@@ -168,7 +236,15 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
         if (!didPop && _model.isDirty) unawaited(_confirmDiscard());
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Daily Reflection')),
+        appBar: AppBar(
+          title: Text(
+            DaisthLocalizations.text(
+              context,
+              id: 'Refleksi Harian',
+              en: 'Daily Reflection',
+            ),
+          ),
+        ),
         body: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 620),
@@ -184,7 +260,11 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
                     children: [
                       if (widget.historical) ...[
                         Text(
-                          'Editing ${_formattedDay(context)}',
+                          DaisthLocalizations.text(
+                            context,
+                            id: 'Mengedit ${_formattedDay(context)}',
+                            en: 'Editing ${_formattedDay(context)}',
+                          ),
                           style: theme.textTheme.labelLarge?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -192,7 +272,11 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
                         const SizedBox(height: DaisthSpacing.md),
                       ],
                       Text(
-                        'Bagaimana ritmemu hari ini?',
+                        DaisthLocalizations.text(
+                          context,
+                          id: 'Bagaimana ritmemu hari ini?',
+                          en: 'How did your day feel?',
+                        ),
                         style: theme.textTheme.headlineSmall,
                       ),
                       const SizedBox(height: DaisthSpacing.lg),
@@ -205,7 +289,11 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
                       if (_model.rhythmError) ...[
                         const SizedBox(height: DaisthSpacing.xs),
                         Text(
-                          'Pilih satu gambaran ritmemu untuk menyimpan refleksi.',
+                          DaisthLocalizations.text(
+                            context,
+                            id: 'Pilih satu gambaran ritmemu untuk menyimpan refleksi.',
+                            en: 'Choose a rhythm to save your reflection.',
+                          ),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.error,
                           ),
@@ -213,7 +301,11 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
                       ],
                       const SizedBox(height: DaisthSpacing.xl),
                       Text(
-                        'Apa yang ingin kamu ingat dari hari ini?',
+                        DaisthLocalizations.text(
+                          context,
+                          id: 'Apa yang ingin kamu ingat dari hari ini?',
+                          en: 'What would you like to remember from today?',
+                        ),
                         style: theme.textTheme.titleSmall,
                       ),
                       const SizedBox(height: DaisthSpacing.sm),
@@ -225,10 +317,18 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
                         minLines: 3,
                         textCapitalization: TextCapitalization.sentences,
                         decoration: InputDecoration(
-                          hintText: 'Catatan singkat (opsional)',
+                          hintText: DaisthLocalizations.text(
+                            context,
+                            id: 'Catatan singkat (opsional)',
+                            en: 'A short note (optional)',
+                          ),
                           alignLabelWithHint: true,
                           errorText: _model.noteError
-                              ? 'Catatan maksimal 500 karakter.'
+                              ? DaisthLocalizations.text(
+                                  context,
+                                  id: 'Catatan maksimal 500 karakter.',
+                                  en: 'Notes can be up to 500 characters.',
+                                )
                               : null,
                         ),
                       ),
@@ -243,14 +343,26 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
                                 ),
                               )
                             : const Icon(PhosphorIconsRegular.floppyDisk),
-                        label: const Text('Simpan refleksi'),
+                        label: Text(
+                          DaisthLocalizations.text(
+                            context,
+                            id: 'Simpan refleksi',
+                            en: 'Save reflection',
+                          ),
+                        ),
                       ),
                       if (_model.savedReflection != null) ...[
                         const SizedBox(height: DaisthSpacing.sm),
                         TextButton.icon(
                           onPressed: _model.isSaving ? null : _delete,
                           icon: const Icon(PhosphorIconsRegular.trash),
-                          label: const Text('Hapus refleksi'),
+                          label: Text(
+                            DaisthLocalizations.text(
+                              context,
+                              id: 'Hapus refleksi',
+                              en: 'Delete reflection',
+                            ),
+                          ),
                         ),
                       ],
                     ],
@@ -277,9 +389,21 @@ class _RhythmChoice extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final label = switch (rhythm) {
-      ReflectionRhythm.steady => 'Terasa mengalir',
-      ReflectionRhythm.mixed => 'Naik turun',
-      ReflectionRhythm.heavy => 'Terasa berat',
+      ReflectionRhythm.steady => DaisthLocalizations.text(
+        context,
+        id: 'Terasa mengalir',
+        en: 'Felt steady',
+      ),
+      ReflectionRhythm.mixed => DaisthLocalizations.text(
+        context,
+        id: 'Naik turun',
+        en: 'Up and down',
+      ),
+      ReflectionRhythm.heavy => DaisthLocalizations.text(
+        context,
+        id: 'Terasa berat',
+        en: 'Felt heavy',
+      ),
     };
     return Padding(
       padding: const EdgeInsets.only(bottom: DaisthSpacing.sm),

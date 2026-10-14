@@ -72,8 +72,8 @@ void main() {
     addTearDown(session.dispose);
     await _pumpToday(tester, session);
 
-    expect(find.text('Aktifkan jadwal sholat'), findsOneWidget);
-    expect(find.text('Gunakan lokasi saya'), findsOneWidget);
+    expect(find.text('Set up prayer times'), findsOneWidget);
+    expect(find.text('Use my location'), findsOneWidget);
     expect(location.requestCount, 0);
     expect(tester.takeException(), isNull);
   });
@@ -158,12 +158,12 @@ void main() {
     addTearDown(session.dispose);
     await _pumpToday(tester, session);
 
-    expect(find.text('Menggunakan lokasi terakhir.'), findsOneWidget);
+    expect(find.text('Using your last known location.'), findsOneWidget);
     expect(find.text('Refresh'), findsOneWidget);
     await tester.tap(find.text('Refresh'));
     await tester.pumpAndSettle();
     expect(repository.calls, 2);
-    expect(find.text('Menggunakan lokasi terakhir.'), findsOneWidget);
+    expect(find.text('Using your last known location.'), findsOneWidget);
   });
 }
 

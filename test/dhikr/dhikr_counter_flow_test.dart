@@ -25,7 +25,7 @@ void main() {
     await tester.ensureVisible(find.text('Zikir after prayer'));
     await tester.tap(find.text('Zikir after prayer'));
     await _settle(tester);
-    expect(find.text('Selesaikan sholat terlebih dahulu'), findsOneWidget);
+    expect(find.text('Complete the prayer first'), findsOneWidget);
     expect(find.byType(DhikrCounterScreen), findsNothing);
     harness.noticeController.dismiss();
     await _settle(tester);
@@ -82,8 +82,8 @@ void main() {
     await _settle(tester);
 
     expect(find.text('Zikir complete'), findsOneWidget);
-    expect(find.text('100 hitungan selesai'), findsOneWidget);
-    await tester.tap(find.text('Selesai'));
+    expect(find.text('100 counts completed'), findsOneWidget);
+    await tester.tap(find.text('Done'));
     await _settle(tester);
 
     expect(find.text('Recorded just now'), findsOneWidget);
@@ -114,7 +114,7 @@ void main() {
 
     expect(await tester.binding.handlePopRoute(), isTrue);
     await _settle(tester);
-    expect(find.text('Keluar dari sesi?'), findsOneWidget);
+    expect(find.text('Leave this session?'), findsOneWidget);
     expect(
       find.text('This Zikir session progress has not been saved.'),
       findsOneWidget,
@@ -125,10 +125,10 @@ void main() {
 
     expect(await tester.binding.handlePopRoute(), isTrue);
     await _settle(tester);
-    await tester.tap(find.text('Keluar'));
+    await tester.tap(find.text('Leave'));
     await _settle(tester);
     expect(find.byType(DhikrCounterScreen), findsNothing);
-    expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(find.text('Not started'), findsOneWidget);
   });
 
   testWidgets('reset session requires confirmation before clearing count', (
@@ -147,20 +147,20 @@ void main() {
     await _settle(tester);
     expect(find.text('1'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Pilihan sesi'));
+    await tester.tap(find.byTooltip('Session options'));
     await _settle(tester);
-    await tester.tap(find.text('Reset sesi'));
+    await tester.tap(find.text('Reset session'));
     await _settle(tester);
-    expect(find.text('Reset sesi?'), findsOneWidget);
-    await tester.tap(find.text('Batal'));
+    expect(find.text('Reset session?'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
     await _settle(tester);
     expect(find.text('1'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Pilihan sesi'));
+    await tester.tap(find.byTooltip('Session options'));
     await _settle(tester);
-    await tester.tap(find.text('Reset sesi'));
+    await tester.tap(find.text('Reset session'));
     await _settle(tester);
-    await tester.tap(find.text('Reset sesi'));
+    await tester.tap(find.text('Reset session'));
     await _settle(tester);
     expect(find.text('0'), findsOneWidget);
   });

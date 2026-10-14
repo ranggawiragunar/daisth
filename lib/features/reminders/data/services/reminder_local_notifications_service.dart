@@ -16,9 +16,22 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
   }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin _plugin;
-  final String languageCode;
+  String languageCode;
   bool get _english => languageCode.toLowerCase() == 'en';
   void Function(String? payload)? _onNotificationTap;
+
+  Future<void> updateLanguageCode(String languageCode) async {
+    if (this.languageCode == languageCode) return;
+    this.languageCode = languageCode;
+    final callback = _onNotificationTap;
+    if (callback == null) return;
+    try {
+      await initialize(onNotificationTap: callback);
+    } catch (_) {
+      // Existing notification actions remain usable if native categories cannot
+      // be refreshed; future reminders still use the updated language.
+    }
+  }
 
   String get _highChannelName =>
       _english ? 'Daisth · High priority' : 'Daisth · Prioritas tinggi';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/design_system/components/daisth_segmented_progress.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 
 class DailyProgress extends StatelessWidget {
   const DailyProgress({
@@ -21,10 +22,17 @@ class DailyProgress extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Today', style: theme.textTheme.titleMedium),
+        Text(
+          DaisthLocalizations.text(context, id: 'Hari ini', en: 'Today'),
+          style: theme.textTheme.titleMedium,
+        ),
         const SizedBox(height: DaisthSpacing.xs),
         Text(
-          '$recordedCount of $total routines recorded',
+          DaisthLocalizations.text(
+            context,
+            id: '$recordedCount dari $total rutinitas tercatat',
+            en: '$recordedCount of $total routines recorded',
+          ),
           style: theme.textTheme.bodySmall?.copyWith(color: secondary),
         ),
         if (total > 0) ...[

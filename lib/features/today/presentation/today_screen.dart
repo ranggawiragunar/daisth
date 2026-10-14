@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/location/domain/models/location_access_status.dart';
+import '../../../core/localization/daisth_localizations.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/tokens/daisth_colors.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
@@ -137,7 +138,10 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                           ),
                           Flexible(
                             child: Text(
-                              PrayerTimePresentation.date(_viewModel.now),
+                              PrayerTimePresentation.date(
+                                _viewModel.now,
+                                Localizations.localeOf(context),
+                              ),
                               maxLines: 1,
                               textAlign: TextAlign.end,
                               overflow: TextOverflow.ellipsis,
@@ -177,7 +181,11 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                       ],
                       const SizedBox(height: DaisthSpacing.section),
                       Text(
-                        "Today's Routine",
+                        DaisthLocalizations.text(
+                          context,
+                          id: 'Rutinitas Hari Ini',
+                          en: "Today's Routine",
+                        ),
                         style: theme.textTheme.titleMedium,
                       ),
                       const SizedBox(height: DaisthSpacing.lg),
@@ -211,9 +219,17 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         final time =
             '${(minutes ~/ 60).toString().padLeft(2, '0')}:${(minutes % 60).toString().padLeft(2, '0')}';
         return FocusRoutineCard(
-          eyebrow: 'ROUTINE FOCUS',
+          eyebrow: DaisthLocalizations.text(
+            context,
+            id: 'FOKUS RUTINITAS',
+            en: 'ROUTINE FOCUS',
+          ),
           title: customFocus.title,
-          status: 'Scheduled for $time',
+          status: DaisthLocalizations.text(
+            context,
+            id: 'Dijadwalkan pukul $time',
+            en: 'Scheduled for $time',
+          ),
           time: time,
           onOpenRoutine: () => widget.onRoutineTap?.call(customFocus.id),
         );
@@ -225,7 +241,11 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           prayer,
           Localizations.localeOf(context),
         ),
-        status: period.focusLabel,
+        status: DaisthLocalizations.text(
+          context,
+          id: period.currentPrayer == null ? 'Berikutnya' : 'Waktunya',
+          en: period.currentPrayer == null ? 'Up next' : 'Now',
+        ),
         time: PrayerTimePresentation.time(schedule.timeFor(prayer)),
         onOpenRoutine: () => widget.onRoutineTap?.call(routineId),
       );
@@ -297,29 +317,89 @@ class _PrayerScheduleSetupCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final title = isLoading
-        ? 'Memuat jadwal sholat'
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Memuat jadwal salat',
+            en: 'Loading prayer schedule',
+          )
         : hasLocationError || hasCalculationError
-        ? 'Jadwal belum dapat dimuat'
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Jadwal belum dapat dimuat',
+            en: 'Could not load the schedule',
+          )
         : accessStatus == LocationAccessStatus.deniedForever
-        ? 'Izin lokasi dinonaktifkan'
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Izin lokasi dinonaktifkan',
+            en: 'Location permission is disabled',
+          )
         : accessStatus == LocationAccessStatus.serviceDisabled
-        ? 'Layanan lokasi tidak aktif'
-        : 'Aktifkan jadwal sholat';
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Layanan lokasi tidak aktif',
+            en: 'Location services are off',
+          )
+        : DaisthLocalizations.text(
+            context,
+            id: 'Aktifkan jadwal salat',
+            en: 'Set up prayer times',
+          );
     final message = isLoading
-        ? 'Menghitung waktu sholat di lokasimu.'
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Menghitung waktu salat di lokasimu.',
+            en: 'Calculating prayer times for your location.',
+          )
         : hasLocationError || hasCalculationError
-        ? 'Periksa akses dan layanan lokasi, lalu coba lagi.'
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Periksa izin dan layanan lokasi, lalu coba lagi.',
+            en: 'Check location access and services, then try again.',
+          )
         : accessStatus == LocationAccessStatus.deniedForever
-        ? 'Aktifkan izin lokasi Daisth melalui pengaturan perangkat.'
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Aktifkan izin lokasi Daisth melalui pengaturan perangkat.',
+            en: 'Allow Daisth to access location in device settings.',
+          )
         : accessStatus == LocationAccessStatus.serviceDisabled
-        ? 'Aktifkan layanan lokasi perangkat untuk menghitung waktu sholat.'
-        : 'Daisth menggunakan lokasi saat aplikasi dibuka untuk menghitung waktu sholat di daerahmu.';
+        ? DaisthLocalizations.text(
+            context,
+            id: 'Aktifkan layanan lokasi perangkat untuk menghitung waktu salat.',
+            en: 'Turn on location services to calculate prayer times.',
+          )
+        : DaisthLocalizations.text(
+            context,
+            id: 'Daisth menggunakan lokasi saat aplikasi dibuka untuk menghitung waktu salat di daerahmu.',
+            en: 'Daisth uses your location while the app is open to calculate local prayer times.',
+          );
     final actionLabel = switch (accessStatus) {
-      LocationAccessStatus.deniedForever => 'Buka Pengaturan',
-      LocationAccessStatus.serviceDisabled => 'Buka Pengaturan Lokasi',
-      LocationAccessStatus.denied => 'Gunakan lokasi saya',
-      LocationAccessStatus.granted => 'Coba lagi',
-      null => 'Gunakan lokasi saya',
+      LocationAccessStatus.deniedForever => DaisthLocalizations.text(
+        context,
+        id: 'Buka Pengaturan',
+        en: 'Open Settings',
+      ),
+      LocationAccessStatus.serviceDisabled => DaisthLocalizations.text(
+        context,
+        id: 'Buka Pengaturan Lokasi',
+        en: 'Open Location Settings',
+      ),
+      LocationAccessStatus.denied => DaisthLocalizations.text(
+        context,
+        id: 'Gunakan lokasi saya',
+        en: 'Use my location',
+      ),
+      LocationAccessStatus.granted => DaisthLocalizations.text(
+        context,
+        id: 'Coba lagi',
+        en: 'Try again',
+      ),
+      null => DaisthLocalizations.text(
+        context,
+        id: 'Gunakan lokasi saya',
+        en: 'Use my location',
+      ),
     };
     final onPressed = switch (accessStatus) {
       LocationAccessStatus.deniedForever => onOpenAppSettings,
@@ -396,8 +476,21 @@ class _LastKnownScheduleNotice extends StatelessWidget {
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         const SizedBox(width: DaisthSpacing.sm),
-        const Expanded(child: Text('Menggunakan lokasi terakhir.')),
-        TextButton(onPressed: onRefresh, child: const Text('Refresh')),
+        Expanded(
+          child: Text(
+            DaisthLocalizations.text(
+              context,
+              id: 'Menggunakan lokasi terakhir.',
+              en: 'Using your last known location.',
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: onRefresh,
+          child: Text(
+            DaisthLocalizations.text(context, id: 'Muat ulang', en: 'Refresh'),
+          ),
+        ),
       ],
     ),
   );

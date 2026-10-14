@@ -8,7 +8,7 @@ import '../models/reminder_schedule_data.dart';
 class ReminderMapper {
   ReminderMapper({this.languageCode = 'id'});
 
-  final String languageCode;
+  String languageCode;
 
   bool get _english => languageCode.toLowerCase() == 'en';
 

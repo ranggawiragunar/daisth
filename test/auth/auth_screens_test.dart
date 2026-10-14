@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
 import 'package:daisth/core/design_system/theme/daisth_theme.dart';
@@ -37,6 +38,13 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('id'),
+          supportedLocales: const [Locale('id'), Locale('en')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           theme: DaisthTheme.light,
           home: AccountScreen(viewModel: viewModel, notices: notices),
         ),
@@ -67,6 +75,13 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('id'),
+        supportedLocales: const [Locale('id'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         theme: DaisthTheme.light,
         home: AccountScreen(viewModel: viewModel, notices: notices),
       ),
@@ -94,6 +109,13 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('id'),
+          supportedLocales: const [Locale('id'), Locale('en')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           theme: DaisthTheme.light,
           home: AccountScreen(viewModel: viewModel, notices: notices),
         ),
@@ -136,6 +158,13 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('id'),
+          supportedLocales: const [Locale('id'), Locale('en')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           theme: DaisthTheme.light,
           home: AccountScreen(viewModel: viewModel, notices: notices),
         ),
@@ -161,6 +190,13 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            locale: const Locale('id'),
+            supportedLocales: const [Locale('id'), Locale('en')],
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             theme: DaisthTheme.dark,
             home: AccountScreen(viewModel: viewModel, notices: notices),
           ),
@@ -196,6 +232,13 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('id'),
+          supportedLocales: const [Locale('id'), Locale('en')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           theme: DaisthTheme.light,
           home: AccountScreen(viewModel: viewModel, notices: notices),
         ),

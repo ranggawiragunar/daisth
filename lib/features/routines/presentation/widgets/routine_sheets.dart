@@ -4,6 +4,7 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 import '../../../../core/design_system/components/daisth_button.dart';
 import '../../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../../domain/models/routine_step.dart';
 
 class NotTodaySelection {
@@ -44,12 +45,20 @@ Future<NotTodaySelection?> showNotTodaySheet(BuildContext context) {
               ),
               const SizedBox(height: DaisthSpacing.xl),
               Text(
-                'Tidak dilakukan hari ini?',
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Tidak dilakukan hari ini?',
+                  en: 'Not today?',
+                ),
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: DaisthSpacing.xs),
               Text(
-                'Kamu bisa menambahkan alasan jika ingin. Ini opsional.',
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Kamu bisa menambahkan alasan jika ingin. Ini opsional.',
+                  en: 'You can add a reason if you like. This is optional.',
+                ),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -61,7 +70,7 @@ Future<NotTodaySelection?> showNotTodaySheet(BuildContext context) {
                 children: [
                   for (final reason in reasons)
                     ChoiceChip(
-                      label: Text(reason),
+                      label: Text(_localizedReason(context, reason)),
                       selected: selectedReason == reason,
                       onSelected: (_) => setSheetState(
                         () => selectedReason = selectedReason == reason
@@ -75,7 +84,11 @@ Future<NotTodaySelection?> showNotTodaySheet(BuildContext context) {
               SizedBox(
                 width: double.infinity,
                 child: DaisthButton(
-                  label: 'Simpan',
+                  label: DaisthLocalizations.text(
+                    context,
+                    id: 'Simpan',
+                    en: 'Save',
+                  ),
                   onPressed: () => Navigator.of(
                     sheetContext,
                   ).pop(NotTodaySelection(selectedReason)),
@@ -87,7 +100,13 @@ Future<NotTodaySelection?> showNotTodaySheet(BuildContext context) {
                   sheetContext,
                 ).pop(const NotTodaySelection(null)),
                 style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
-                child: const Text('Lewati alasan'),
+                child: Text(
+                  DaisthLocalizations.text(
+                    context,
+                    id: 'Lewati alasan',
+                    en: 'Skip reason',
+                  ),
+                ),
               ),
             ],
           ),
@@ -96,6 +115,36 @@ Future<NotTodaySelection?> showNotTodaySheet(BuildContext context) {
     },
   );
 }
+
+String _localizedReason(BuildContext context, String reason) =>
+    switch (reason) {
+      'Ketiduran' => DaisthLocalizations.text(
+        context,
+        id: 'Ketiduran',
+        en: 'Overslept',
+      ),
+      'Tidak sempat' => DaisthLocalizations.text(
+        context,
+        id: 'Tidak sempat',
+        en: 'Ran out of time',
+      ),
+      'Bepergian' => DaisthLocalizations.text(
+        context,
+        id: 'Bepergian',
+        en: 'Travelling',
+      ),
+      'Kondisi fisik' => DaisthLocalizations.text(
+        context,
+        id: 'Kondisi fisik',
+        en: 'Physical condition',
+      ),
+      'Lainnya' => DaisthLocalizations.text(
+        context,
+        id: 'Lainnya',
+        en: 'Other',
+      ),
+      _ => reason,
+    };
 
 Future<void> showRoutineStepSheet({
   required BuildContext context,
@@ -132,7 +181,11 @@ Future<void> showRoutineStepSheet({
                 ),
               ),
               IconButton(
-                tooltip: 'Close',
+                tooltip: DaisthLocalizations.text(
+                  context,
+                  id: 'Tutup',
+                  en: 'Close',
+                ),
                 onPressed: () => Navigator.of(sheetContext).pop(),
                 icon: const Icon(PhosphorIconsRegular.x),
               ),
@@ -140,7 +193,10 @@ Future<void> showRoutineStepSheet({
           ),
           Text(step.subtitle, style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: DaisthSpacing.xl),
-          Text('Guidance', style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            DaisthLocalizations.text(context, id: 'Panduan', en: 'Guidance'),
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
           const SizedBox(height: DaisthSpacing.sm),
           Text(
             step.guidanceTitle ?? 'Panduan ${step.title}',
@@ -153,8 +209,16 @@ Future<void> showRoutineStepSheet({
             width: double.infinity,
             child: DaisthButton(
               label: step.completed
-                  ? 'Mark as Not Done'
-                  : 'Mark ${step.title} Done',
+                  ? DaisthLocalizations.text(
+                      context,
+                      id: 'Tandai Belum Selesai',
+                      en: 'Mark as Not Done',
+                    )
+                  : DaisthLocalizations.text(
+                      context,
+                      id: 'Tandai ${step.title} Selesai',
+                      en: 'Mark ${step.title} Done',
+                    ),
               onPressed: () {
                 onToggle();
                 Navigator.of(sheetContext).pop();
@@ -169,7 +233,13 @@ Future<void> showRoutineStepSheet({
             },
             style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
             icon: const Icon(PhosphorIconsRegular.bookOpenText, size: 18),
-            label: const Text('Open Reading'),
+            label: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Buka Bacaan',
+                en: 'Open Reading',
+              ),
+            ),
           ),
         ],
       ),

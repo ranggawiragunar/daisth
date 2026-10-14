@@ -13,6 +13,7 @@ class AppSettingsRepositoryData implements AppSettingsRepository {
     if (row == null) return const AppSettings();
     return AppSettings(
       themePreference: _parseTheme(row['theme_mode'] as String?),
+      languagePreference: _parseLanguage(row['language_mode'] as String?),
       remindersEnabled: row['reminders_enabled'] == 1,
       onboardingVersion: row['onboarding_version'] as int?,
       updatedAt:
@@ -24,6 +25,11 @@ class AppSettingsRepositoryData implements AppSettingsRepository {
   @override
   Future<void> saveSettings(AppSettings settings) => service.saveSettings({
     'theme_mode': settings.themePreference.name,
+    'language_mode': switch (settings.languagePreference) {
+      AppLanguagePreference.system => 'system',
+      AppLanguagePreference.indonesian => 'id',
+      AppLanguagePreference.english => 'en',
+    },
     'reminders_enabled': settings.remindersEnabled ? 1 : 0,
     'updated_at_utc':
         settings.updatedAt?.toUtc().toIso8601String() ??
@@ -41,5 +47,11 @@ class AppSettingsRepositoryData implements AppSettingsRepository {
     'light' => AppThemePreference.light,
     'dark' => AppThemePreference.dark,
     _ => AppThemePreference.system,
+  };
+
+  AppLanguagePreference _parseLanguage(String? value) => switch (value) {
+    'id' => AppLanguagePreference.indonesian,
+    'en' => AppLanguagePreference.english,
+    _ => AppLanguagePreference.system,
   };
 }

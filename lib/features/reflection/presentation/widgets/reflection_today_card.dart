@@ -6,6 +6,7 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 import '../../../../core/design_system/components/daisth_surface.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../../core/time/domain/models/calendar_day.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../../domain/models/daily_reflection.dart';
 import '../../domain/models/reflection_rhythm.dart';
 import '../../domain/repositories/reflection_repository.dart';
@@ -64,7 +65,11 @@ class _ReflectionTodayCardState extends State<ReflectionTodayCard> {
     final theme = Theme.of(context);
     return Semantics(
       button: true,
-      label: 'Refleksi Hari Ini. Buka refleksi harian.',
+      label: DaisthLocalizations.text(
+        context,
+        id: 'Refleksi Hari Ini. Buka refleksi harian.',
+        en: 'Today’s reflection. Open daily reflection.',
+      ),
       child: InkWell(
         onTap: widget.onOpen,
         borderRadius: BorderRadius.circular(20),
@@ -82,16 +87,28 @@ class _ReflectionTodayCardState extends State<ReflectionTodayCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Refleksi Hari Ini',
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Refleksi Hari Ini',
+                        en: 'Today’s Reflection',
+                      ),
                       style: theme.textTheme.titleSmall,
                     ),
                     const SizedBox(height: DaisthSpacing.xxs),
                     Text(
                       _loading
-                          ? 'Memuat refleksi hari ini.'
+                          ? DaisthLocalizations.text(
+                              context,
+                              id: 'Memuat refleksi hari ini.',
+                              en: 'Loading today’s reflection.',
+                            )
                           : _reflection == null
-                          ? 'Luangkan sebentar untuk melihat kembali ritmemu hari ini.'
-                          : '${_reflectionLabel(_reflection!.rhythm)} · Tersimpan',
+                          ? DaisthLocalizations.text(
+                              context,
+                              id: 'Luangkan sebentar untuk melihat kembali ritmemu hari ini.',
+                              en: 'Take a moment to reflect on how today felt.',
+                            )
+                          : '${_reflectionLabel(context, _reflection!.rhythm)} · ${DaisthLocalizations.text(context, id: 'Tersimpan', en: 'Saved')}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -111,8 +128,21 @@ class _ReflectionTodayCardState extends State<ReflectionTodayCard> {
   }
 }
 
-String _reflectionLabel(ReflectionRhythm rhythm) => switch (rhythm) {
-  ReflectionRhythm.steady => 'Terasa mengalir',
-  ReflectionRhythm.mixed => 'Naik turun',
-  ReflectionRhythm.heavy => 'Terasa berat',
-};
+String _reflectionLabel(BuildContext context, ReflectionRhythm rhythm) =>
+    switch (rhythm) {
+      ReflectionRhythm.steady => DaisthLocalizations.text(
+        context,
+        id: 'Terasa mengalir',
+        en: 'Felt steady',
+      ),
+      ReflectionRhythm.mixed => DaisthLocalizations.text(
+        context,
+        id: 'Naik turun',
+        en: 'Up and down',
+      ),
+      ReflectionRhythm.heavy => DaisthLocalizations.text(
+        context,
+        id: 'Terasa berat',
+        en: 'Felt heavy',
+      ),
+    };

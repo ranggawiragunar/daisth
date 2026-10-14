@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../localization/daisth_localizations.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../theme/daisth_notice_palette.dart';
@@ -125,7 +126,11 @@ class DaisthNotice extends StatelessWidget {
             if (showCloseButton) ...[
               const SizedBox(width: 4),
               IconButton(
-                tooltip: 'Dismiss notification',
+                tooltip: DaisthLocalizations.text(
+                  context,
+                  id: 'Tutup notifikasi',
+                  en: 'Dismiss notification',
+                ),
                 onPressed: onClose,
                 constraints: const BoxConstraints.tightFor(
                   width: 36,

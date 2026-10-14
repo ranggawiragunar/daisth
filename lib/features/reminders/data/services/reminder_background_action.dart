@@ -7,6 +7,9 @@ import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../../../core/persistence/data/services/daisth_database_service.dart';
+import '../../../../core/app_settings/data/repositories/app_settings_repository_data.dart';
+import '../../../../core/app_settings/data/services/app_settings_sqlite_service.dart';
+import '../../../../core/app_settings/domain/models/app_settings.dart';
 import '../../../../core/timezone/data/repositories/timezone_repository_data.dart';
 import '../../../../core/timezone/data/services/timezone_flutter_service.dart';
 import '../../../routines/data/mappers/routine_record_mapper.dart';
@@ -43,6 +46,13 @@ void daisthBackgroundNotificationResponse(NotificationResponse response) async {
     tzdata.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation(payload.timezoneIdentifier));
     final db = DaisthDatabaseService.background();
+    final settings = await AppSettingsRepositoryData(
+      service: AppSettingsSqliteService(db),
+    ).getSettings();
+    final languageCode = AppLanguagePreferenceResolver.resolveCode(
+      settings.languagePreference,
+      PlatformDispatcher.instance.locales.map((locale) => locale.languageCode),
+    );
     final routineRepo = RoutineRecordRepositoryData(
       service: RoutineRecordSqliteService(db),
       mapper: RoutineRecordMapper(),
@@ -61,11 +71,11 @@ void daisthBackgroundNotificationResponse(NotificationResponse response) async {
       mapper: RoutineReminderStateMapper(),
     );
     final notificationService = ReminderLocalNotificationsService(
-      languageCode: PlatformDispatcher.instance.locale.languageCode,
+      languageCode: languageCode,
     );
     final reminderRepo = ReminderRepositoryData(
       service: notificationService,
-      mapper: ReminderMapper(),
+      mapper: ReminderMapper(languageCode: languageCode),
     );
     await TimezoneRepositoryData(
       service: TimezoneFlutterService(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:daisth/app/app_preferences_scope.dart';
@@ -23,6 +24,13 @@ void main() {
       var completed = false;
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('id'),
+          supportedLocales: const [Locale('id'), Locale('en')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           theme: DaisthTheme.light,
           home: OnboardingScreen(
             completeOnboarding: () async {
@@ -112,6 +120,13 @@ void main() {
 
 Widget _app(GoRouter router, DaisthNoticeController notices) =>
     MaterialApp.router(
+      locale: const Locale('id'),
+      supportedLocales: const [Locale('id'), Locale('en')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: DaisthTheme.light,
       routerConfig: router,
       builder: (context, child) => AppPreferencesScope(

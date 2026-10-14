@@ -6,6 +6,7 @@ import '../../../../core/design_system/theme/daisth_theme_extension.dart';
 import '../../../../core/design_system/tokens/daisth_colors.dart';
 import '../../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 
 class FocusRoutineCard extends StatelessWidget {
   const FocusRoutineCard({
@@ -110,7 +111,16 @@ class FocusRoutineCard extends StatelessWidget {
                         ),
                         const SizedBox(width: DaisthSpacing.sm),
                         Text(
-                          eyebrow,
+                          eyebrow == 'PRAYER FOCUS' ||
+                                  eyebrow == 'ROUTINE FOCUS'
+                              ? DaisthLocalizations.text(
+                                  context,
+                                  id: eyebrow == 'ROUTINE FOCUS'
+                                      ? 'FOKUS RUTINITAS'
+                                      : 'FOKUS SALAT',
+                                  en: eyebrow,
+                                )
+                              : eyebrow,
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: colors.primary,
                             letterSpacing: 1.15,
@@ -153,7 +163,11 @@ class FocusRoutineCard extends StatelessWidget {
                     ),
                     const SizedBox(height: DaisthSpacing.lg),
                     DaisthButton(
-                      label: 'Open Routine',
+                      label: DaisthLocalizations.text(
+                        context,
+                        id: 'Buka Rutinitas',
+                        en: 'Open Routine',
+                      ),
                       onPressed: onOpenRoutine,
                       compact: true,
                       icon: PhosphorIconsRegular.arrowRight,

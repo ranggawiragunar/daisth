@@ -149,7 +149,7 @@ void main() {
     addTearDown(harness.dispose);
     await tester.pumpWidget(harness.app);
     await tester.pumpAndSettle();
-    expect(find.text('Tanggal history tidak valid.'), findsOneWidget);
+    expect(find.text('This history date is invalid.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -163,12 +163,12 @@ void main() {
         () => Future<void>.delayed(const Duration(milliseconds: 30)),
       );
       await _pumpReflection(tester);
-      expect(find.text('Bagaimana ritmemu hari ini?'), findsOneWidget);
+      expect(find.text('How did your day feel?'), findsOneWidget);
 
-      await tester.tap(find.text('Simpan refleksi'));
+      await tester.tap(find.text('Save reflection'));
       await _pumpReflection(tester);
       expect(
-        find.text('Pilih satu gambaran ritmemu untuk menyimpan refleksi.'),
+        find.text('Choose a rhythm to save your reflection.'),
         findsOneWidget,
       );
       expect(
@@ -178,13 +178,13 @@ void main() {
         isNull,
       );
 
-      await tester.tap(find.text('Terasa mengalir'));
+      await tester.tap(find.text('Felt steady'));
       await tester.ensureVisible(find.byType(TextField));
       final noteField = tester.widget<TextField>(find.byType(TextField));
       noteField.controller!.text = 'Hari yang tenang.';
       noteField.onChanged!('Hari yang tenang.');
       expect(noteField.controller?.text, 'Hari yang tenang.');
-      await tester.tap(find.text('Simpan refleksi'));
+      await tester.tap(find.text('Save reflection'));
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 30)),
       );
@@ -195,25 +195,32 @@ void main() {
       expect(saved?.rhythm, ReflectionRhythm.steady);
       expect(saved?.note, 'Hari yang tenang.');
       expect(saved?.recordedAt, saved?.updatedAt);
+      harness.noticeController.dismiss();
 
       harness.router.go(RoutePaths.today);
       await _pumpReflection(tester);
-      expect(find.text('Terasa mengalir · Tersimpan'), findsOneWidget);
+      expect(find.text('Felt steady · Saved'), findsOneWidget);
       expect(find.text('Daily Reflection'), findsNothing);
-      await tester.tap(find.text('Refleksi Hari Ini'));
+      await tester.tap(find.text('Today’s Reflection'));
       await _pumpReflection(tester);
       expect(find.text('Daily Reflection'), findsOneWidget);
-      expect(find.text('Hapus refleksi'), findsOneWidget);
-      await tester.tap(find.text('Hapus refleksi'));
+      expect(find.text('Delete reflection'), findsOneWidget);
+      final deleteAction = find.text('Delete reflection').first;
+      await tester.ensureVisible(deleteAction);
+      await tester.tap(deleteAction);
       await tester.pumpAndSettle();
-      expect(find.text('Hapus refleksi'), findsNWidgets(2));
-      await tester.tap(find.text('Hapus refleksi').last);
+      final confirmDelete = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Delete reflection'),
+      );
+      expect(confirmDelete, findsOneWidget);
+      await tester.tap(confirmDelete);
       await _pumpReflection(tester);
       await tester.pump(const Duration(seconds: 5));
       harness.router.pop();
       await _pumpReflection(tester);
       expect(
-        find.text('Luangkan sebentar untuk melihat kembali ritmemu hari ini.'),
+        find.text('Take a moment to reflect on how today felt.'),
         findsOneWidget,
       );
       await tester.pump(const Duration(seconds: 5));
@@ -240,7 +247,7 @@ void main() {
     );
     await _pumpReflection(tester);
     expect(find.textContaining('Editing'), findsOneWidget);
-    expect(find.text('Terasa berat'), findsOneWidget);
+    expect(find.text('Felt heavy'), findsOneWidget);
     expect(find.text('A difficult but useful day.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -314,10 +321,10 @@ void main() {
     expect(find.text('Day Detail'), findsOneWidget);
     expect(find.text('Completed'), findsNWidgets(5));
     expect(find.text('Reflection'), findsOneWidget);
-    expect(find.text('Naik turun'), findsOneWidget);
+    expect(find.text('Up and down'), findsOneWidget);
     expect(find.text('Aku ingin mengingat hari ini.'), findsOneWidget);
 
-    await tester.tap(find.text('Naik turun'));
+    await tester.tap(find.text('Up and down'));
     await _pumpReflection(tester);
     expect(find.textContaining('Editing'), findsOneWidget);
     expect(find.text('Aku ingin mengingat hari ini.'), findsOneWidget);
@@ -330,17 +337,17 @@ void main() {
     addTearDown(harness.dispose);
     await tester.pumpWidget(harness.app);
     await tester.pumpAndSettle();
-    expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(find.text('Not started'), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
 
     harness.router.go('/routines/sholat-malam');
     await tester.pumpAndSettle();
-    expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(find.text('Not started'), findsOneWidget);
     expect(find.byType(RoutineDetailScreen), findsOneWidget);
 
     harness.router.go('/routines/zuhur');
     await tester.pumpAndSettle();
-    expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(find.text('Not started'), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-settings')), findsNothing);
   });
 
@@ -353,10 +360,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(RoutineUnavailableScreen), findsOneWidget);
-    expect(find.text('Routine tidak tersedia'), findsOneWidget);
+    expect(find.text('Routine unavailable'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    await tester.tap(find.text('Kembali'));
+    await tester.tap(find.text('Back'));
     await tester.pumpAndSettle();
     expect(find.text("Assalamu'alaikum"), findsOneWidget);
   });
@@ -431,7 +438,7 @@ void main() {
         '/routines/zuhur/mosques',
       );
       expect(find.byType(MosqueFinderScreen), findsOneWidget);
-      expect(find.text('Temukan tempat sholat di dekatmu'), findsOneWidget);
+      expect(find.text('Find a place to pray nearby'), findsOneWidget);
       expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
     },
   );
@@ -449,7 +456,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(zuhurRow);
     await tester.pumpAndSettle();
-    expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(find.text('Not started'), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
     expect(harness.router.canPop(), isTrue);
 
@@ -467,7 +474,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(dhuhaRow);
     await tester.pumpAndSettle();
-    expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(find.text('Not started'), findsOneWidget);
     expect(harness.router.canPop(), isTrue);
 
     expect(await tester.binding.handlePopRoute(), isTrue);

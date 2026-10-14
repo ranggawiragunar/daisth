@@ -9,6 +9,7 @@ import '../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/localization/daisth_terminology.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../core/localization/daisth_localizations.dart';
 import '../data/catalog/default_routine_template_catalog.dart';
 import '../domain/models/routine_definition.dart';
 import '../domain/models/routine_origin.dart';
@@ -67,8 +68,9 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      isDismissible: false,
-      enableDrag: false,
+      isDismissible: true,
+      enableDrag: true,
+      showDragHandle: true,
       useSafeArea: true,
       useRootNavigator: true,
       builder: (context) => _CustomRoutineEditor(
@@ -100,8 +102,9 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      isDismissible: false,
-      enableDrag: false,
+      isDismissible: true,
+      enableDrag: true,
+      showDragHandle: true,
       useSafeArea: true,
       useRootNavigator: true,
       builder: (context) => _CustomRoutineEditor(
@@ -120,6 +123,8 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      useRootNavigator: true,
+      showDragHandle: true,
       builder: (context) => _DefaultRoutineEditor(
         repository: widget.routineRepository,
         initial: routine,
@@ -158,9 +163,22 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
               widget.bottomContentPadding,
             ),
             children: [
-              Text('Routines', style: theme.textTheme.headlineSmall),
+              Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Rutinitas',
+                  en: 'Routines',
+                ),
+                style: theme.textTheme.headlineSmall,
+              ),
               const SizedBox(height: DaisthSpacing.xl),
-              _SectionTitle(title: 'Default'),
+              _SectionTitle(
+                title: DaisthLocalizations.text(
+                  context,
+                  id: 'Bawaan',
+                  en: 'Default',
+                ),
+              ),
               const SizedBox(height: DaisthSpacing.sm),
               DaisthSurface(
                 padding: EdgeInsets.zero,
@@ -180,11 +198,25 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
               const SizedBox(height: DaisthSpacing.xl),
               Row(
                 children: [
-                  const Expanded(child: _SectionTitle(title: 'My Routines')),
+                  Expanded(
+                    child: _SectionTitle(
+                      title: DaisthLocalizations.text(
+                        context,
+                        id: 'Rutinitas Saya',
+                        en: 'My Routines',
+                      ),
+                    ),
+                  ),
                   TextButton.icon(
                     onPressed: _createRoutine,
                     icon: Icon(PhosphorIconsRegular.plus, size: 18),
-                    label: const Text('Add Routine'),
+                    label: Text(
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Tambah Rutinitas',
+                        en: 'Add Routine',
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -248,9 +280,13 @@ class _RoutineManagerRow extends StatelessWidget {
   final RoutineDefinition definition;
   final VoidCallback onTap;
 
-  String get _scheduleLabel => switch (definition.schedule) {
+  String _scheduleLabel(BuildContext context) => switch (definition.schedule) {
     FixedRoutineSchedule(:final value) => _formatMinutes(value),
-    PrayerRoutineSchedule() => 'Prayer time',
+    PrayerRoutineSchedule() => DaisthLocalizations.text(
+      context,
+      id: 'Waktu salat',
+      en: 'Prayer time',
+    ),
   };
 
   @override
@@ -265,7 +301,7 @@ class _RoutineManagerRow extends StatelessWidget {
           style: theme.textTheme.titleSmall,
         ),
         subtitle: Text(
-          '$_scheduleLabel${definition.reminderEnabled ? ' · Reminder on' : ''}',
+          '${_scheduleLabel(context)}${definition.reminderEnabled ? ' · ${DaisthLocalizations.text(context, id: 'Pengingat aktif', en: 'Reminder on')}' : ''}',
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -362,10 +398,21 @@ class _DefaultRoutineEditorState extends State<_DefaultRoutineEditor> {
       context: context,
       useSafeArea: true,
       builder: (context) => _ConfirmSheet(
-        title: 'Reset this routine?',
-        message:
-            "Its schedule and reminder settings will return to the Daisth default. Daily records won't be removed.",
-        confirmLabel: 'Reset to Default',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Reset rutinitas ini?',
+          en: 'Reset this routine?',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Jadwal dan pengingat akan kembali ke pengaturan bawaan Daisth. Catatan harian tidak akan dihapus.',
+          en: "Its schedule and reminder settings will return to the Daisth default. Daily records won't be removed.",
+        ),
+        confirmLabel: DaisthLocalizations.text(
+          context,
+          id: 'Kembalikan ke Bawaan',
+          en: 'Reset to Default',
+        ),
       ),
     );
     if (confirmed != true || !mounted) return;
@@ -391,10 +438,22 @@ class _DefaultRoutineEditorState extends State<_DefaultRoutineEditor> {
     final discard = await showModalBottomSheet<bool>(
       context: context,
       useSafeArea: true,
-      builder: (context) => const _ConfirmSheet(
-        title: 'Discard changes?',
-        message: 'Your unsaved routine changes will be lost.',
-        confirmLabel: 'Discard Changes',
+      builder: (context) => _ConfirmSheet(
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Buang perubahan?',
+          en: 'Discard changes?',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Perubahan rutinitas yang belum disimpan akan hilang.',
+          en: 'Your unsaved routine changes will be lost.',
+        ),
+        confirmLabel: DaisthLocalizations.text(
+          context,
+          id: 'Buang Perubahan',
+          en: 'Discard Changes',
+        ),
       ),
     );
     if (discard == true && mounted) {
@@ -414,8 +473,16 @@ class _DefaultRoutineEditorState extends State<_DefaultRoutineEditor> {
         children: [
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Enabled'),
-            subtitle: const Text('Matikan untuk menyembunyikan dari Today.'),
+            title: Text(
+              DaisthLocalizations.text(context, id: 'Aktif', en: 'Enabled'),
+            ),
+            subtitle: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Matikan untuk menyembunyikan dari Hari Ini.',
+                en: 'Turn off to hide from Today.',
+              ),
+            ),
             value: _draft.isEnabled,
             onChanged: (value) =>
                 setState(() => _draft = _draft.copyWith(isEnabled: value)),
@@ -423,36 +490,79 @@ class _DefaultRoutineEditorState extends State<_DefaultRoutineEditor> {
           if (_timeEditable)
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Preferred time'),
+              title: Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Waktu pilihan',
+                  en: 'Preferred time',
+                ),
+              ),
               subtitle: Text(time == null ? '--:--' : _formatMinutes(time)),
               trailing: const Icon(Icons.access_time),
               onTap: _pickTime,
             )
           else
-            const ListTile(
+            ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text('Schedule'),
-              subtitle: Text('Based on prayer time'),
+              title: Text(
+                DaisthLocalizations.text(context, id: 'Jadwal', en: 'Schedule'),
+              ),
+              subtitle: Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Mengikuti waktu salat',
+                  en: 'Based on prayer time',
+                ),
+              ),
             ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Reminder'),
+            title: Text(
+              DaisthLocalizations.text(
+                context,
+                id: 'Pengingat',
+                en: 'Reminder',
+              ),
+            ),
             value: _draft.reminderEnabled,
             onChanged: (value) => setState(
               () => _draft = _draft.copyWith(reminderEnabled: value),
             ),
           ),
-          DaisthButton(
-            label: _saving ? 'Saving...' : 'Save Changes',
-            onPressed: _saving ? null : _save,
-          ),
-          const SizedBox(height: DaisthSpacing.xs),
-          Center(
-            child: TextButton(
-              onPressed: _saving ? null : _reset,
-              child: const Text('Reset to Default'),
+          const SizedBox(height: DaisthSpacing.sm),
+          SizedBox(
+            width: double.infinity,
+            child: DaisthButton(
+              label: _saving
+                  ? DaisthLocalizations.text(
+                      context,
+                      id: 'Menyimpan...',
+                      en: 'Saving...',
+                    )
+                  : DaisthLocalizations.text(
+                      context,
+                      id: 'Simpan Perubahan',
+                      en: 'Save Changes',
+                    ),
+              compact: true,
+              onPressed: _saving ? null : _save,
             ),
           ),
+          const SizedBox(height: DaisthSpacing.xs),
+          SizedBox(
+            width: double.infinity,
+            child: DaisthButton(
+              style: DaisthButtonStyle.outline,
+              label: DaisthLocalizations.text(
+                context,
+                id: 'Kembalikan ke Bawaan',
+                en: 'Reset to Default',
+              ),
+              compact: true,
+              onPressed: _saving ? null : _reset,
+            ),
+          ),
+          const SizedBox(height: DaisthSpacing.sm),
         ],
       ),
     );
@@ -634,10 +744,22 @@ class _CustomRoutineEditorState extends State<_CustomRoutineEditor> {
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
       useSafeArea: true,
-      builder: (context) => const _ConfirmSheet(
-        title: 'Delete this routine?',
-        message: 'Past records will be kept.',
-        confirmLabel: 'Delete Routine',
+      builder: (context) => _ConfirmSheet(
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Hapus rutinitas ini?',
+          en: 'Delete this routine?',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Catatan sebelumnya tetap disimpan.',
+          en: 'Past records will be kept.',
+        ),
+        confirmLabel: DaisthLocalizations.text(
+          context,
+          id: 'Hapus Rutinitas',
+          en: 'Delete Routine',
+        ),
       ),
     );
     if (confirmed != true || !mounted) return;
@@ -663,10 +785,22 @@ class _CustomRoutineEditorState extends State<_CustomRoutineEditor> {
     final discard = await showModalBottomSheet<bool>(
       context: context,
       useSafeArea: true,
-      builder: (context) => const _ConfirmSheet(
-        title: 'Discard changes?',
-        message: 'Your unsaved routine changes will be lost.',
-        confirmLabel: 'Discard Changes',
+      builder: (context) => _ConfirmSheet(
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Buang perubahan?',
+          en: 'Discard changes?',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Perubahan rutinitas yang belum disimpan akan hilang.',
+          en: 'Your unsaved routine changes will be lost.',
+        ),
+        confirmLabel: DaisthLocalizations.text(
+          context,
+          id: 'Buang Perubahan',
+          en: 'Discard Changes',
+        ),
       ),
     );
     if (discard == true && mounted) {
@@ -680,13 +814,29 @@ class _CustomRoutineEditorState extends State<_CustomRoutineEditor> {
     canPop: !_dirty || _allowPop,
     onPopInvokedWithResult: (didPop, _) => _onPop(didPop),
     child: _EditorFrame(
-      title: widget.initial.title.isEmpty ? 'Add Routine' : 'Edit Routine',
+      title: widget.initial.title.isEmpty
+          ? DaisthLocalizations.text(
+              context,
+              id: 'Tambah Rutinitas',
+              en: 'Add Routine',
+            )
+          : DaisthLocalizations.text(
+              context,
+              id: 'Edit Rutinitas',
+              en: 'Edit Routine',
+            ),
       children: [
         TextFormField(
           controller: _title,
           maxLength: 50,
           textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(labelText: 'Routine name *'),
+          decoration: InputDecoration(
+            labelText: DaisthLocalizations.text(
+              context,
+              id: 'Nama rutinitas *',
+              en: 'Routine name *',
+            ),
+          ),
         ),
         TextFormField(
           controller: _description,
@@ -694,35 +844,61 @@ class _CustomRoutineEditorState extends State<_CustomRoutineEditor> {
           minLines: 1,
           maxLines: 3,
           textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(labelText: 'Description'),
+          decoration: InputDecoration(
+            labelText: DaisthLocalizations.text(
+              context,
+              id: 'Deskripsi',
+              en: 'Description',
+            ),
+          ),
         ),
         ListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Time *'),
+          title: Text(
+            DaisthLocalizations.text(context, id: 'Waktu *', en: 'Time *'),
+          ),
           subtitle: Text(_time.format(context)),
           trailing: const Icon(Icons.access_time),
           onTap: _pickTime,
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Enabled'),
+          title: Text(
+            DaisthLocalizations.text(context, id: 'Aktif', en: 'Enabled'),
+          ),
           value: _enabled,
           onChanged: (value) => setState(() => _enabled = value),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Reminder'),
+          title: Text(
+            DaisthLocalizations.text(context, id: 'Pengingat', en: 'Reminder'),
+          ),
           value: _reminder,
           onChanged: (value) => setState(() => _reminder = value),
         ),
         const SizedBox(height: DaisthSpacing.sm),
         Row(
           children: [
-            const Expanded(child: Text('Checklist steps')),
+            Expanded(
+              child: Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Langkah checklist',
+                  en: 'Checklist steps',
+                ),
+              ),
+            ),
             TextButton.icon(
               onPressed: _addStep,
               icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add step'),
+              label: Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Tambah langkah',
+                  en: 'Add step',
+                ),
+              ),
             ),
           ],
         ),
@@ -736,13 +912,27 @@ class _CustomRoutineEditorState extends State<_CustomRoutineEditor> {
                     controller: _steps[i].controller,
                     maxLength: 80,
                     decoration: InputDecoration(
-                      labelText: 'Step ${i + 1}',
+                      labelText: DaisthLocalizations.text(
+                        context,
+                        id: 'Langkah ${i + 1}',
+                        en: 'Step ${i + 1}',
+                      ),
                       counterText: '',
                     ),
                   ),
                 ),
                 IconButton(
-                  tooltip: _steps[i].required ? 'Required' : 'Optional',
+                  tooltip: _steps[i].required
+                      ? DaisthLocalizations.text(
+                          context,
+                          id: 'Wajib',
+                          en: 'Required',
+                        )
+                      : DaisthLocalizations.text(
+                          context,
+                          id: 'Opsional',
+                          en: 'Optional',
+                        ),
                   onPressed: () =>
                       setState(() => _steps[i].required = !_steps[i].required),
                   icon: Icon(
@@ -752,7 +942,11 @@ class _CustomRoutineEditorState extends State<_CustomRoutineEditor> {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Remove step',
+                  tooltip: DaisthLocalizations.text(
+                    context,
+                    id: 'Hapus langkah',
+                    en: 'Remove step',
+                  ),
                   onPressed: () => _removeStep(i),
                   icon: const Icon(Icons.close),
                 ),
@@ -761,7 +955,11 @@ class _CustomRoutineEditorState extends State<_CustomRoutineEditor> {
           ),
         if (_steps.isNotEmpty)
           Text(
-            'Tap the checkbox to switch a step between required and optional.',
+            DaisthLocalizations.text(
+              context,
+              id: 'Ketuk kotak centang untuk mengubah langkah menjadi wajib atau opsional.',
+              en: 'Tap the checkbox to switch a step between required and optional.',
+            ),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         if (_formError != null) ...[
@@ -772,9 +970,22 @@ class _CustomRoutineEditorState extends State<_CustomRoutineEditor> {
           ),
         ],
         const SizedBox(height: DaisthSpacing.md),
-        DaisthButton(
-          label: _saving ? 'Saving...' : 'Save Routine',
-          onPressed: _saving ? null : _save,
+        SizedBox(
+          width: double.infinity,
+          child: DaisthButton(
+            label: _saving
+                ? DaisthLocalizations.text(
+                    context,
+                    id: 'Menyimpan...',
+                    en: 'Saving...',
+                  )
+                : DaisthLocalizations.text(
+                    context,
+                    id: 'Simpan Rutinitas',
+                    en: 'Save Routine',
+                  ),
+            onPressed: _saving ? null : _save,
+          ),
         ),
         if (widget.initial.title.isNotEmpty) ...[
           const SizedBox(height: DaisthSpacing.xs),
@@ -784,7 +995,13 @@ class _CustomRoutineEditorState extends State<_CustomRoutineEditor> {
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.error,
               ),
-              child: const Text('Delete Routine'),
+              child: Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Hapus Rutinitas',
+                  en: 'Delete Routine',
+                ),
+              ),
             ),
           ),
         ],
@@ -857,7 +1074,9 @@ class _ConfirmSheet extends StatelessWidget {
         Center(
           child: TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(
+              DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel'),
+            ),
           ),
         ),
       ],

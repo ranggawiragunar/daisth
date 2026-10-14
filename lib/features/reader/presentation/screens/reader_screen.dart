@@ -4,6 +4,7 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../../app/router/route_paths.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../../domain/models/reader_content.dart';
 import '../view_models/reader_view_model.dart';
 import '../widgets/reader_display_controls.dart';
@@ -64,14 +65,21 @@ class _ReaderScreenState extends State<ReaderScreen> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         leading: IconButton(
-          tooltip: 'Kembali',
+          tooltip: DaisthLocalizations.text(context, id: 'Kembali', en: 'Back'),
           onPressed: _back,
           icon: const Icon(PhosphorIconsRegular.arrowLeft),
         ),
-        title: Text('Reader', style: theme.textTheme.titleMedium),
+        title: Text(
+          DaisthLocalizations.text(context, id: 'Bacaan', en: 'Reader'),
+          style: theme.textTheme.titleMedium,
+        ),
         actions: [
           IconButton(
-            tooltip: 'Tampilan bacaan',
+            tooltip: DaisthLocalizations.text(
+              context,
+              id: 'Tampilan bacaan',
+              en: 'Reading display',
+            ),
             onPressed: () => showReaderDisplayControls(context, _viewModel),
             icon: Text(
               'Aa',
@@ -164,7 +172,7 @@ class ReaderUnavailableScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          tooltip: 'Kembali',
+          tooltip: DaisthLocalizations.text(context, id: 'Kembali', en: 'Back'),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -174,7 +182,10 @@ class ReaderUnavailableScreen extends StatelessWidget {
           },
           icon: const Icon(PhosphorIconsRegular.arrowLeft),
         ),
-        title: Text('Reader', style: theme.textTheme.titleMedium),
+        title: Text(
+          DaisthLocalizations.text(context, id: 'Bacaan', en: 'Reader'),
+          style: theme.textTheme.titleMedium,
+        ),
       ),
       body: SafeArea(
         child: Center(
@@ -190,13 +201,21 @@ class ReaderUnavailableScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: DaisthSpacing.lg),
                 Text(
-                  'Bacaan tidak tersedia',
+                  DaisthLocalizations.text(
+                    context,
+                    id: 'Bacaan tidak tersedia',
+                    en: 'Reading unavailable',
+                  ),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleLarge,
                 ),
                 const SizedBox(height: DaisthSpacing.sm),
                 Text(
-                  'Bacaan ini belum tersedia untuk routine ini.',
+                  DaisthLocalizations.text(
+                    context,
+                    id: 'Bacaan ini belum tersedia untuk rutinitas ini.',
+                    en: 'This reading is not available for this routine yet.',
+                  ),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 
 class DhikrSequenceProgress extends StatelessWidget {
   const DhikrSequenceProgress({
@@ -24,8 +25,16 @@ class DhikrSequenceProgress extends StatelessWidget {
       children: [
         Text(
           isCompleted
-              ? '$itemCount dari $itemCount bagian'
-              : 'Bagian ${currentItemIndex + 1} dari $itemCount',
+              ? DaisthLocalizations.text(
+                  context,
+                  id: '$itemCount dari $itemCount bagian',
+                  en: '$itemCount of $itemCount sections',
+                )
+              : DaisthLocalizations.text(
+                  context,
+                  id: 'Bagian ${currentItemIndex + 1} dari $itemCount',
+                  en: 'Section ${currentItemIndex + 1} of $itemCount',
+                ),
           style: Theme.of(
             context,
           ).textTheme.labelMedium?.copyWith(color: colors.onSurfaceVariant),

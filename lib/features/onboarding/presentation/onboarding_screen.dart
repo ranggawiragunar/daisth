@@ -5,6 +5,7 @@ import '../../../core/design_system/components/daisth_button.dart';
 import '../../../core/design_system/components/daisth_notice.dart';
 import '../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../core/localization/daisth_localizations.dart';
 import '../../../app/router/route_paths.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -48,8 +49,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       widget.notices.show(
         context,
         type: DaisthNoticeType.error,
-        title: 'Pengaturan belum dapat disimpan.',
-        message: 'Coba lagi untuk melanjutkan.',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Pengaturan belum dapat disimpan.',
+          en: 'Settings could not be saved.',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Coba lagi untuk melanjutkan.',
+          en: 'Try again to continue.',
+        ),
       );
     }
   }
@@ -78,7 +87,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: _saving ? null : _finish,
-                      child: const Text('Lewati'),
+                      child: Text(
+                        DaisthLocalizations.text(
+                          context,
+                          id: 'Lewati',
+                          en: 'Skip',
+                        ),
+                      ),
                     ),
                   ),
                   Expanded(
@@ -113,13 +128,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                           const SizedBox(height: DaisthSpacing.xxxl),
                           Text(
-                            _titles[index],
+                            DaisthLocalizations.text(
+                              context,
+                              id: _titles[index],
+                              en: const [
+                                'Keep a steady rhythm',
+                                'Routines that fit your day',
+                                'Reflect without judgment',
+                              ][index],
+                            ),
                             textAlign: TextAlign.center,
                             style: theme.textTheme.headlineSmall,
                           ),
                           const SizedBox(height: DaisthSpacing.md),
                           Text(
-                            _descriptions[index],
+                            DaisthLocalizations.text(
+                              context,
+                              id: _descriptions[index],
+                              en: const [
+                                'Daisth supports your daily routines with a calm and simple space.',
+                                'Set routines around prayer times, create your own habits, and choose reminders when you are ready.',
+                                'Look back on your days and write reflections. No scores or streaks. An account is optional.',
+                              ][index],
+                            ),
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodyLarge,
                           ),
@@ -149,7 +180,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: DaisthButton(
-                      label: _page == 2 ? 'Mulai Daisth' : 'Lanjut',
+                      label: _page == 2
+                          ? DaisthLocalizations.text(
+                              context,
+                              id: 'Mulai Daisth',
+                              en: 'Get started',
+                            )
+                          : DaisthLocalizations.text(
+                              context,
+                              id: 'Lanjut',
+                              en: 'Continue',
+                            ),
                       onPressed: _saving
                           ? null
                           : () {

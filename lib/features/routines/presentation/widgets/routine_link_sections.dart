@@ -3,6 +3,7 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../../core/design_system/components/daisth_surface.dart';
 import '../../../../core/localization/daisth_terminology.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../../../../core/design_system/theme/daisth_theme_extension.dart';
 import '../../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
@@ -39,7 +40,11 @@ class RoutineGuidanceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _RoutineLinkSection(
-    title: 'Guidance & Readings',
+    title: DaisthLocalizations.text(
+      context,
+      id: 'Panduan & Bacaan',
+      en: 'Guidance & Readings',
+    ),
     items: items,
     onTap: onTap,
   );
@@ -59,10 +64,12 @@ class RoutineHelpfulActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isEnglish =
-        DaisthTerminology.languageCode(Localizations.localeOf(context)) == 'en';
     return _RoutineLinkSection(
-      title: 'Helpful Actions',
+      title: DaisthLocalizations.text(
+        context,
+        id: 'Aksi Bermanfaat',
+        en: 'Helpful Actions',
+      ),
       items: [
         RoutineLinkItem(
           actionId: 'nearby-mosque',
@@ -79,14 +86,22 @@ class RoutineHelpfulActions extends StatelessWidget {
             Localizations.localeOf(context),
           ),
           subtitle: dhikrCompleted
-              ? isEnglish
-                    ? 'Zikir recorded'
-                    : 'Zikir sudah tercatat'
+              ? DaisthLocalizations.text(
+                  context,
+                  id: 'Zikir sudah tercatat',
+                  en: 'Zikir recorded',
+                )
               : prayerCompleted
-              ? isEnglish
-                    ? 'Start Zikir after prayer'
-                    : 'Mulai Zikir setelah salat'
-              : 'Available after prayer',
+              ? DaisthLocalizations.text(
+                  context,
+                  id: 'Mulai Zikir setelah salat',
+                  en: 'Start Zikir after prayer',
+                )
+              : DaisthLocalizations.text(
+                  context,
+                  id: 'Tersedia setelah salat',
+                  en: 'Available after prayer',
+                ),
           icon: PhosphorIconsRegular.handsPraying,
           isActionAvailable: prayerCompleted,
         ),

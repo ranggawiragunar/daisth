@@ -3,6 +3,7 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../view_models/reader_view_model.dart';
 
 Future<void> showReaderDisplayControls(
@@ -64,12 +65,20 @@ class _ReaderControlsSheet extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Tampilan Bacaan',
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Tampilan Bacaan',
+                        en: 'Reading display',
+                      ),
                       style: theme.textTheme.titleLarge,
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Tutup',
+                    tooltip: DaisthLocalizations.text(
+                      context,
+                      id: 'Tutup',
+                      en: 'Close',
+                    ),
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(PhosphorIconsRegular.x),
                   ),
@@ -79,19 +88,38 @@ class _ReaderControlsSheet extends StatelessWidget {
               SwitchListTile.adaptive(
                 key: const ValueKey('reader-transliteration-toggle'),
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Transliterasi'),
+                title: Text(
+                  DaisthLocalizations.text(
+                    context,
+                    id: 'Transliterasi',
+                    en: 'Transliteration',
+                  ),
+                ),
                 value: viewModel.transliterationVisible,
                 onChanged: viewModel.setTransliterationVisible,
               ),
               SwitchListTile.adaptive(
                 key: const ValueKey('reader-translation-toggle'),
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Terjemahan'),
+                title: Text(
+                  DaisthLocalizations.text(
+                    context,
+                    id: 'Terjemahan',
+                    en: 'Translation',
+                  ),
+                ),
                 value: viewModel.translationVisible,
                 onChanged: viewModel.setTranslationVisible,
               ),
               const SizedBox(height: DaisthSpacing.sm),
-              Text('Ukuran teks', style: theme.textTheme.titleSmall),
+              Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Ukuran teks',
+                  en: 'Text size',
+                ),
+                style: theme.textTheme.titleSmall,
+              ),
               const SizedBox(height: DaisthSpacing.sm),
               Wrap(
                 spacing: DaisthSpacing.sm,

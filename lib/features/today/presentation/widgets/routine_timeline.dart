@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/design_system/components/daisth_status_indicator.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../../../../core/localization/daisth_terminology.dart';
 import '../../../../core/design_system/theme/daisth_theme_extension.dart'
     as design;
@@ -52,6 +53,15 @@ class RoutineTimeline extends StatelessWidget {
   final Map<String, routine_domain.RoutineStatus> recordedStatuses;
   final List<RoutineDefinition>? definitions;
 
+  String? _focusLabel(Locale locale) {
+    final state = period;
+    if (state == null) return null;
+    final isEnglish = locale.languageCode == 'en';
+    return state.currentPrayer == null
+        ? (isEnglish ? 'Up next' : 'Berikutnya')
+        : (isEnglish ? 'Now' : 'Waktunya');
+  }
+
   design.RoutineStatus _statusFor(
     String routineId,
     design.RoutineStatus scheduledStatus,
@@ -79,7 +89,7 @@ class RoutineTimeline extends StatelessWidget {
               ? design.RoutineStatus.due
               : design.RoutineStatus.upcoming,
         ),
-        detail: isFocused ? period?.focusLabel : null,
+        detail: isFocused ? _focusLabel(locale) : null,
         isCurrent: isFocused,
       );
     }
@@ -167,7 +177,7 @@ class RoutineTimeline extends StatelessWidget {
         routineId: definition.id,
         prayer: prayer,
         status: _statusFor(definition.id, fallbackStatus),
-        detail: isFocused ? period?.focusLabel : null,
+        detail: isFocused ? _focusLabel(locale) : null,
         isCurrent: isFocused,
       );
       entries.add((minute: minute, entry: entry));
@@ -323,7 +333,11 @@ class _TimelineRow extends StatelessWidget {
     if (onTap == null) return row;
     return Semantics(
       button: true,
-      label: 'Buka detail ${entry.title}',
+      label: DaisthLocalizations.text(
+        context,
+        id: 'Buka detail ${entry.title}',
+        en: 'Open ${entry.title} details',
+      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(

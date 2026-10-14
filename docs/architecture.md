@@ -55,6 +55,13 @@ paths, shell branches, and root-level detail routes are centralized under
 with the floating navigation dock; detail routes sit on the root navigator
 outside that shell.
 
+`DaisthApp` owns the effective locale. It loads the device-local language
+preference before showing the router, resolves System Default against platform
+locales with English fallback, and passes the locale to `MaterialApp.router`.
+Presentation copy uses the shared localization helper; stable Islamic product
+terminology is mapped by `DaisthTerminology`. Language changes update the app
+immediately and reconcile future reminders without entering account sync.
+
 Routine Detail uses demo fixtures from
 `features/routines/data/demo/routine_demo_data.dart` for routine content. Daily
 progress is stored by `RoutineRecordRepositoryData` through

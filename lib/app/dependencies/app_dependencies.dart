@@ -82,7 +82,7 @@ import '../../features/sync/presentation/sync_view_model.dart';
 
 class AppDependencies {
   AppDependencies({
-    this.languageCode = 'id',
+    String languageCode = 'id',
     http.Client? httpClient,
     LocationRepository? locationRepository,
     MosqueRepository? mosqueRepository,
@@ -99,8 +99,12 @@ class AppDependencies {
     AuthRepository? authRepository,
     CloudDataRepository? cloudDataRepository,
     this.startTodayClock = true,
-  }) : httpClient = httpClient ?? http.Client(),
+  }) : languageCode = languageCode,
+       httpClient = httpClient ?? http.Client(),
        _ownsHttpClient = httpClient == null {
+    _reminderNotificationGateway =
+        reminderNotificationGateway ??
+        ReminderLocalNotificationsService(languageCode: languageCode);
     this.databaseService = databaseService ?? DaisthDatabaseService();
     firebaseAuthService = FirebaseAuthService();
     firebaseBootstrapService = FirebaseBootstrapService();
@@ -201,9 +205,7 @@ class AppDependencies {
     this.reminderRepository =
         reminderRepository ??
         ReminderRepositoryData(
-          service:
-              reminderNotificationGateway ??
-              ReminderLocalNotificationsService(languageCode: languageCode),
+          service: _reminderNotificationGateway,
           mapper: reminderMapper,
         );
     buildTodayReminderPlan = BuildTodayReminderPlanUseCase(
@@ -234,10 +236,11 @@ class AppDependencies {
       prayerScheduleSession: prayerScheduleSession,
       appSettingsRepository: this.appSettingsRepository,
       reminderStateRepository: routineReminderStateRepository,
+      languageCode: languageCode,
     );
   }
 
-  final String languageCode;
+  String languageCode;
   final http.Client httpClient;
   final bool startTodayClock;
   final bool _ownsHttpClient;
@@ -272,6 +275,7 @@ class AppDependencies {
   late final FindNearbyMosquesUseCase nearbyMosques;
   late final TimezoneRepository timezoneRepository;
   late final ReminderRepository reminderRepository;
+  late final ReminderNotificationGateway _reminderNotificationGateway;
   late final ReminderMapper reminderMapper = ReminderMapper(
     languageCode: languageCode,
   );
@@ -426,6 +430,20 @@ class AppDependencies {
 
   Future<void> ensureRoutineDefinitionsReady() =>
       _routineDefinitionsInitialization ??= _ensureRoutineDefinitionsReady();
+
+  void updateLanguageCode(String code) {
+    final normalized = code.toLowerCase() == 'id' ? 'id' : 'en';
+    if (languageCode == normalized) return;
+    languageCode = normalized;
+    reminderMapper.languageCode = normalized;
+    buildTodayReminderPlan.languageCode = normalized;
+    reminderSettings.languageCode = normalized;
+    final gateway = _reminderNotificationGateway;
+    if (gateway is ReminderLocalNotificationsService) {
+      unawaited(gateway.updateLanguageCode(normalized));
+    }
+    unawaited(reminderSettings.onLanguageChanged());
+  }
 
   Future<void> _ensureRoutineDefinitionsReady() async {
     await ensureDefaultRoutines();

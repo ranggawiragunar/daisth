@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
 import 'package:daisth/core/design_system/theme/daisth_theme.dart';
@@ -278,6 +279,13 @@ class _Harness {
   late final MosqueFinderViewModel viewModel;
 
   Widget app({ThemeData? theme}) => MaterialApp(
+    locale: const Locale('id'),
+    supportedLocales: const [Locale('id'), Locale('en')],
+    localizationsDelegates: const [
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
     theme: theme ?? DaisthTheme.light,
     home: DaisthNoticeScope(
       controller: noticeController,

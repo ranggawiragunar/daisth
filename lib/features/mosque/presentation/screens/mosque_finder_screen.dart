@@ -7,6 +7,7 @@ import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../../core/maps/services/map_navigation_service.dart';
 import '../../../../core/localization/daisth_terminology.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../../domain/models/mosque_place.dart';
 import '../../domain/models/mosque_place_type.dart';
 import '../../domain/models/nearby_mosque_result.dart';
@@ -70,7 +71,11 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
     widget.noticeController.show(
       context,
       type: DaisthNoticeType.error,
-      title: 'Tidak dapat membuka navigasi',
+      title: DaisthLocalizations.text(
+        context,
+        id: 'Tidak dapat membuka navigasi',
+        en: 'Could not open navigation',
+      ),
     );
   }
 
@@ -85,7 +90,11 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
     widget.noticeController.show(
       context,
       type: DaisthNoticeType.info,
-      title: 'Tidak dapat membuka informasi OpenStreetMap',
+      title: DaisthLocalizations.text(
+        context,
+        id: 'Tidak dapat membuka informasi OpenStreetMap',
+        en: 'Could not open OpenStreetMap information',
+      ),
     );
   }
 
@@ -101,7 +110,11 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Tentang Data Peta',
+              DaisthLocalizations.text(
+                context,
+                id: 'Tentang Data Peta',
+                en: 'About map data',
+              ),
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
@@ -109,9 +122,11 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              'Informasi lokasi Masjid dan Mushola diambil dari OpenStreetMap, '
-              'peta kolaboratif yang dibuat dan diperbarui oleh komunitas. '
-              'Datanya tersedia di bawah lisensi Open Database License (ODbL).',
+              DaisthLocalizations.text(
+                context,
+                id: 'Informasi lokasi Masjid dan Mushola diambil dari OpenStreetMap, peta kolaboratif yang dibuat dan diperbarui oleh komunitas. Datanya tersedia di bawah lisensi Open Database License (ODbL).',
+                en: 'Location information for Masjid and Mushola comes from OpenStreetMap, a collaborative map created and maintained by its community. Data is available under the Open Database License (ODbL).',
+              ),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -149,7 +164,11 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
         ),
         actions: [
           IconButton(
-            tooltip: 'Informasi peta',
+            tooltip: DaisthLocalizations.text(
+              context,
+              id: 'Informasi peta',
+              en: 'Map information',
+            ),
             onPressed: _showMapInformation,
             icon: const Icon(Icons.info_outline_rounded),
           ),
@@ -182,7 +201,13 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
                   ),
                 ),
                 icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('Muat ulang pencarian'),
+                label: Text(
+                  DaisthLocalizations.text(
+                    context,
+                    id: 'Muat ulang pencarian',
+                    en: 'Refresh search',
+                  ),
+                ),
               ),
             )
           : null,
@@ -198,53 +223,113 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
 
   Widget _buildState(ThemeData theme, List<MosquePlace> places) {
     return switch (_model.state) {
-      MosqueFinderState.checking => const _LoadingState(
+      MosqueFinderState.checking => _LoadingState(
         key: ValueKey('checking'),
-        message: 'Memeriksa akses lokasi…',
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Memeriksa akses lokasi…',
+          en: 'Checking location access…',
+        ),
       ),
       MosqueFinderState.permissionExplanation => _PermissionState(
         key: const ValueKey('permission-explanation'),
-        title: 'Temukan tempat sholat di dekatmu',
-        message:
-            'Lokasi digunakan saat kamu membuka pencarian ini dan tidak disimpan dalam riwayat ibadah.',
-        action: 'Gunakan lokasi saya',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Temukan tempat sholat di dekatmu',
+          en: 'Find a place to pray nearby',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Lokasi digunakan saat kamu membuka pencarian ini dan tidak disimpan dalam riwayat ibadah.',
+          en: 'Your location is used while this search is open and is not saved in your worship history.',
+        ),
+        action: DaisthLocalizations.text(
+          context,
+          id: 'Gunakan lokasi saya',
+          en: 'Use my location',
+        ),
         onPressed: _model.requestLocation,
       ),
       MosqueFinderState.denied => _PermissionState(
         key: const ValueKey('denied'),
-        title: 'Lokasi diperlukan untuk mencari tempat terdekat',
-        message:
-            'Izinkan akses lokasi saat menggunakan aplikasi untuk mencari Masjid dan Mushola.',
-        action: 'Coba lagi',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Lokasi diperlukan untuk mencari tempat terdekat',
+          en: 'Location is needed to find nearby places',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Izinkan akses lokasi saat menggunakan aplikasi untuk mencari Masjid dan Mushola.',
+          en: 'Allow location access while using the app to find nearby Masjid and Mushola.',
+        ),
+        action: DaisthLocalizations.text(
+          context,
+          id: 'Coba lagi',
+          en: 'Try again',
+        ),
         onPressed: _model.requestLocation,
       ),
       MosqueFinderState.deniedForever => _PermissionState(
         key: const ValueKey('denied-forever'),
-        title: 'Izin lokasi dinonaktifkan',
-        message: 'Aktifkan izin lokasi Daisth melalui pengaturan perangkat.',
-        action: 'Buka Pengaturan',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Izin lokasi dinonaktifkan',
+          en: 'Location permission is off',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Aktifkan izin lokasi Daisth melalui pengaturan perangkat.',
+          en: 'Enable Daisth location access in your device settings.',
+        ),
+        action: DaisthLocalizations.text(
+          context,
+          id: 'Buka Pengaturan',
+          en: 'Open Settings',
+        ),
         onPressed: _model.openAppSettings,
       ),
       MosqueFinderState.serviceDisabled => _PermissionState(
         key: const ValueKey('service-disabled'),
-        title: 'Layanan lokasi tidak aktif',
-        message:
-            'Aktifkan layanan lokasi perangkat untuk mencari tempat terdekat.',
-        action: 'Buka Pengaturan Lokasi',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Layanan lokasi tidak aktif',
+          en: 'Location services are off',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Aktifkan layanan lokasi perangkat untuk mencari tempat terdekat.',
+          en: 'Turn on device location services to find nearby places.',
+        ),
+        action: DaisthLocalizations.text(
+          context,
+          id: 'Buka Pengaturan Lokasi',
+          en: 'Open Location Settings',
+        ),
         onPressed: _model.openLocationSettings,
       ),
       MosqueFinderState.loading =>
         _model.result == null
-            ? const _LoadingState(
+            ? _LoadingState(
                 key: ValueKey('loading'),
-                message: 'Mencari Masjid & Mushola di sekitar…',
+                message: DaisthLocalizations.text(
+                  context,
+                  id: 'Mencari Masjid & Mushola di sekitar…',
+                  en: 'Searching for nearby Masjid & Mushola…',
+                ),
               )
             : _model.result!.places.isEmpty
             ? _RetryState(
                 key: const ValueKey('empty'),
-                title:
-                    'Belum menemukan Masjid atau Mushola di sekitar lokasi ini.',
-                message: 'Pencarian mencakup area hingga 5 km.',
+                title: DaisthLocalizations.text(
+                  context,
+                  id: 'Belum menemukan Masjid atau Mushola di sekitar lokasi ini.',
+                  en: 'No Masjid or Mushola found near this location.',
+                ),
+                message: DaisthLocalizations.text(
+                  context,
+                  id: 'Pencarian mencakup area hingga 5 km.',
+                  en: 'Search covers an area up to 5 km.',
+                ),
                 onRetry: _model.refresh,
               )
             : _ResultsState(
@@ -255,26 +340,58 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
               ),
       MosqueFinderState.locationUnavailable => _RetryState(
         key: const ValueKey('location-unavailable'),
-        title: 'Lokasi belum tersedia',
-        message: 'Periksa layanan lokasi lalu coba lagi.',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Lokasi belum tersedia',
+          en: 'Location is unavailable',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Periksa layanan lokasi lalu coba lagi.',
+          en: 'Check location services and try again.',
+        ),
         onRetry: _model.refresh,
       ),
       MosqueFinderState.networkError => _RetryState(
         key: const ValueKey('network-error'),
-        title: 'Pencarian tempat sholat belum bisa dimuat',
-        message: 'Layanan data sedang tidak tersedia. Coba lagi.',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Pencarian tempat sholat belum bisa dimuat',
+          en: 'Nearby search could not load',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Layanan data sedang tidak tersedia. Coba lagi.',
+          en: 'The data service is unavailable. Try again.',
+        ),
         onRetry: _model.refresh,
       ),
       MosqueFinderState.serviceBusy => _RetryState(
         key: const ValueKey('service-busy'),
-        title: 'Layanan pencarian sedang sibuk',
-        message: 'Layanan data sedang sibuk. Coba lagi.',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Layanan pencarian sedang sibuk',
+          en: 'Search service is busy',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Layanan data sedang sibuk. Coba lagi.',
+          en: 'The data service is busy. Try again.',
+        ),
         onRetry: _model.refresh,
       ),
       MosqueFinderState.empty => _RetryState(
         key: const ValueKey('empty'),
-        title: 'Belum menemukan Masjid atau Mushola di sekitar lokasi ini.',
-        message: 'Pencarian mencakup area hingga 5 km.',
+        title: DaisthLocalizations.text(
+          context,
+          id: 'Belum menemukan Masjid atau Mushola di sekitar lokasi ini.',
+          en: 'No Masjid or Mushola found near this location.',
+        ),
+        message: DaisthLocalizations.text(
+          context,
+          id: 'Pencarian mencakup area hingga 5 km.',
+          en: 'Search covers an area up to 5 km.',
+        ),
         onRetry: _model.refresh,
       ),
       MosqueFinderState.results => _ResultsState(
@@ -412,7 +529,13 @@ class _RetryState extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Coba lagi'),
+              label: Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Coba lagi',
+                  en: 'Try again',
+                ),
+              ),
             ),
           ],
         ),
@@ -462,7 +585,7 @@ class _ResultsState extends StatelessWidget {
           const SizedBox(height: DaisthSpacing.md),
         ],
         Text(
-          'Terdekat',
+          DaisthLocalizations.text(context, id: 'Terdekat', en: 'Nearest'),
           style: theme.textTheme.labelLarge?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -471,7 +594,14 @@ class _ResultsState extends StatelessWidget {
         _NearestMosqueCard(place: places.first, onNavigate: onNavigate),
         if (places.length > 1) ...[
           const SizedBox(height: DaisthSpacing.xl),
-          Text('Tempat lainnya', style: theme.textTheme.titleSmall),
+          Text(
+            DaisthLocalizations.text(
+              context,
+              id: 'Tempat lainnya',
+              en: 'More places',
+            ),
+            style: theme.textTheme.titleSmall,
+          ),
           const SizedBox(height: DaisthSpacing.sm),
           DaisthSurface(
             padding: EdgeInsets.zero,
@@ -491,7 +621,11 @@ class _ResultsState extends StatelessWidget {
         ],
         const SizedBox(height: DaisthSpacing.md),
         Text(
-          'Pencarian hingga ${_formatDistance(result.searchedRadiusMeters)}',
+          DaisthLocalizations.text(
+            context,
+            id: 'Pencarian hingga ${_formatDistance(result.searchedRadiusMeters)}',
+            en: 'Search radius up to ${_formatDistance(result.searchedRadiusMeters)}',
+          ),
           textAlign: TextAlign.center,
           style: theme.textTheme.labelSmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
@@ -532,8 +666,16 @@ class _CachedResultsNotice extends StatelessWidget {
           Expanded(
             child: Text(
               isRefreshing
-                  ? 'Menampilkan hasil terakhir sambil memperbarui.'
-                  : 'Menampilkan hasil terakhir. Data terbaru belum tersedia.',
+                  ? DaisthLocalizations.text(
+                      context,
+                      id: 'Menampilkan hasil terakhir sambil memperbarui.',
+                      en: 'Showing previous results while refreshing.',
+                    )
+                  : DaisthLocalizations.text(
+                      context,
+                      id: 'Menampilkan hasil terakhir. Data terbaru belum tersedia.',
+                      en: 'Showing previous results. New data is not available yet.',
+                    ),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -563,8 +705,14 @@ class _LastKnownNotice extends StatelessWidget {
           size: 18,
         ),
         const SizedBox(width: DaisthSpacing.sm),
-        const Expanded(
-          child: Text('Menggunakan lokasi terakhir yang tersedia.'),
+        Expanded(
+          child: Text(
+            DaisthLocalizations.text(
+              context,
+              id: 'Menggunakan lokasi terakhir yang tersedia.',
+              en: 'Using the last available location.',
+            ),
+          ),
         ),
       ],
     ),
@@ -598,7 +746,7 @@ class _NearestMosqueCard extends StatelessWidget {
                     Text(place.name, style: theme.textTheme.titleMedium),
                     const SizedBox(height: DaisthSpacing.xxs),
                     Text(
-                      '${_typeLabel(place.type)} · ${_formatDistance(place.distanceMeters)}',
+                      '${_typeLabel(context, place.type)} · ${_formatDistance(place.distanceMeters)}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -621,7 +769,13 @@ class _NearestMosqueCard extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: () => onNavigate(place),
               icon: const Icon(Icons.directions_walk_rounded),
-              label: const Text('Navigate'),
+              label: Text(
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Navigasi',
+                  en: 'Navigate',
+                ),
+              ),
             ),
           ),
         ],
@@ -645,7 +799,7 @@ class _MosqueResultTile extends StatelessWidget {
       title: Text(place.name, style: theme.textTheme.bodyLarge),
       subtitle: Text(
         [
-          _typeLabel(place.type),
+          _typeLabel(context, place.type),
           if (place.shortAddress != null) place.shortAddress!,
         ].join(' · '),
         maxLines: 2,
@@ -666,10 +820,14 @@ class _MosqueResultTile extends StatelessWidget {
   }
 }
 
-String _typeLabel(MosquePlaceType type) => switch (type) {
+String _typeLabel(BuildContext context, MosquePlaceType type) => switch (type) {
   MosquePlaceType.mosque => 'Masjid',
   MosquePlaceType.musalla => 'Mushola',
-  MosquePlaceType.unknown => 'Tempat sholat',
+  MosquePlaceType.unknown => DaisthLocalizations.text(
+    context,
+    id: 'Tempat sholat',
+    en: 'Prayer place',
+  ),
 };
 
 String _formatDistance(num meters) => meters < 1000
