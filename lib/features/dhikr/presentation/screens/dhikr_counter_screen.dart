@@ -6,6 +6,7 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 import '../../../../app/router/route_paths.dart';
 import '../../../../core/design_system/components/daisth_button.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../../core/localization/daisth_terminology.dart';
 import '../../../reader/presentation/widgets/reader_typography.dart';
 import '../../domain/models/dhikr_item.dart';
 import '../../domain/models/dhikr_sequence.dart';
@@ -98,15 +99,21 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
       return;
     }
     _exitDialogOpen = true;
+    final isEnglish =
+        DaisthTerminology.languageCode(Localizations.localeOf(context)) == 'en';
     final shouldExit = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Keluar dari sesi?'),
-        content: const Text('Progress dzikir sesi ini belum disimpan.'),
+        content: Text(
+          isEnglish
+              ? 'This Zikir session progress has not been saved.'
+              : 'Progres sesi Zikir ini belum disimpan.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Lanjut Dzikir'),
+            child: Text(isEnglish ? 'Continue Zikir' : 'Lanjutkan Zikir'),
           ),
           FilledButton.tonal(
             onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -150,7 +157,7 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
             onPressed: _requestBack,
             icon: const Icon(PhosphorIconsRegular.arrowLeft),
           ),
-          title: Text('Dzikir', style: theme.textTheme.titleMedium),
+          title: Text('Zikir', style: theme.textTheme.titleMedium),
           actions: [
             PopupMenuButton<String>(
               tooltip: 'Pilihan sesi',
@@ -291,7 +298,10 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
         Icon(PhosphorIconsRegular.checkCircle, size: 42, color: colors.primary),
         const SizedBox(height: DaisthSpacing.md),
         Text(
-          'Dzikir selesai',
+          DaisthTerminology.languageCode(Localizations.localeOf(context)) ==
+                  'en'
+              ? 'Zikir complete'
+              : 'Zikir selesai',
           key: const ValueKey('dhikr-completed-title'),
           textAlign: TextAlign.center,
           style: theme.textTheme.titleLarge,
@@ -364,6 +374,8 @@ class DhikrUnavailableScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isEnglish =
+        DaisthTerminology.languageCode(Localizations.localeOf(context)) == 'en';
     void goBack() {
       if (context.canPop()) {
         context.pop();
@@ -379,7 +391,7 @@ class DhikrUnavailableScreen extends StatelessWidget {
           onPressed: goBack,
           icon: const Icon(PhosphorIconsRegular.arrowLeft),
         ),
-        title: Text('Dzikir', style: theme.textTheme.titleMedium),
+        title: Text('Zikir', style: theme.textTheme.titleMedium),
       ),
       body: SafeArea(
         child: Center(
@@ -395,7 +407,7 @@ class DhikrUnavailableScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: DaisthSpacing.lg),
                 Text(
-                  'Dzikir tidak tersedia',
+                  isEnglish ? 'Zikir is unavailable' : 'Zikir tidak tersedia',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleLarge,
                 ),

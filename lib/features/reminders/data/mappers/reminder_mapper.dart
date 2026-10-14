@@ -6,6 +6,12 @@ import '../../domain/models/reminder_priority.dart';
 import '../models/reminder_schedule_data.dart';
 
 class ReminderMapper {
+  ReminderMapper({this.languageCode = 'id'});
+
+  final String languageCode;
+
+  bool get _english => languageCode.toLowerCase() == 'en';
+
   ReminderScheduleData toScheduleData(Reminder reminder) {
     final identity = reminder.id;
     final dateKey = reminder.dateKey ?? _dateFromIdentity(identity);
@@ -128,16 +134,16 @@ class ReminderMapper {
   }
 
   String _fallbackTitle(String routineId) => switch (routineId) {
-    'subuh' => 'Subuh segera masuk',
-    'zuhur' => 'Waktu Zuhur mendekat',
-    'asar' => 'Waktu Asar mendekat',
-    'maghrib' => 'Waktu Maghrib mendekat',
-    'isya' => 'Waktu Isya mendekat',
-    'dhuha' => 'Waktu Dhuha',
-    'sholat-malam' => 'Sholat Malam',
+    'subuh' => _english ? 'Fajr is coming up' : 'Subuh segera masuk',
+    'zuhur' => _english ? 'Dhuhr is coming up' : 'Waktu Zuhur mendekat',
+    'asar' => _english ? 'Asr is coming up' : 'Waktu Asar mendekat',
+    'maghrib' => _english ? 'Maghrib is coming up' : 'Waktu Maghrib mendekat',
+    'isya' => _english ? 'Isha is coming up' : 'Waktu Isya mendekat',
+    'dhuha' => _english ? 'Duha' : 'Waktu Dhuha',
+    'sholat-malam' => _english ? 'Night Prayer' : 'Sholat Malam',
     'reflection' => 'Refleksi hari ini',
-    'penutup-hari' => 'Penutup Hari',
-    _ => 'Pengingat Daisth',
+    'penutup-hari' => _english ? 'End of Day' : 'Penutup Hari',
+    _ => _english ? 'Daisth reminder' : 'Pengingat Daisth',
   };
 
   static const _referenceRoutines = {'reflection'};

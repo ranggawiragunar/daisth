@@ -8,6 +8,7 @@ import '../core/design_system/components/daisth_notice.dart';
 import '../core/design_system/components/daisth_notice_controller.dart';
 import '../core/design_system/theme/daisth_theme.dart';
 import '../core/location/domain/repositories/location_repository.dart';
+import '../core/localization/daisth_terminology.dart';
 import '../features/reminders/domain/models/reminder_action.dart';
 import '../features/reminders/domain/models/reminder_payload.dart';
 import 'app_preferences_scope.dart';
@@ -45,6 +46,8 @@ class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
     _dependencies =
         widget.dependencies ??
         AppDependencies(
+          languageCode:
+              WidgetsBinding.instance.platformDispatcher.locale.languageCode,
           locationRepository: widget.locationRepository,
           startTodayClock: widget.startTodayClock,
         );
@@ -153,6 +156,14 @@ class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
     return MaterialApp.router(
       title: 'Daisth',
       debugShowCheckedModeBanner: false,
+      supportedLocales: DaisthTerminology.supportedLocales,
+      localeResolutionCallback: (locale, supportedLocales) {
+        final languageCode = locale?.languageCode.toLowerCase();
+        return supportedLocales.firstWhere(
+          (candidate) => candidate.languageCode == languageCode,
+          orElse: () => const Locale('en'),
+        );
+      },
       theme: DaisthTheme.light,
       darkTheme: DaisthTheme.dark,
       themeMode: _themeMode,

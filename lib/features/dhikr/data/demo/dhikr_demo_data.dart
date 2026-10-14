@@ -4,7 +4,7 @@ import '../../domain/models/dhikr_sequence.dart';
 abstract final class DhikrDemoData {
   static final postPrayer = DhikrSequence(
     id: 'post-prayer',
-    title: 'Dzikir Setelah Sholat',
+    title: 'Zikir setelah salat',
     context: 'Setelah sholat fardhu',
     sourceLabel: 'Sahih Muslim 597a',
     items: const [

@@ -82,6 +82,7 @@ import '../../features/sync/presentation/sync_view_model.dart';
 
 class AppDependencies {
   AppDependencies({
+    this.languageCode = 'id',
     http.Client? httpClient,
     LocationRepository? locationRepository,
     MosqueRepository? mosqueRepository,
@@ -202,10 +203,12 @@ class AppDependencies {
         ReminderRepositoryData(
           service:
               reminderNotificationGateway ??
-              ReminderLocalNotificationsService(),
+              ReminderLocalNotificationsService(languageCode: languageCode),
           mapper: reminderMapper,
         );
-    buildTodayReminderPlan = BuildTodayReminderPlanUseCase();
+    buildTodayReminderPlan = BuildTodayReminderPlanUseCase(
+      languageCode: languageCode,
+    );
     scheduleTodayReminders = ScheduleTodayRemindersUseCase(
       reminderRepository: this.reminderRepository,
       timezoneRepository: this.timezoneRepository,
@@ -234,6 +237,7 @@ class AppDependencies {
     );
   }
 
+  final String languageCode;
   final http.Client httpClient;
   final bool startTodayClock;
   final bool _ownsHttpClient;
@@ -268,7 +272,9 @@ class AppDependencies {
   late final FindNearbyMosquesUseCase nearbyMosques;
   late final TimezoneRepository timezoneRepository;
   late final ReminderRepository reminderRepository;
-  late final ReminderMapper reminderMapper = ReminderMapper();
+  late final ReminderMapper reminderMapper = ReminderMapper(
+    languageCode: languageCode,
+  );
   late final BuildTodayReminderPlanUseCase buildTodayReminderPlan;
   late final ScheduleTodayRemindersUseCase scheduleTodayReminders;
   late final HandleReminderActionUseCase handleReminderAction;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../../core/design_system/components/daisth_surface.dart';
+import '../../../../core/localization/daisth_terminology.dart';
 import '../../../../core/design_system/theme/daisth_theme_extension.dart';
 import '../../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
@@ -57,28 +58,42 @@ class RoutineHelpfulActions extends StatelessWidget {
   final bool dhikrCompleted;
 
   @override
-  Widget build(BuildContext context) => _RoutineLinkSection(
-    title: 'Helpful Actions',
-    items: [
-      const RoutineLinkItem(
-        actionId: 'nearby-mosque',
-        title: 'Nearby Mosque',
-        subtitle: 'Find a place to pray nearby',
-        icon: PhosphorIconsRegular.mapPin,
-      ),
-      RoutineLinkItem(
-        title: 'Post-Prayer Dhikr',
-        subtitle: dhikrCompleted
-            ? 'Dzikir sudah tercatat'
-            : prayerCompleted
-            ? 'Mulai dzikir setelah sholat'
-            : 'Available after prayer',
-        icon: PhosphorIconsRegular.handsPraying,
-        isActionAvailable: prayerCompleted,
-      ),
-    ],
-    onTap: onTap,
-  );
+  Widget build(BuildContext context) {
+    final isEnglish =
+        DaisthTerminology.languageCode(Localizations.localeOf(context)) == 'en';
+    return _RoutineLinkSection(
+      title: 'Helpful Actions',
+      items: [
+        RoutineLinkItem(
+          actionId: 'nearby-mosque',
+          title: DaisthTerminology.nearbyPrayerPlacesTitle(
+            Localizations.localeOf(context),
+          ),
+          subtitle: DaisthTerminology.nearbyPrayerPlacesSubtitle(
+            Localizations.localeOf(context),
+          ),
+          icon: PhosphorIconsRegular.mapPin,
+        ),
+        RoutineLinkItem(
+          title: DaisthTerminology.postPrayerZikirTitle(
+            Localizations.localeOf(context),
+          ),
+          subtitle: dhikrCompleted
+              ? isEnglish
+                    ? 'Zikir recorded'
+                    : 'Zikir sudah tercatat'
+              : prayerCompleted
+              ? isEnglish
+                    ? 'Start Zikir after prayer'
+                    : 'Mulai Zikir setelah salat'
+              : 'Available after prayer',
+          icon: PhosphorIconsRegular.handsPraying,
+          isActionAvailable: prayerCompleted,
+        ),
+      ],
+      onTap: onTap,
+    );
+  }
 }
 
 class _RoutineLinkSection extends StatelessWidget {

@@ -64,10 +64,10 @@ void main() {
       expect(find.text('Unrecorded'), findsNWidgets(5));
       expect(find.text('No reflection recorded.'), findsOneWidget);
 
-      await tester.tap(find.text('Sholat Zuhur'));
+      await tester.tap(find.text('Dhuhr'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Editing'), findsOneWidget);
-      await tester.tap(find.text('Mark Zuhur Done'));
+      await tester.tap(find.text('Mark Dhuhr Done'));
       await tester.pumpAndSettle();
       final selectedDay = CalendarDay(year: 2026, month: 10, day: 12);
       expect(await records.getRoutineRecord(selectedDay, 'zuhur'), isNotNull);
@@ -120,7 +120,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final bedtimeEntry = find.ancestor(
-      of: find.text('Penutup Hari'),
+      of: find.text('End of Day'),
       matching: find.byType(InkWell),
     );
     await tester.ensureVisible(bedtimeEntry.last);
@@ -404,7 +404,7 @@ void main() {
   });
 
   testWidgets(
-    'Nearby Mosque opens the finder before completion outside shell',
+    'Nearby Masjid and Mushola opens the finder before completion outside shell',
     (tester) async {
       final harness = _RouterHarness(
         initialLocation: '/routines/zuhur',
@@ -420,9 +420,9 @@ void main() {
       await tester.pumpWidget(harness.app);
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.text('Nearby Mosque'));
+      await tester.ensureVisible(find.text('Nearby Masjid & Mushola'));
       await tester.tap(
-        find.byKey(const ValueKey('routine-link-Nearby Mosque')),
+        find.byKey(const ValueKey('routine-link-Nearby Masjid & Mushola')),
       );
       await tester.pumpAndSettle();
 

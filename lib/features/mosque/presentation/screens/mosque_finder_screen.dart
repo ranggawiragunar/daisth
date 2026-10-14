@@ -6,6 +6,7 @@ import '../../../../core/design_system/components/daisth_surface.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../../core/maps/services/map_navigation_service.dart';
+import '../../../../core/localization/daisth_terminology.dart';
 import '../../domain/models/mosque_place.dart';
 import '../../domain/models/mosque_place_type.dart';
 import '../../domain/models/nearby_mosque_result.dart';
@@ -108,7 +109,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              'Informasi lokasi masjid dan mushola diambil dari OpenStreetMap, '
+              'Informasi lokasi Masjid dan Mushola diambil dari OpenStreetMap, '
               'peta kolaboratif yang dibuat dan diperbarui oleh komunitas. '
               'Datanya tersedia di bawah lisensi Open Database License (ODbL).',
               textAlign: TextAlign.center,
@@ -140,7 +141,12 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
     final places = _model.result?.places ?? const <MosquePlace>[];
     return Scaffold(
       appBar: AppBar(
-        title: Text('Nearby Mosque', style: theme.textTheme.titleMedium),
+        title: Text(
+          DaisthTerminology.nearbyPrayerPlacesTitle(
+            Localizations.localeOf(context),
+          ),
+          style: theme.textTheme.titleMedium,
+        ),
         actions: [
           IconButton(
             tooltip: 'Informasi peta',
@@ -208,7 +214,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
         key: const ValueKey('denied'),
         title: 'Lokasi diperlukan untuk mencari tempat terdekat',
         message:
-            'Izinkan akses lokasi saat menggunakan aplikasi untuk mencari masjid dan mushola.',
+            'Izinkan akses lokasi saat menggunakan aplikasi untuk mencari Masjid dan Mushola.',
         action: 'Coba lagi',
         onPressed: _model.requestLocation,
       ),
@@ -231,13 +237,13 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
         _model.result == null
             ? const _LoadingState(
                 key: ValueKey('loading'),
-                message: 'Mencari masjid & mushola di sekitar…',
+                message: 'Mencari Masjid & Mushola di sekitar…',
               )
             : _model.result!.places.isEmpty
             ? _RetryState(
                 key: const ValueKey('empty'),
                 title:
-                    'Belum menemukan masjid atau mushola di sekitar lokasi ini.',
+                    'Belum menemukan Masjid atau Mushola di sekitar lokasi ini.',
                 message: 'Pencarian mencakup area hingga 5 km.',
                 onRetry: _model.refresh,
               )
@@ -267,7 +273,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
       ),
       MosqueFinderState.empty => _RetryState(
         key: const ValueKey('empty'),
-        title: 'Belum menemukan masjid atau mushola di sekitar lokasi ini.',
+        title: 'Belum menemukan Masjid atau Mushola di sekitar lokasi ini.',
         message: 'Pencarian mencakup area hingga 5 km.',
         onRetry: _model.refresh,
       ),

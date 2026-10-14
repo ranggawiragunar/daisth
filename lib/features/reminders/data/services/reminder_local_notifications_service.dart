@@ -10,11 +10,26 @@ import 'reminder_background_action.dart';
 import '../../domain/models/reminder_action.dart';
 
 class ReminderLocalNotificationsService implements ReminderNotificationGateway {
-  ReminderLocalNotificationsService({FlutterLocalNotificationsPlugin? plugin})
-    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  ReminderLocalNotificationsService({
+    FlutterLocalNotificationsPlugin? plugin,
+    this.languageCode = 'id',
+  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin _plugin;
+  final String languageCode;
+  bool get _english => languageCode.toLowerCase() == 'en';
   void Function(String? payload)? _onNotificationTap;
+
+  String get _highChannelName =>
+      _english ? 'Daisth · High priority' : 'Daisth · Prioritas tinggi';
+  String get _standardChannelName =>
+      _english ? 'Daisth · Routine reminders' : 'Daisth · Pengingat rutin';
+  String get _highChannelDescription => _english
+      ? 'Prayer time and Night Prayer reminders.'
+      : 'Pengingat waktu salat dan Sholat Malam.';
+  String get _standardChannelDescription => _english
+      ? 'Duha, reflection, and End of Day reminders.'
+      : 'Pengingat Dhuha, refleksi, dan Penutup Hari.';
 
   @override
   Future<void> initialize({
@@ -34,15 +49,17 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
               actions: [
                 DarwinNotificationAction.plain(
                   ReminderActionIds.done,
-                  'Selesai',
+                  _english ? 'Done' : 'Selesai',
                 ),
                 DarwinNotificationAction.plain(
                   ReminderActionIds.snooze,
-                  'Ingatkan 10 menit lagi',
+                  _english
+                      ? 'Remind me in 10 minutes'
+                      : 'Ingatkan 10 menit lagi',
                 ),
                 DarwinNotificationAction.plain(
                   ReminderActionIds.open,
-                  'Buka',
+                  _english ? 'Open' : 'Buka',
                   options: {DarwinNotificationActionOption.foreground},
                 ),
               ],
@@ -52,7 +69,7 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
               actions: [
                 DarwinNotificationAction.plain(
                   ReminderActionIds.open,
-                  'Buka',
+                  _english ? 'Open' : 'Buka',
                   options: {DarwinNotificationActionOption.foreground},
                 ),
               ],
@@ -79,19 +96,19 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
     if (defaultTargetPlatform == TargetPlatform.android) {
       final android = _androidPlugin;
       await android?.createNotificationChannel(
-        const AndroidNotificationChannel(
+        AndroidNotificationChannel(
           ReminderMapper.highChannelId,
-          'Daisth · Prioritas tinggi',
-          description: 'Pengingat waktu sholat dan Sholat Malam.',
+          _highChannelName,
+          description: _highChannelDescription,
           importance: Importance.high,
           enableVibration: true,
         ),
       );
       await android?.createNotificationChannel(
-        const AndroidNotificationChannel(
+        AndroidNotificationChannel(
           ReminderMapper.standardChannelId,
-          'Daisth · Pengingat rutin',
-          description: 'Pengingat Dhuha, refleksi, dan penutup hari.',
+          _standardChannelName,
+          description: _standardChannelDescription,
           importance: Importance.defaultImportance,
           enableVibration: true,
         ),
@@ -159,12 +176,10 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           reminder.channelId,
-          highPriority
-              ? 'Daisth · Prioritas tinggi'
-              : 'Daisth · Pengingat rutin',
+          highPriority ? _highChannelName : _standardChannelName,
           channelDescription: highPriority
-              ? 'Pengingat waktu sholat dan Sholat Malam.'
-              : 'Pengingat Dhuha, refleksi, dan penutup hari.',
+              ? _highChannelDescription
+              : _standardChannelDescription,
           importance: highPriority
               ? Importance.high
               : Importance.defaultImportance,
@@ -173,22 +188,24 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
           playSound: true,
           icon: 'ic_daisth_notification',
           actions: reminder.actionable
-              ? const [
+              ? [
                   AndroidNotificationAction(
                     ReminderActionIds.done,
-                    'Selesai',
+                    _english ? 'Done' : 'Selesai',
                     showsUserInterface: false,
                     cancelNotification: true,
                   ),
                   AndroidNotificationAction(
                     ReminderActionIds.snooze,
-                    'Ingatkan 10 menit lagi',
+                    _english
+                        ? 'Remind me in 10 minutes'
+                        : 'Ingatkan 10 menit lagi',
                     showsUserInterface: false,
                     cancelNotification: true,
                   ),
                   AndroidNotificationAction(
                     ReminderActionIds.open,
-                    'Buka',
+                    _english ? 'Open' : 'Buka',
                     showsUserInterface: true,
                     cancelNotification: true,
                   ),

@@ -22,25 +22,25 @@ void main() {
     await _settle(tester);
 
     expect(find.text('Available after prayer'), findsOneWidget);
-    await tester.ensureVisible(find.text('Post-Prayer Dhikr'));
-    await tester.tap(find.text('Post-Prayer Dhikr'));
+    await tester.ensureVisible(find.text('Zikir after prayer'));
+    await tester.tap(find.text('Zikir after prayer'));
     await _settle(tester);
     expect(find.text('Selesaikan sholat terlebih dahulu'), findsOneWidget);
     expect(find.byType(DhikrCounterScreen), findsNothing);
     harness.noticeController.dismiss();
     await _settle(tester);
 
-    await tester.tap(find.text('Mark Zuhur Done'));
+    await tester.tap(find.text('Mark Dhuhr Done'));
     await _settle(tester);
     harness.noticeController.dismiss();
     await _settle(tester);
-    expect(find.text('Mulai dzikir setelah sholat'), findsOneWidget);
+    expect(find.text('Start Zikir after prayer'), findsOneWidget);
 
-    await tester.tap(find.text('Post-Prayer Dhikr'));
+    await tester.tap(find.text('Zikir after prayer'));
     await _settle(tester);
     expect(find.byType(DhikrCounterScreen), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
-    expect(find.text('Dzikir Setelah Sholat'), findsOneWidget);
+    expect(find.text('Zikir setelah salat'), findsOneWidget);
     expect(find.text('Sahih Muslim 597a'), findsOneWidget);
 
     expect(await tester.binding.handlePopRoute(), isTrue);
@@ -57,12 +57,12 @@ void main() {
     await tester.pumpWidget(harness.app);
     await _settle(tester);
 
-    await tester.tap(find.text('Mark Zuhur Done'));
+    await tester.tap(find.text('Mark Dhuhr Done'));
     await _settle(tester);
     harness.noticeController.dismiss();
     await _settle(tester);
-    await tester.ensureVisible(find.text('Post-Prayer Dhikr'));
-    await tester.tap(find.text('Post-Prayer Dhikr'));
+    await tester.ensureVisible(find.text('Zikir after prayer'));
+    await tester.tap(find.text('Zikir after prayer'));
     await _settle(tester);
 
     final countSurface = find.byKey(const ValueKey('dhikr-count-tap-surface'));
@@ -81,13 +81,13 @@ void main() {
     }
     await _settle(tester);
 
-    expect(find.text('Dzikir selesai'), findsOneWidget);
+    expect(find.text('Zikir complete'), findsOneWidget);
     expect(find.text('100 hitungan selesai'), findsOneWidget);
     await tester.tap(find.text('Selesai'));
     await _settle(tester);
 
     expect(find.text('Recorded just now'), findsOneWidget);
-    expect(find.text('Dzikir sudah tercatat'), findsOneWidget);
+    expect(find.text('Zikir recorded'), findsOneWidget);
     expect(find.byType(DhikrCounterScreen), findsNothing);
     final semantics = tester.ensureSemantics();
     try {
@@ -116,10 +116,10 @@ void main() {
     await _settle(tester);
     expect(find.text('Keluar dari sesi?'), findsOneWidget);
     expect(
-      find.text('Progress dzikir sesi ini belum disimpan.'),
+      find.text('This Zikir session progress has not been saved.'),
       findsOneWidget,
     );
-    await tester.tap(find.text('Lanjut Dzikir'));
+    await tester.tap(find.text('Continue Zikir'));
     await _settle(tester);
     expect(find.byType(DhikrCounterScreen), findsOneWidget);
 
@@ -174,7 +174,7 @@ void main() {
       await tester.pumpWidget(unknown.app);
       await _settle(tester);
       expect(find.byType(DhikrUnavailableScreen), findsOneWidget);
-      expect(find.text('Dzikir tidak tersedia'), findsOneWidget);
+      expect(find.text('Zikir is unavailable'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       unknown.dispose();

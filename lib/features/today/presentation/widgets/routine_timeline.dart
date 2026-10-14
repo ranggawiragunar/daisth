@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/design_system/components/daisth_status_indicator.dart';
+import '../../../../core/localization/daisth_terminology.dart';
 import '../../../../core/design_system/theme/daisth_theme_extension.dart'
     as design;
 import '../../../../core/design_system/tokens/daisth_radius.dart';
@@ -61,15 +62,15 @@ class RoutineTimeline extends StatelessWidget {
     _ => scheduledStatus,
   };
 
-  List<_RoutineEntry> _entries() {
-    if (definitions != null) return _managedEntries();
+  List<_RoutineEntry> _entries(Locale locale) {
+    if (definitions != null) return _managedEntries(locale);
     _RoutineEntry prayerEntry(PrayerName prayer) {
       final isFocused = period?.focusPrayer == prayer;
       return _RoutineEntry(
         time: schedule == null
             ? '--:--'
             : PrayerTimePresentation.time(schedule!.timeFor(prayer)),
-        title: 'Sholat ${PrayerTimePresentation.label(prayer)}',
+        title: PrayerTimePresentation.label(prayer, locale),
         routineId: PrayerTimePresentation.routineId(prayer),
         prayer: prayer,
         status: _statusFor(
@@ -86,14 +87,14 @@ class RoutineTimeline extends StatelessWidget {
     return [
       _RoutineEntry(
         time: '03:00',
-        title: 'Sholat Malam',
+        title: DaisthTerminology.nightPrayer(locale),
         routineId: 'sholat-malam',
         status: _statusFor('sholat-malam', design.RoutineStatus.upcoming),
       ),
       prayerEntry(PrayerName.fajr),
       _RoutineEntry(
         time: '07:00',
-        title: 'Sholat Dhuha',
+        title: DaisthTerminology.prayerName('dhuha', locale),
         routineId: 'dhuha',
         status: _statusFor('dhuha', design.RoutineStatus.upcoming),
       ),
@@ -105,7 +106,7 @@ class RoutineTimeline extends StatelessWidget {
         time: _formatMinutes(
           BuiltInRoutineDefaults.penutupHariMinutesAfterMidnight,
         ),
-        title: 'Penutup Hari',
+        title: DaisthTerminology.endOfDay(locale),
         routineId: 'penutup-hari',
         status: design.RoutineStatus.upcoming,
       ),
@@ -116,7 +117,7 @@ class RoutineTimeline extends StatelessWidget {
       '${(minutes ~/ 60).toString().padLeft(2, '0')}:'
       '${(minutes % 60).toString().padLeft(2, '0')}';
 
-  List<_RoutineEntry> _managedEntries() {
+  List<_RoutineEntry> _managedEntries(Locale locale) {
     int prayerMinutes(PrayerKey key) {
       final prayer = switch (key) {
         PrayerKey.subuh => PrayerName.fajr,
@@ -151,16 +152,11 @@ class RoutineTimeline extends StatelessWidget {
       final fallbackStatus = isFocused && period?.currentPrayer == prayer
           ? design.RoutineStatus.due
           : design.RoutineStatus.upcoming;
-      final title = switch (definition.id) {
-        'dhuha' => 'Sholat Dhuha',
-        'sholat-malam' => 'Sholat Malam',
-        'subuh' ||
-        'zuhur' ||
-        'asar' ||
-        'maghrib' ||
-        'isya' => 'Sholat ${definition.title}',
-        _ => definition.title,
-      };
+      final localizedTitle = DaisthTerminology.routineTitle(
+        definition.id,
+        locale,
+      );
+      final title = localizedTitle.isEmpty ? definition.title : localizedTitle;
       final entry = _RoutineEntry(
         time: prayer == null
             ? '${(minute ~/ 60).toString().padLeft(2, '0')}:${(minute % 60).toString().padLeft(2, '0')}'
@@ -185,7 +181,7 @@ class RoutineTimeline extends StatelessWidget {
     final extension = Theme.of(
       context,
     ).extension<design.DaisthThemeExtension>()!;
-    final entries = _entries();
+    final entries = _entries(Localizations.localeOf(context));
     return Column(
       children: [
         for (var index = 0; index < entries.length; index++)

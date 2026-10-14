@@ -9,6 +9,7 @@ import '../../../../app/router/route_paths.dart';
 import '../../../../core/design_system/components/daisth_button.dart';
 import '../../../../core/design_system/components/daisth_empty_state.dart';
 import '../../../../core/design_system/components/daisth_surface.dart';
+import '../../../../core/localization/daisth_terminology.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../../core/time/domain/models/calendar_day.dart';
 import '../../data/resolvers/history_routine_resolver_data.dart';
@@ -411,7 +412,11 @@ class _HistoryEntryTile extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                entry.routine.title,
+                _historyRoutineTitle(
+                  context,
+                  entry.routine.id,
+                  entry.routine.title,
+                ),
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
@@ -432,6 +437,14 @@ class _HistoryEntryTile extends StatelessWidget {
       ),
     ),
   );
+}
+
+String _historyRoutineTitle(BuildContext context, String id, String fallback) {
+  final localized = DaisthTerminology.routineTitle(
+    id,
+    Localizations.localeOf(context),
+  );
+  return localized.isEmpty ? fallback : localized;
 }
 
 class _ErrorState extends StatelessWidget {

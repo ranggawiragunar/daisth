@@ -7,6 +7,7 @@ import '../../../core/design_system/components/daisth_button.dart';
 import '../../../core/design_system/components/daisth_notice.dart';
 import '../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
+import '../../../core/localization/daisth_terminology.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
 import '../data/catalog/default_routine_template_catalog.dart';
 import '../domain/models/routine_definition.dart';
@@ -259,7 +260,10 @@ class _RoutineManagerRow extends StatelessWidget {
       color: Colors.transparent,
       child: ListTile(
         onTap: onTap,
-        title: Text(definition.title, style: theme.textTheme.titleSmall),
+        title: Text(
+          _localizedDefinitionTitle(context, definition),
+          style: theme.textTheme.titleSmall,
+        ),
         subtitle: Text(
           '$_scheduleLabel${definition.reminderEnabled ? ' · Reminder on' : ''}',
           style: theme.textTheme.bodySmall?.copyWith(
@@ -284,6 +288,14 @@ class _RoutineManagerRow extends StatelessWidget {
       ),
     );
   }
+}
+
+String _localizedDefinitionTitle(BuildContext context, RoutineDefinition item) {
+  final localized = DaisthTerminology.routineTitle(
+    item.id,
+    Localizations.localeOf(context),
+  );
+  return localized.isEmpty ? item.title : localized;
 }
 
 class _DefaultRoutineEditor extends StatefulWidget {

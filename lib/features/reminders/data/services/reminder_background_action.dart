@@ -1,4 +1,4 @@
-import 'dart:ui' show DartPluginRegistrant;
+import 'dart:ui' show DartPluginRegistrant, PlatformDispatcher;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -60,7 +60,9 @@ void daisthBackgroundNotificationResponse(NotificationResponse response) async {
       service: RoutineReminderStateSqliteService(db),
       mapper: RoutineReminderStateMapper(),
     );
-    final notificationService = ReminderLocalNotificationsService();
+    final notificationService = ReminderLocalNotificationsService(
+      languageCode: PlatformDispatcher.instance.locale.languageCode,
+    );
     final reminderRepo = ReminderRepositoryData(
       service: notificationService,
       mapper: ReminderMapper(),

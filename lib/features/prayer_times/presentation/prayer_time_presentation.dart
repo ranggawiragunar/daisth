@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+
+import '../../../core/localization/daisth_terminology.dart';
 import '../domain/models/prayer_name.dart';
 
 abstract final class PrayerTimePresentation {
@@ -9,13 +12,13 @@ abstract final class PrayerTimePresentation {
     PrayerName.isha,
   ];
 
-  static String label(PrayerName prayer) => switch (prayer) {
-    PrayerName.fajr => 'Subuh',
-    PrayerName.sunrise => 'Terbit',
-    PrayerName.dhuhr => 'Zuhur',
-    PrayerName.asr => 'Asar',
-    PrayerName.maghrib => 'Maghrib',
-    PrayerName.isha => 'Isya',
+  static String label(PrayerName prayer, Locale locale) => switch (prayer) {
+    PrayerName.fajr => DaisthTerminology.prayerName('subuh', locale),
+    PrayerName.sunrise => locale.languageCode == 'id' ? 'Terbit' : 'Sunrise',
+    PrayerName.dhuhr => DaisthTerminology.prayerName('zuhur', locale),
+    PrayerName.asr => DaisthTerminology.prayerName('asar', locale),
+    PrayerName.maghrib => DaisthTerminology.prayerName('maghrib', locale),
+    PrayerName.isha => DaisthTerminology.prayerName('isya', locale),
   };
 
   static String time(DateTime value) =>

@@ -14,6 +14,7 @@ import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/theme/daisth_theme_extension.dart';
 import '../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../core/localization/daisth_terminology.dart';
 import '../../../core/time/domain/models/calendar_day.dart';
 import '../../prayer_times/domain/models/prayer_name.dart';
 import '../../prayer_times/presentation/prayer_schedule_session.dart';
@@ -63,6 +64,14 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   Routine get _routine => _viewModel.routine;
   List<RoutineStep> get _steps => _viewModel.steps;
   routine_domain.RoutineStatus get _completionState => _viewModel.status;
+  String get _displayRoutineTitle {
+    final localized = DaisthTerminology.routineTitle(
+      _routine.id,
+      Localizations.localeOf(context),
+    );
+    return localized.isEmpty ? _routine.title : localized;
+  }
+
   int get _completedRequiredCount => _viewModel.completedRequiredCount;
   int get _requiredCount => _viewModel.requiredCount;
   bool get _allRequiredDone => _viewModel.allRequiredCompleted;
@@ -173,7 +182,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     HapticFeedback.mediumImpact();
     _showNotice(
       type: DaisthNoticeType.success,
-      title: '${_routine.title.replaceFirst('Sholat ', '')} recorded',
+      title: '$_displayRoutineTitle recorded',
     );
   }
 
@@ -186,7 +195,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     HapticFeedback.mediumImpact();
     _showNotice(
       type: DaisthNoticeType.success,
-      title: '${_routine.title} recorded',
+      title: '$_displayRoutineTitle recorded',
     );
   }
 
@@ -196,7 +205,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     HapticFeedback.mediumImpact();
     _showNotice(
       type: DaisthNoticeType.success,
-      title: '${_routine.title.replaceFirst('Sholat ', '')} recorded',
+      title: '$_displayRoutineTitle recorded',
     );
   }
 
@@ -310,7 +319,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          _routine.title,
+                                          _displayRoutineTitle,
                                           style: theme.textTheme.headlineSmall
                                               ?.copyWith(
                                                 fontWeight: FontWeight.w600,
@@ -466,7 +475,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     if (_steps.any(
       (step) => step.id == 'post-prayer-dhikr' && step.completed,
     )) {
-      _showNotice(type: DaisthNoticeType.info, title: 'Dzikir sudah tercatat');
+      _showNotice(type: DaisthNoticeType.info, title: 'Zikir sudah tercatat');
       return;
     }
     final completed = await context.push<bool>(
@@ -498,7 +507,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     final label = _routine.steps.isEmpty
         ? 'Mark Done'
         : isSimplePrayer
-        ? 'Mark ${_routine.title.replaceFirst('Sholat ', '')} Done'
+        ? 'Mark $_displayRoutineTitle Done'
         : _steps.any((step) => step.completed)
         ? 'Mark Remaining Done'
         : 'Mark All Done';

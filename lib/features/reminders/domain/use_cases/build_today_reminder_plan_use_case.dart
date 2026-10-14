@@ -12,6 +12,24 @@ import '../models/reminder_plan.dart';
 import '../models/reminder_priority.dart';
 
 class BuildTodayReminderPlanUseCase {
+  BuildTodayReminderPlanUseCase({this.languageCode = 'id'});
+
+  final String languageCode;
+
+  bool get _english => languageCode.toLowerCase() == 'en';
+
+  String _routineTitle(String id, String fallback) => switch (id) {
+    'sholat-malam' => _english ? 'Night Prayer' : 'Sholat Malam',
+    'subuh' => _english ? 'Fajr' : 'Subuh',
+    'dhuha' => _english ? 'Duha' : 'Dhuha',
+    'zuhur' => _english ? 'Dhuhr' : 'Zuhur',
+    'asar' => _english ? 'Asr' : 'Asar',
+    'maghrib' => 'Maghrib',
+    'isya' => _english ? 'Isha' : 'Isya',
+    'penutup-hari' => _english ? 'End of Day' : 'Penutup Hari',
+    _ => fallback,
+  };
+
   ReminderPlan call({
     required PrayerDaySchedule schedule,
     required DeviceTimezone timezone,
@@ -71,12 +89,20 @@ class BuildTodayReminderPlanUseCase {
         add(
           routineId: definition.id,
           title: isPrayer
-              ? 'Waktu ${definition.title} mendekat'
-              : definition.title,
+              ? _english
+                    ? '${_routineTitle(definition.id, definition.title)} is coming up'
+                    : 'Waktu ${_routineTitle(definition.id, definition.title)} mendekat'
+              : _routineTitle(definition.id, definition.title),
           body: isPrayer
-              ? 'Sekitar 10 menit lagi.'
+              ? _english
+                    ? 'In about 10 minutes.'
+                    : 'Sekitar 10 menit lagi.'
               : definition.id == 'penutup-hari'
-              ? 'Siapkan bacaan dan rutinitas sebelum tidur.'
+              ? _english
+                    ? 'Take a moment to close your day calmly.'
+                    : 'Siapkan bacaan dan rutinitas sebelum tidur.'
+              : _english
+              ? 'It is time for your planned routine.'
               : 'Waktu yang kamu pilih sudah tiba.',
           scheduledAt: isPrayer
               ? scheduledAt.subtract(const Duration(minutes: 10))
@@ -129,15 +155,17 @@ class BuildTodayReminderPlanUseCase {
   ) {
     add(
       routineId: 'sholat-malam',
-      title: 'Sholat Malam',
-      body: 'Waktu yang kamu pilih sudah tiba.',
+      title: _english ? 'Night Prayer' : 'Sholat Malam',
+      body: _english
+          ? 'It is time for your planned routine.'
+          : 'Waktu yang kamu pilih sudah tiba.',
       scheduledAt: DateTime(date.year, date.month, date.day, 3),
       priority: ReminderPriority.high,
     );
     add(
       routineId: 'subuh',
-      title: 'Subuh segera masuk',
-      body: 'Sekitar 10 menit lagi.',
+      title: _english ? 'Fajr is coming up' : 'Subuh segera masuk',
+      body: _english ? 'In about 10 minutes.' : 'Sekitar 10 menit lagi.',
       scheduledAt: schedule
           .timeFor(PrayerName.fajr)
           .subtract(const Duration(minutes: 10)),
@@ -145,21 +173,39 @@ class BuildTodayReminderPlanUseCase {
     );
     add(
       routineId: 'dhuha',
-      title: 'Waktu Dhuha',
-      body: 'Masih ada waktu untuk Dhuha pagi ini.',
+      title: _english ? 'Duha' : 'Waktu Dhuha',
+      body: _english
+          ? 'There is still time for Duha this morning.'
+          : 'Masih ada waktu untuk Dhuha pagi ini.',
       scheduledAt: DateTime(date.year, date.month, date.day, 7),
       priority: ReminderPriority.medium,
     );
     for (final prayer in [
-      (PrayerName.dhuhr, 'zuhur', 'Waktu Zuhur mendekat'),
-      (PrayerName.asr, 'asar', 'Waktu Asar mendekat'),
-      (PrayerName.maghrib, 'maghrib', 'Waktu Maghrib mendekat'),
-      (PrayerName.isha, 'isya', 'Waktu Isya mendekat'),
+      (
+        PrayerName.dhuhr,
+        'zuhur',
+        _english ? 'Dhuhr is coming up' : 'Waktu Zuhur mendekat',
+      ),
+      (
+        PrayerName.asr,
+        'asar',
+        _english ? 'Asr is coming up' : 'Waktu Asar mendekat',
+      ),
+      (
+        PrayerName.maghrib,
+        'maghrib',
+        _english ? 'Maghrib is coming up' : 'Waktu Maghrib mendekat',
+      ),
+      (
+        PrayerName.isha,
+        'isya',
+        _english ? 'Isha is coming up' : 'Waktu Isya mendekat',
+      ),
     ]) {
       add(
         routineId: prayer.$2,
         title: prayer.$3,
-        body: 'Sekitar 10 menit lagi.',
+        body: _english ? 'In about 10 minutes.' : 'Sekitar 10 menit lagi.',
         scheduledAt: schedule
             .timeFor(prayer.$1)
             .subtract(const Duration(minutes: 10)),
@@ -168,8 +214,10 @@ class BuildTodayReminderPlanUseCase {
     }
     add(
       routineId: 'penutup-hari',
-      title: 'Penutup Hari',
-      body: 'Siapkan bacaan dan rutinitas sebelum tidur.',
+      title: _english ? 'End of Day' : 'Penutup Hari',
+      body: _english
+          ? 'Take a moment to close your day calmly.'
+          : 'Siapkan bacaan dan rutinitas sebelum tidur.',
       scheduledAt: DateTime(date.year, date.month, date.day).add(
         const Duration(
           minutes: BuiltInRoutineDefaults.penutupHariMinutesAfterMidnight,

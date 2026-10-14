@@ -23,7 +23,7 @@ import '../support/fake_routine_record_repository.dart';
 import '../support/test_persistence.dart';
 
 void main() {
-  testWidgets('Sholat Malam tracks partial progress, completion, and undo', (
+  testWidgets('Night Prayer tracks partial progress, completion, and undo', (
     tester,
   ) async {
     final controller = DaisthNoticeController();
@@ -43,7 +43,7 @@ void main() {
     await tester.tap(find.text('Mark Remaining Done'));
     await _settle(tester);
     expect(find.text('Completed · 4 of 4'), findsOneWidget);
-    expect(find.text('Sholat Malam recorded'), findsOneWidget);
+    expect(find.text('Night Prayer recorded'), findsOneWidget);
     expect(find.byType(SnackBar), findsNothing);
     await _dismissNotice(tester, controller);
 
@@ -128,14 +128,14 @@ void main() {
     await _pumpRoutine(tester, RoutineDemoData.zuhur, controller);
 
     expect(find.text('Not Today'), findsNothing);
-    expect(find.text('Nearby Mosque'), findsOneWidget);
-    expect(find.text('Post-Prayer Dhikr'), findsOneWidget);
+    expect(find.text('Nearby Masjid & Mushola'), findsOneWidget);
+    expect(find.text('Zikir after prayer'), findsOneWidget);
 
-    await tester.tap(find.text('Mark Zuhur Done'));
+    await tester.tap(find.text('Mark Dhuhr Done'));
     await _settle(tester);
     expect(find.text('Recorded just now'), findsOneWidget);
-    expect(find.text('Zuhur recorded'), findsOneWidget);
-    expect(find.text('Mark Zuhur Done'), findsNothing);
+    expect(find.text('Dhuhr recorded'), findsOneWidget);
+    expect(find.text('Mark Dhuhr Done'), findsNothing);
     await _dismissNotice(tester, controller);
   });
 
@@ -162,11 +162,11 @@ void main() {
       calculationSettings: PrayerCalculationSettings.defaultSettings,
     );
     final cases = [
-      (RoutineDemoData.subuh, '04:16', 'Mark Subuh Done'),
-      (RoutineDemoData.zuhur, '11:41', 'Mark Zuhur Done'),
-      (RoutineDemoData.asar, '14:42', 'Mark Asar Done'),
+      (RoutineDemoData.subuh, '04:16', 'Mark Fajr Done'),
+      (RoutineDemoData.zuhur, '11:41', 'Mark Dhuhr Done'),
+      (RoutineDemoData.asar, '14:42', 'Mark Asr Done'),
       (RoutineDemoData.maghrib, '17:46', 'Mark Maghrib Done'),
-      (RoutineDemoData.isya, '18:56', 'Mark Isya Done'),
+      (RoutineDemoData.isya, '18:56', 'Mark Isha Done'),
     ];
 
     for (final (routine, time, completeLabel) in cases) {
@@ -179,8 +179,8 @@ void main() {
       expect(find.text(time), findsOneWidget);
       expect(find.text(completeLabel), findsOneWidget);
       expect(find.text('Not Today'), findsNothing);
-      expect(find.text('Nearby Mosque'), findsOneWidget);
-      expect(find.text('Post-Prayer Dhikr'), findsOneWidget);
+      expect(find.text('Nearby Masjid & Mushola'), findsOneWidget);
+      expect(find.text('Zikir after prayer'), findsOneWidget);
       expect(find.text('Available after prayer'), findsOneWidget);
     }
 
@@ -240,18 +240,18 @@ void main() {
     );
     await _settle(tester);
 
-    await tester.ensureVisible(find.text('Sholat Malam'));
-    await tester.tap(find.text('Sholat Malam'));
+    await tester.ensureVisible(find.text('Night Prayer'));
+    await tester.tap(find.text('Night Prayer'));
     await _settle(tester);
     expect(find.text('Belum dimulai'), findsOneWidget);
     expect(await tester.binding.handlePopRoute(), isTrue);
     await _settle(tester);
 
-    await tester.ensureVisible(find.text('Sholat Dhuha'));
-    await tester.tap(find.text('Sholat Dhuha'));
+    await tester.ensureVisible(find.text('Duha'));
+    await tester.tap(find.text('Duha'));
     await _settle(tester);
     expect(find.text('Belum dimulai'), findsOneWidget);
-    expect(find.text('Sholat Dhuha'), findsOneWidget);
+    expect(find.text('Duha'), findsOneWidget);
     expect(find.text('2 rakaat'), findsOneWidget);
   });
 

@@ -24,7 +24,7 @@ void main() {
 
     expect(find.text("Assalamu'alaikum"), findsOneWidget);
     expect(find.text('0 of 7 routines recorded'), findsOneWidget);
-    expect(find.text('Sholat Zuhur'), findsOneWidget);
+    expect(find.text('Dhuhr'), findsOneWidget);
 
     await tester.ensureVisible(
       find.byKey(const ValueKey('today-routine-zuhur')),
@@ -41,13 +41,13 @@ void main() {
     expect(find.text('Rangkaian'), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
 
-    await tester.tap(find.text('Mark Zuhur Done'));
+    await tester.tap(find.text('Mark Dhuhr Done'));
     await tester.pumpAndSettle();
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 50)),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Zuhur recorded'), findsOneWidget);
+    expect(find.text('Dhuhr recorded'), findsOneWidget);
     expect(find.byType(DaisthNotice), findsOneWidget);
     expect(find.byType(SnackBar), findsNothing);
 

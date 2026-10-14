@@ -31,8 +31,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Sholat Malam'), findsOneWidget);
-    expect(find.text('Subuh'), findsOneWidget);
+    expect(find.text('Night Prayer'), findsOneWidget);
+    expect(find.text('Fajr'), findsOneWidget);
     await tester.drag(find.byType(ListView), const Offset(0, -700));
     await tester.pumpAndSettle();
     expect(find.text('No custom routines yet.'), findsOneWidget);

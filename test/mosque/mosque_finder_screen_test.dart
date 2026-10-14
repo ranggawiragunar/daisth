@@ -95,12 +95,12 @@ void main() {
     );
     await tester.pumpWidget(harness.app());
     await tester.pump();
-    expect(find.text('Mencari masjid & mushola di sekitar…'), findsOneWidget);
+    expect(find.text('Mencari Masjid & Mushola di sekitar…'), findsOneWidget);
 
     locationFix.complete(const GeoCoordinate(latitude: -6.2, longitude: 106.8));
     await tester.pumpAndSettle();
     expect(
-      find.text('Belum menemukan masjid atau mushola di sekitar lokasi ini.'),
+      find.text('Belum menemukan Masjid atau Mushola di sekitar lokasi ini.'),
       findsOneWidget,
     );
     expect(find.text('Coba lagi'), findsOneWidget);
@@ -165,7 +165,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text('Belum menemukan masjid atau mushola di sekitar lokasi ini.'),
+      find.text('Belum menemukan Masjid atau Mushola di sekitar lokasi ini.'),
       findsNothing,
     );
     expect(

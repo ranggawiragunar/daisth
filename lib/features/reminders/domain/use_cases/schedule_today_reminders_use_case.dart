@@ -43,6 +43,9 @@ class ScheduleTodayRemindersUseCase {
   final DateTime Function() _clock;
   static const _followUpPolicy = ReminderFollowUpPolicy();
 
+  bool get _english =>
+      buildTodayReminderPlan.languageCode.toLowerCase() == 'en';
+
   Future<ReminderScheduleSummary> call({
     PrayerDaySchedule? schedule,
     DateTime? now,
@@ -200,9 +203,15 @@ class ScheduleTodayRemindersUseCase {
       routineId: primary.routineId,
       title: primary.title,
       body: isSnooze
-          ? 'Pengingat yang kamu tunda.'
+          ? _english
+                ? 'This is the reminder you snoozed.'
+                : 'Pengingat yang kamu tunda.'
           : primary.routineId == 'penutup-hari'
-          ? 'Kalau masih memungkinkan, rutinitas ini masih tersedia.'
+          ? _english
+                ? 'Your End of Day routine is still available if you have time.'
+                : 'Kalau masih memungkinkan, rutinitas ini masih tersedia.'
+          : _english
+          ? '${primary.title} is still available if you have time.'
           : '${primary.title} masih tersedia. Kalau belum sempat, masih ada waktu.',
       scheduledAt: at,
       priority: primary.priority,
@@ -216,13 +225,13 @@ class ScheduleTodayRemindersUseCase {
     final key =
         '${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
     final title = switch (id) {
-      'sholat-malam' => 'Sholat Malam',
-      'subuh' => 'Subuh',
-      'dhuha' => 'Sholat Dhuha',
-      'zuhur' => 'Sholat Zuhur',
-      'asar' => 'Sholat Asar',
-      'maghrib' => 'Sholat Maghrib',
-      _ => 'Sholat Isya',
+      'sholat-malam' => _english ? 'Night Prayer' : 'Sholat Malam',
+      'subuh' => _english ? 'Fajr' : 'Subuh',
+      'dhuha' => _english ? 'Duha' : 'Sholat Dhuha',
+      'zuhur' => _english ? 'Dhuhr' : 'Sholat Zuhur',
+      'asar' => _english ? 'Asr' : 'Sholat Asar',
+      'maghrib' => _english ? 'Maghrib' : 'Sholat Maghrib',
+      _ => _english ? 'Isha' : 'Sholat Isya',
     };
     return Reminder(
       id: '$id-primary-$key',

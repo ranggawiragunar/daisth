@@ -221,7 +221,10 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
       final prayer = period.focusPrayer;
       final routineId = PrayerTimePresentation.routineId(prayer);
       return FocusRoutineCard(
-        title: 'Sholat ${PrayerTimePresentation.label(prayer)}',
+        title: PrayerTimePresentation.label(
+          prayer,
+          Localizations.localeOf(context),
+        ),
         status: period.focusLabel,
         time: PrayerTimePresentation.time(schedule.timeFor(prayer)),
         onOpenRoutine: () => widget.onRoutineTap?.call(routineId),

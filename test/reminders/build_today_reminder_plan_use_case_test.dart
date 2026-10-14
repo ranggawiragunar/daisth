@@ -75,6 +75,44 @@ void main() {
     );
   });
 
+  test('English reminder terminology follows the active locale', () {
+    final englishBuilder = BuildTodayReminderPlanUseCase(languageCode: 'en');
+    final plan = englishBuilder(
+      schedule: schedule,
+      timezone: const DeviceTimezone(ianaName: 'Asia/Jakarta'),
+      now: now,
+    );
+
+    expect(
+      plan.reminders.singleWhere((item) => item.routineId == 'subuh').title,
+      'Fajr is coming up',
+    );
+    expect(
+      plan.reminders.singleWhere((item) => item.routineId == 'zuhur').title,
+      'Dhuhr is coming up',
+    );
+    expect(
+      plan.reminders.singleWhere((item) => item.routineId == 'asar').title,
+      'Asr is coming up',
+    );
+    expect(
+      plan.reminders.singleWhere((item) => item.routineId == 'isya').title,
+      'Isha is coming up',
+    );
+    expect(
+      plan.reminders
+          .singleWhere((item) => item.routineId == 'sholat-malam')
+          .title,
+      'Night Prayer',
+    );
+    expect(
+      plan.reminders
+          .singleWhere((item) => item.routineId == 'penutup-hari')
+          .title,
+      'End of Day',
+    );
+  });
+
   test('skips every reminder whose time has passed', () {
     final plan = builder(
       schedule: schedule,

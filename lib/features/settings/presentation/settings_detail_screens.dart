@@ -8,6 +8,7 @@ import '../../../app/router/route_paths.dart';
 import '../../../core/design_system/assets/daisth_assets.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../core/localization/daisth_terminology.dart';
 import '../../../core/location/domain/models/location_access_status.dart';
 import '../../../core/location/domain/repositories/location_repository.dart';
 import '../../../core/timezone/domain/repositories/timezone_repository.dart';
@@ -150,7 +151,13 @@ class _PrayerLocationSettingsScreenState
               const SizedBox(height: DaisthSpacing.md),
               const _ValueRow(label: 'Calculation', value: 'KEMENAG'),
               const SizedBox(height: DaisthSpacing.md),
-              const _ValueRow(label: 'Asar', value: 'Shafi'),
+              _ValueRow(
+                label: DaisthTerminology.prayerName(
+                  'asar',
+                  Localizations.localeOf(context),
+                ),
+                value: 'Shafi',
+              ),
               const SizedBox(height: DaisthSpacing.md),
               _ValueRow(label: 'Timezone', value: timezone ?? 'Tidak tersedia'),
               const SizedBox(height: DaisthSpacing.md),
