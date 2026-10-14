@@ -41,7 +41,7 @@ void daisthBackgroundNotificationResponse(NotificationResponse response) async {
     }
     tzdata.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation(payload.timezoneIdentifier));
-    final db = DaisthDatabaseService();
+    final db = DaisthDatabaseService.background();
     final routineRepo = RoutineRecordRepositoryData(
       service: RoutineRecordSqliteService(db),
       mapper: RoutineRecordMapper(),

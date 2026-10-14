@@ -9,6 +9,8 @@ import 'package:daisth/features/routines/domain/models/routine_status.dart';
 import 'package:daisth/features/sync/data/mappers/sync_entity_firestore_mapper.dart';
 import 'package:daisth/features/sync/data/services/sync_sqlite_service.dart';
 
+import 'package:daisth/features/sync/domain/models/sync_entity.dart';
+
 import '../support/test_persistence.dart';
 
 void main() {
@@ -239,6 +241,44 @@ void main() {
     final db = await persistence.database.open();
     expect(await db.query(DatabaseSchema.syncOutbox), isEmpty);
   });
+
+  test(
+    'remote tombstones apply without a payload for every entity type',
+    () async {
+      final persistence = await TestPersistence.create();
+      addTearDown(persistence.dispose);
+      final service = SyncSqliteService(persistence.database);
+      await service.initialize();
+      final now = DateTime.utc(2026, 10, 14);
+      final ids = <SyncEntityType, String>{
+        SyncEntityType.routineDefinition: 'missing',
+        SyncEntityType.routineStepDefinition: 'missing__step',
+        SyncEntityType.routineRecord: '2026-10-12__zuhur',
+        SyncEntityType.routineStepRecord: '2026-10-12__zuhur__step',
+        SyncEntityType.dailyReflection: '2026-10-12',
+      };
+      final entities = ids.entries
+          .map(
+            (entry) => SyncEntity(
+              type: entry.key,
+              id: entry.value,
+              updatedAtUtc: now,
+              deletedAtUtc: now,
+              sourceDeviceId: 'remote',
+              payload: null,
+              isDeleted: true,
+            ),
+          )
+          .toList();
+      final applied = await service.applyMerge(
+        remoteWinners: entities,
+        localWinners: const [],
+        nowUtc: now,
+      );
+      expect(applied, hasLength(SyncEntityType.values.length));
+      expect(await service.getPending(), isEmpty);
+    },
+  );
 
   test('merge transaction preserves a newer concurrent local record', () async {
     final persistence = await TestPersistence.create();

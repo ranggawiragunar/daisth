@@ -69,6 +69,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
       isDismissible: false,
       enableDrag: false,
       useSafeArea: true,
+      useRootNavigator: true,
       builder: (context) => _CustomRoutineEditor(
         repository: widget.routineRepository,
         recordRepository: widget.routineRecordRepository,
@@ -101,6 +102,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
       isDismissible: false,
       enableDrag: false,
       useSafeArea: true,
+      useRootNavigator: true,
       builder: (context) => _CustomRoutineEditor(
         repository: widget.routineRepository,
         recordRepository: widget.routineRecordRepository,

@@ -4,12 +4,19 @@ import 'package:sqflite/sqflite.dart';
 import '../schema/database_schema.dart';
 
 class DaisthDatabaseService {
-  DaisthDatabaseService({this.factory, this.databasePath});
+  DaisthDatabaseService({this.factory, this.databasePath})
+    : _singleInstance = true;
+
+  // A notification isolate must own its native connection. Closing it must
+  // never close the foreground engine's connection to the same SQLite file.
+  DaisthDatabaseService.background({this.factory, this.databasePath})
+    : _singleInstance = false;
 
   static const databaseName = 'daisth.db';
 
   final DatabaseFactory? factory;
   final String? databasePath;
+  final bool _singleInstance;
   Future<Database>? _database;
 
   Future<Database> open() => _database ??= _open();
@@ -23,6 +30,7 @@ class DaisthDatabaseService {
       resolvedPath,
       options: OpenDatabaseOptions(
         version: DatabaseSchema.version,
+        singleInstance: _singleInstance,
         onCreate: (db, _) => DatabaseSchema.create(db),
         onUpgrade: DatabaseSchema.upgrade,
       ),

@@ -54,6 +54,8 @@ void main() {
     expect(data['isDeleted'], isTrue);
     expect(data['deletedAtUtc'], isA<Timestamp>());
     expect(data['schemaVersion'], 1);
+    expect(data.keys, isNot(contains('note')));
+    expect(data.keys, isNot(contains('rhythm')));
   });
 
   test('stable composite IDs escape separators inside routine IDs', () {

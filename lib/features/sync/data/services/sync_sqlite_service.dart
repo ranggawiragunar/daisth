@@ -479,21 +479,6 @@ class SyncSqliteService {
   }
 
   Future<void> _applyRemote(DatabaseExecutor tx, SyncEntity entity) async {
-    final map = switch (entity.type) {
-      SyncEntityType.routineDefinition => _definitionMapper.toMap(
-        entity.payload as RoutineDefinition,
-      ),
-      SyncEntityType.routineStepDefinition => _definitionMapper.stepToMap(
-        entity.payload as RoutineStepDefinition,
-      ),
-      SyncEntityType.routineRecord =>
-        _recordMapper.toData(entity.payload as RoutineRecord).toMap(),
-      SyncEntityType.routineStepRecord =>
-        _recordMapper.stepToData(entity.payload as RoutineStepRecord).toMap(),
-      SyncEntityType.dailyReflection => _reflectionRow(
-        entity.payload as DailyReflection,
-      ),
-    };
     final table = switch (entity.type) {
       SyncEntityType.routineDefinition => DatabaseSchema.routineDefinitions,
       SyncEntityType.routineStepDefinition =>
@@ -520,6 +505,21 @@ class SyncSqliteService {
     if (entity.isDeleted) {
       await tx.delete(table, where: where, whereArgs: args);
     } else {
+      final map = switch (entity.type) {
+        SyncEntityType.routineDefinition => _definitionMapper.toMap(
+          entity.payload as RoutineDefinition,
+        ),
+        SyncEntityType.routineStepDefinition => _definitionMapper.stepToMap(
+          entity.payload as RoutineStepDefinition,
+        ),
+        SyncEntityType.routineRecord =>
+          _recordMapper.toData(entity.payload as RoutineRecord).toMap(),
+        SyncEntityType.routineStepRecord =>
+          _recordMapper.stepToData(entity.payload as RoutineStepRecord).toMap(),
+        SyncEntityType.dailyReflection => _reflectionRow(
+          entity.payload as DailyReflection,
+        ),
+      };
       await tx.insert(table, map, conflictAlgorithm: ConflictAlgorithm.replace);
     }
   }

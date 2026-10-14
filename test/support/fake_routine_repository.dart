@@ -14,9 +14,7 @@ class FakeRoutineRepository implements RoutineRepository {
   }) {
     for (final definition
         in definitions ??
-            DefaultRoutineTemplateCatalog.definitions(
-              DateTime.utc(2026, 10, 13),
-            )) {
+            DefaultRoutineTemplateCatalog.definitions(DateTime.now())) {
       _definitions[definition.id] = definition;
     }
     for (final step in steps) {

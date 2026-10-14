@@ -66,7 +66,9 @@ class DaisthFirestoreService implements CloudDataRepository {
             .doc(entity.id);
         final data = _mapper.toFirestore(entity)
           ..['serverUpdatedAt'] = FieldValue.serverTimestamp();
-        batch.set(ref, data, SetOptions(merge: true));
+        // Every entity map is a complete document. Replacing it also removes old
+        // user content when this write is a metadata-only tombstone.
+        batch.set(ref, data);
       }
       await batch.commit();
     }

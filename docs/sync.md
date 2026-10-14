@@ -42,7 +42,9 @@ Documents live only under `users/{uid}` and its entity collections. Each entity
 has `schemaVersion`, `updatedAtUtc`, `sourceDeviceId`, `isDeleted`, and
 `deletedAtUtc`; `serverUpdatedAt` is transport diagnostics only. Domain event
 timestamps retain their existing meaning. Deleted records and reflections are
-kept remotely as tombstones so another device cannot resurrect stale data.
+kept remotely as metadata-only tombstones so another device cannot resurrect
+stale data. Entity writes replace complete documents; a tombstone therefore
+removes the previous user-content fields instead of leaving them behind.
 Routine definitions are archived through their existing `isArchived` field.
 
 ## Merge and outbox
