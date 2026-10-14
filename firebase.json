@@ -23,7 +23,8 @@
         "lib/firebase_options.dart": {
           "projectId": "daisthapp",
           "configurations": {
-            "android": "1:563438128973:android:c8453221d952847596b104"
+            "android": "1:563438128973:android:c8453221d952847596b104",
+            "ios": "1:563438128973:ios:a18c9b1f2ffb1cb596b104"
           }
         }
       }

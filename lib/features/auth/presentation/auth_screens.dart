@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../../core/design_system/components/daisth_notice.dart';
 import '../../../core/design_system/components/daisth_notice_controller.dart';
@@ -309,22 +310,12 @@ class _AccountScreenState extends State<AccountScreen> {
                         const SizedBox(height: DaisthSpacing.lg),
                         if (!kIsWeb &&
                             defaultTargetPlatform == TargetPlatform.iOS) ...[
-                          FilledButton(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              foregroundColor: Colors.white,
-                              minimumSize: const Size.fromHeight(48),
-                            ),
+                          SignInWithAppleButton(
+                            height: 48,
+                            style: theme.brightness == Brightness.dark
+                                ? SignInWithAppleButtonStyle.white
+                                : SignInWithAppleButtonStyle.black,
                             onPressed: loading ? null : _signInWithApple,
-                            child: loading
-                                ? const SizedBox.square(
-                                    dimension: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Text('Lanjutkan dengan Apple'),
                           ),
                           const SizedBox(height: DaisthSpacing.sm),
                         ],

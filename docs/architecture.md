@@ -86,10 +86,12 @@ AuthRepositoryData
 FirebaseAuthService
 ```
 
-The account feature supports Google Sign-In only and remains optional. Firebase
-owns session persistence. Sign-in and sign-out do not read, write, merge, or
-clear local feature data. Authentication does not gate shell routes. Firestore
-sync and account ownership semantics are not part of this foundation.
+The optional account feature supports Google Sign-In on Android and iOS, plus
+Sign in with Apple on iOS after production Apple/Firebase configuration is
+completed. Firebase owns session persistence. Sign-in and sign-out do not read,
+write, merge, or clear local feature data. Authentication does not gate shell
+routes. Firestore sync and account ownership semantics are described in
+[sync.md](sync.md).
 
 `RoutineDetailViewModel` loads the selected local calendar day's step and
 routine records when the route opens. Status is resolved from required steps;
@@ -331,7 +333,9 @@ permission, exact-alarm availability, Reminder Health, and the current schedule
 without prompting for permission.
 
 Account deletion is orchestrated by `DeleteAccountUseCase`. It locks the sync
-coordinator for the target UID, reauthenticates with Google, purges the known
-Firestore user collections, deletes the Firebase Auth user, clears the local
-sync link only when it belongs to that UID, then disconnects Google. Local
-SQLite feature data and device settings remain intact.
+coordinator for the target UID, reauthenticates with the active Google or Apple
+provider, purges the known Firestore user collections, revokes Apple
+authorization for Apple accounts, deletes the Firebase Auth user, and clears
+the local sync link only when it belongs to that UID. Google is disconnected
+after Google-account deletion. Local SQLite feature data and device settings
+remain intact.

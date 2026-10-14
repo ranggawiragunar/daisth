@@ -48,6 +48,11 @@ class DeleteAccountUseCase {
       if (reauthenticated.uid != expectedUid) {
         return DeleteAccountOutcome.wrongAccount;
       }
+      final currentSession = await authRepository.currentSession();
+      if (currentSession is! AuthSignedIn ||
+          currentSession.user.uid != expectedUid) {
+        return DeleteAccountOutcome.wrongAccount;
+      }
     } on AuthOperationException catch (error) {
       return switch (error.failure) {
         AuthFailure.cancelled => DeleteAccountOutcome.cancelled,
@@ -62,18 +67,18 @@ class DeleteAccountUseCase {
       return DeleteAccountOutcome.serviceUnavailable;
     }
 
+    try {
+      await cloudRepository.deleteAllUserCloudData(expectedUid);
+    } catch (_) {
+      return DeleteAccountOutcome.cloudDeleteFailed;
+    }
+
     if (session.user.provider == AuthProviderKind.apple) {
       try {
         await authRepository.revokeAppleAuthorizationToken();
       } catch (_) {
         return DeleteAccountOutcome.appleTokenRevocationFailed;
       }
-    }
-
-    try {
-      await cloudRepository.deleteAllUserCloudData(expectedUid);
-    } catch (_) {
-      return DeleteAccountOutcome.cloudDeleteFailed;
     }
 
     try {

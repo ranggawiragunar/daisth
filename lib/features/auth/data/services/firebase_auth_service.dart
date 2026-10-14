@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../domain/models/auth_session.dart';
 import '../../domain/models/auth_user.dart';
+import 'firebase_auth_error_mapper.dart';
 
 class FirebaseAuthService {
   factory FirebaseAuthService({
@@ -116,7 +117,9 @@ class FirebaseAuthService {
       ..addScope('name');
     final result = await current.reauthenticateWithProvider(provider);
     final user = result.user;
-    if (user == null || user.uid != current.uid) {
+    if (user == null ||
+        user.uid != current.uid ||
+        _auth!.currentUser?.uid != current.uid) {
       throw const AuthOperationException(AuthFailure.credentialRejected);
     }
     _pendingAppleAuthorizationCode =
@@ -184,7 +187,7 @@ class FirebaseAuthService {
     } on GoogleSignInException catch (error) {
       throw AuthOperationException(_googleFailure(error.code));
     } on FirebaseAuthException catch (error) {
-      throw AuthOperationException(_firebaseFailure(error.code));
+      throw AuthOperationException(mapFirebaseAuthErrorCode(error.code));
     } on FirebaseException {
       throw const AuthOperationException(AuthFailure.serviceUnavailable);
     } catch (_) {
@@ -216,20 +219,5 @@ class FirebaseAuthService {
     GoogleSignInExceptionCode.uiUnavailable => AuthFailure.serviceUnavailable,
     GoogleSignInExceptionCode.userMismatch => AuthFailure.credentialRejected,
     GoogleSignInExceptionCode.unknownError => AuthFailure.unknown,
-  };
-
-  AuthFailure _firebaseFailure(String code) => switch (code) {
-    'network-request-failed' => AuthFailure.networkUnavailable,
-    'requires-recent-login' => AuthFailure.needsReauthentication,
-    'account-exists-with-different-credential' ||
-    'invalid-credential' ||
-    'user-mismatch' ||
-    'credential-already-in-use' => AuthFailure.credentialRejected,
-    'user-disabled' => AuthFailure.accountDisabled,
-    'too-many-requests' => AuthFailure.tooManyRequests,
-    'operation-not-allowed' ||
-    'app-not-authorized' => AuthFailure.configurationError,
-    'service-not-available' => AuthFailure.serviceUnavailable,
-    _ => AuthFailure.unknown,
   };
 }

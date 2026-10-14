@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
 import 'package:daisth/core/design_system/theme/daisth_theme.dart';
 import 'package:daisth/features/auth/domain/models/auth_session.dart';
@@ -103,10 +104,17 @@ void main() {
         find.text('Daisth tetap bisa digunakan tanpa akun.'),
         findsOneWidget,
       );
-      expect(find.text('Lanjutkan dengan Apple'), findsOneWidget);
+      expect(find.byType(SignInWithAppleButton), findsOneWidget);
+      expect(find.text('Sign in with Apple'), findsOneWidget);
       expect(find.text('Lanjutkan dengan Google'), findsOneWidget);
 
-      await tester.tap(find.text('Lanjutkan dengan Apple'));
+      expect(
+        tester
+            .widget<SignInWithAppleButton>(find.byType(SignInWithAppleButton))
+            .style,
+        SignInWithAppleButtonStyle.black,
+      );
+      await tester.tap(find.byType(SignInWithAppleButton));
       await tester.pumpAndSettle();
       expect(repository.appleSignInRequests, 1);
       expect(find.text('Akun Apple'), findsOneWidget);
@@ -134,10 +142,40 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Lanjutkan dengan Apple'), findsNothing);
+      expect(find.byType(SignInWithAppleButton), findsNothing);
+      expect(find.text('Sign in with Apple'), findsNothing);
       expect(find.text('Lanjutkan dengan Google'), findsOneWidget);
     });
   });
+
+  testWidgets(
+    'iOS Apple sign-in uses the light logo style in dark appearance',
+    (tester) async {
+      await _withTargetPlatform(TargetPlatform.iOS, () async {
+        final repository = FakeAuthRepository();
+        final viewModel = AuthViewModel(repository);
+        final notices = DaisthNoticeController();
+        addTearDown(viewModel.dispose);
+        addTearDown(repository.dispose);
+        addTearDown(notices.dispose);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: DaisthTheme.dark,
+            home: AccountScreen(viewModel: viewModel, notices: notices),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          tester
+              .widget<SignInWithAppleButton>(find.byType(SignInWithAppleButton))
+              .style,
+          SignInWithAppleButtonStyle.white,
+        );
+      });
+    },
+  );
 
   testWidgets(
     'signed-in Account shows Google profile without verification UX',

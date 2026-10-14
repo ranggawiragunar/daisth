@@ -69,14 +69,18 @@ in, app resume, and manual Sync now. It pulls the account dataset, merges, then
 flushes outbox writes in Firestore batches. There is no background worker or
 continuous snapshot listener. Unsent work remains durable for the next eligible
 foreground session. Firestore persistence is disabled so SQLite remains the
-only offline store.
+only offline store. Google Sign-In is available on Android and iOS. Sign in
+with Apple is implemented on iOS, subject to completing Apple Developer and
+Firebase provider setup before production use.
 
 ## Account deletion
 
 `DeleteAccountUseCase` holds an exclusive sync-coordinator lock for the
 currently authenticated UID so another pull or outbox write cannot race the
-purge. It reauthenticates through Google and verifies the returned Firebase
-identity before deleting data. `FirestoreAccountDataPurger` enumerates and
+purge. It reauthenticates through the active Google or Apple provider and
+verifies the returned Firebase identity before deleting data. For Apple
+accounts it revokes the Apple authorization token after purging cloud data and
+before deleting the Firebase Auth user. `FirestoreAccountDataPurger` enumerates and
 deletes each known Daisth subcollection in batches of at most 400 documents,
 including tombstones, then deletes `users/{uid}`. Re-enumerating remaining
 documents makes a retry safe after a partial purge. Firebase Auth deletion

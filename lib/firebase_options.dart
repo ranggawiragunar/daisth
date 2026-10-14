@@ -62,6 +62,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '563438128973',
     projectId: 'daisthapp',
     storageBucket: 'daisthapp.firebasestorage.app',
+    androidClientId:
+        '563438128973-307kh7e25svgf963rqot0qb32r0bbb3r.apps.googleusercontent.com',
+    iosClientId:
+        '563438128973-9b6k6rtappnf2c1phoavfetgpo7cssa7.apps.googleusercontent.com',
     iosBundleId: 'com.rendev.daisth',
   );
 }

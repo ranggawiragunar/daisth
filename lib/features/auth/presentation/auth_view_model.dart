@@ -154,7 +154,7 @@ class AuthViewModel extends ChangeNotifier {
           DeleteAccountOutcome.accountDeleteFailed =>
             'Akun belum dapat dihapus. Data di perangkat tetap aman. Coba lagi.',
           DeleteAccountOutcome.appleTokenRevocationFailed =>
-            'Izin Apple belum dapat dicabut. Akun dan data masih aman; coba lagi.',
+            'Penghapusan belum selesai. Data cloud mungkin sudah terhapus, tetapi akun masih aktif karena akses Apple belum dapat dicabut. Coba lagi.',
           DeleteAccountOutcome.serviceUnavailable =>
             'Layanan akun belum tersedia. Data di perangkat tetap aman.',
           DeleteAccountOutcome.success || DeleteAccountOutcome.cancelled => '',

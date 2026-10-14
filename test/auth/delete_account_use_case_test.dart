@@ -20,6 +20,12 @@ void main() {
       expect(await h.useCase('user-a'), DeleteAccountOutcome.success);
       expect(h.auth.events, ['reauth', 'auth-delete', 'disconnect']);
       expect(h.cloud.events, ['purge:user-a']);
+      expect(h.timeline, [
+        'reauth',
+        'purge:user-a',
+        'auth-delete',
+        'disconnect',
+      ]);
       expect(h.local.events, ['unlink:user-a']);
       expect(h.local.state.linkedUid, isNull);
       expect(h.local.dataPreserved, isTrue);
@@ -120,7 +126,7 @@ void main() {
   });
 
   test(
-    'Apple deletion revokes Apple before purge and preserves local data',
+    'Apple deletion purges cloud before revocation and preserves local data',
     () async {
       final h = await _Harness.create(
         linkedUid: 'user-a',
@@ -136,6 +142,13 @@ void main() {
         'sign-out',
       ]);
       expect(h.cloud.events, ['purge:user-a']);
+      expect(h.timeline, [
+        'reauth-apple',
+        'purge:user-a',
+        'revoke-apple',
+        'auth-delete',
+        'sign-out',
+      ]);
       expect(h.local.events, ['unlink:user-a']);
       expect(h.local.state.linkedUid, isNull);
       expect(h.local.dataPreserved, isTrue);
@@ -172,10 +185,28 @@ void main() {
     },
   );
 
+  test('Apple deletion stops if the current Firebase UID changes', () async {
+    final h = await _Harness.create(
+      linkedUid: 'user-a',
+      provider: AuthProviderKind.apple,
+    );
+    addTearDown(h.coordinator.dispose);
+    h.auth.currentUidAfterReauth = 'user-b';
+
+    expect(await h.useCase('user-a'), DeleteAccountOutcome.wrongAccount);
+    expect(h.auth.events, ['reauth-apple']);
+    expect(h.cloud.events, isEmpty);
+    expect(h.local.state.linkedUid, 'user-a');
+    expect(h.local.dataPreserved, isTrue);
+  });
+
   test(
-    'Apple token revocation failure prevents cloud and auth deletion',
+    'Apple token revocation failure keeps Firebase user after cloud purge',
     () async {
-      final h = await _Harness.create(provider: AuthProviderKind.apple);
+      final h = await _Harness.create(
+        linkedUid: 'user-a',
+        provider: AuthProviderKind.apple,
+      );
       addTearDown(h.coordinator.dispose);
       h.auth.revokeAppleFails = true;
 
@@ -184,7 +215,9 @@ void main() {
         DeleteAccountOutcome.appleTokenRevocationFailed,
       );
       expect(h.auth.events, ['reauth-apple', 'revoke-apple']);
-      expect(h.cloud.events, isEmpty);
+      expect(h.cloud.events, ['purge:user-a']);
+      expect(h.local.state.linkedUid, 'user-a');
+      expect(h.local.dataPreserved, isTrue);
     },
   );
 
@@ -199,7 +232,7 @@ void main() {
       h.cloud.failPurge = true;
 
       expect(await h.useCase('user-a'), DeleteAccountOutcome.cloudDeleteFailed);
-      expect(h.auth.events, ['reauth-apple', 'revoke-apple']);
+      expect(h.auth.events, ['reauth-apple']);
       expect(h.local.state.linkedUid, 'user-a');
       expect(h.local.dataPreserved, isTrue);
     },
@@ -222,7 +255,7 @@ void main() {
 }
 
 class _Harness {
-  _Harness(this.auth, this.cloud, this.local, this.coordinator)
+  _Harness(this.auth, this.cloud, this.local, this.coordinator, this.timeline)
     : useCase = DeleteAccountUseCase(
         authRepository: auth,
         cloudRepository: cloud,
@@ -235,15 +268,17 @@ class _Harness {
   final _Local local;
   final SyncCoordinator coordinator;
   final DeleteAccountUseCase useCase;
+  final List<String> timeline;
 
   static Future<_Harness> create({
     String authUid = 'user-a',
     String? linkedUid,
     AuthProviderKind provider = AuthProviderKind.google,
   }) async {
-    final auth = _Auth(authUid, provider: provider);
+    final timeline = <String>[];
+    final auth = _Auth(authUid, provider: provider, timeline: timeline);
     final local = _Local(linkedUid);
-    final cloud = _Cloud();
+    final cloud = _Cloud(timeline);
     final coordinator = SyncCoordinator(
       authRepository: auth,
       localRepository: local,
@@ -254,23 +289,31 @@ class _Harness {
     auth.events.clear();
     cloud.events.clear();
     local.events.clear();
-    return _Harness(auth, cloud, local, coordinator);
+    timeline.clear();
+    return _Harness(auth, cloud, local, coordinator, timeline);
   }
 }
 
 class _Auth implements AuthRepository {
-  _Auth(this.uid, {this.provider = AuthProviderKind.google});
+  _Auth(
+    this.uid, {
+    this.provider = AuthProviderKind.google,
+    required this.timeline,
+  });
   final String uid;
   final AuthProviderKind provider;
+  final List<String> timeline;
   final events = <String>[];
   AuthFailure? reauthFailure;
   AuthFailure? deleteFailure;
   AuthUser? reauthUser;
+  String? currentSessionUid;
+  String? currentUidAfterReauth;
   bool disconnectFails = false;
   bool revokeAppleFails = false;
 
   AuthSession get session =>
-      AuthSignedIn(AuthUser(uid: uid, provider: provider));
+      AuthSignedIn(AuthUser(uid: currentSessionUid ?? uid, provider: provider));
   @override
   Stream<AuthSession> authStateChanges() => Stream.value(session);
   @override
@@ -284,30 +327,36 @@ class _Auth implements AuthRepository {
   @override
   Future<AuthUser> reauthenticateWithGoogle() async {
     events.add('reauth');
+    timeline.add('reauth');
     if (reauthFailure case final failure?) {
       throw AuthOperationException(failure);
     }
+    currentSessionUid = currentUidAfterReauth ?? currentSessionUid;
     return reauthUser ?? AuthUser(uid: uid, provider: provider);
   }
 
   @override
   Future<AuthUser> reauthenticateWithApple() async {
     events.add('reauth-apple');
+    timeline.add('reauth-apple');
     if (reauthFailure case final failure?) {
       throw AuthOperationException(failure);
     }
+    currentSessionUid = currentUidAfterReauth ?? currentSessionUid;
     return reauthUser ?? AuthUser(uid: uid, provider: AuthProviderKind.apple);
   }
 
   @override
   Future<void> revokeAppleAuthorizationToken() async {
     events.add('revoke-apple');
+    timeline.add('revoke-apple');
     if (revokeAppleFails) throw StateError('Apple token revocation failed');
   }
 
   @override
   Future<void> deleteCurrentUser() async {
     events.add('auth-delete');
+    timeline.add('auth-delete');
     if (deleteFailure case final failure?) {
       throw AuthOperationException(failure);
     }
@@ -316,16 +365,23 @@ class _Auth implements AuthRepository {
   @override
   Future<void> disconnectGoogle() async {
     events.add('disconnect');
+    timeline.add('disconnect');
     if (disconnectFails) throw StateError('disconnect failed');
   }
 
   @override
-  Future<void> signOut() async => events.add('sign-out');
+  Future<void> signOut() async {
+    events.add('sign-out');
+    timeline.add('sign-out');
+  }
+
   @override
   Future<void> retryAvailability() async {}
 }
 
 class _Cloud implements CloudDataRepository {
+  _Cloud(this.timeline);
+  final List<String> timeline;
   final events = <String>[];
   bool failPurge = false;
   @override
@@ -338,6 +394,7 @@ class _Cloud implements CloudDataRepository {
   @override
   Future<void> deleteAllUserCloudData(String uid) async {
     events.add('purge:$uid');
+    timeline.add('purge:$uid');
     if (failPurge) throw StateError('network unavailable');
   }
 }

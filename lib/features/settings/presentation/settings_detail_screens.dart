@@ -492,15 +492,15 @@ class DataPrivacySettingsScreen extends StatelessWidget {
             Text('Data Daisth'),
             SizedBox(height: DaisthSpacing.sm),
             Text(
-              'Rutinitas, riwayat, dan Reflection disimpan di perangkat ini.',
+              'Rutinitas, riwayat, dan Reflection tersimpan di perangkat ini secara default.',
             ),
             SizedBox(height: DaisthSpacing.md),
             Text(
-              'Sinkronisasi cloud bersifat opsional. Jika diaktifkan, data sinkronisasi disimpan secara privat di bawah akun Firebase yang terhubung.',
+              'Sinkronisasi cloud bersifat opsional. Jika diaktifkan, rutinitas, riwayat, dan isi Reflection disinkronkan secara privat ke Firestore di bawah UID akun yang terhubung.',
             ),
             SizedBox(height: DaisthSpacing.md),
             Text(
-              'Lokasi perangkat digunakan untuk waktu salat dan pencarian masjid terdekat.',
+              'Lokasi diproses di perangkat untuk menghitung waktu salat. Saat mencari masjid terdekat, koordinat dikirim ke layanan OpenStreetMap/Overpass. Jika kamu membuka navigasi, koordinat tujuan masjid diteruskan ke Google Maps. Daisth tidak menyimpan koordinat lokasi di Firestore.',
             ),
             SizedBox(height: DaisthSpacing.md),
             Text(

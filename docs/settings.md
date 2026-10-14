@@ -40,8 +40,12 @@ and do not enter the Firestore outbox.
 Routine, History, custom routine, Reflection, appearance, and reminder data are
 stored locally. Cloud sync is optional; when active, the syncable records are
 stored under the signed-in Firebase UID's private Firestore path. Location is
-used for prayer times and nearby mosque search. Reflection notes are not placed
-in notification payloads. Daisth currently does not include Firebase Analytics.
+used locally to calculate prayer times. Nearby Mosque sends coordinates in a
+request to an OpenStreetMap/Overpass endpoint; choosing navigation passes the
+selected mosque coordinates to Google Maps. Daisth does not write location to
+Firestore. Reflection rhythm and note sync when account sync is explicitly
+enabled, and Reflection notes are not placed in notification payloads. Daisth
+currently does not include Firebase Analytics.
 The screen does not invent a Privacy Policy or Terms URL.
 
 ## About

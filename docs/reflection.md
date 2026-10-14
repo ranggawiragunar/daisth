@@ -18,8 +18,10 @@ The `daily_reflections` table stores one row per local `CalendarDay` using its
 `YYYY-MM-DD` `date_key`. The stable persisted rhythm values are not localized
 labels. The first save sets `recorded_at_utc` and `updated_at_utc` to the actual
 UTC action instant. Later edits preserve `recorded_at_utc` and update only
-`updated_at_utc`. Notes remain on-device; they are not logged, sent to a
-service, or included in reminder payloads.
+`updated_at_utc`. Reflection is stored locally by default. When the user
+explicitly activates account sync, its rhythm and optional note are synchronized
+to that user's private Firestore data. Reflection text is not logged or placed
+in reminder payloads.
 
 `/reflection` edits today's `CalendarDay`; `/history/:date/reflection` edits the
 selected historical day with the same screen and view model. Reflection is
