@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -7,8 +9,47 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val releaseSigningProperties = Properties()
+val releaseSigningPropertiesFile = rootProject.file("key.properties")
+if (releaseSigningPropertiesFile.isFile) {
+    releaseSigningPropertiesFile.inputStream().use { input ->
+        releaseSigningProperties.load(input)
+    }
+}
+val releaseSigningKeys = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+val hasAnyReleaseSigningValue = releaseSigningKeys.any {
+    !releaseSigningProperties.getProperty(it).isNullOrBlank()
+}
+val hasAllReleaseSigningValues = releaseSigningKeys.all {
+    !releaseSigningProperties.getProperty(it).isNullOrBlank()
+}
+if (hasAnyReleaseSigningValue && !hasAllReleaseSigningValues) {
+    throw GradleException(
+        "android/key.properties is incomplete; provide storeFile, storePassword, keyAlias, and keyPassword."
+    )
+}
+val releaseKeystore = if (hasAllReleaseSigningValues) {
+    rootProject.file(releaseSigningProperties.getProperty("storeFile"))
+} else {
+    null
+}
+if (releaseKeystore != null && !releaseKeystore.isFile) {
+    throw GradleException("The release keystore configured in android/key.properties was not found.")
+}
+
 android {
     namespace = "com.rendev.daisth"
+
+    signingConfigs {
+        if (hasAllReleaseSigningValues) {
+            create("release") {
+                storeFile = requireNotNull(releaseKeystore)
+                storePassword = releaseSigningProperties.getProperty("storePassword")
+                keyAlias = releaseSigningProperties.getProperty("keyAlias")
+                keyPassword = releaseSigningProperties.getProperty("keyPassword")
+            }
+        }
+    }
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -31,9 +72,12 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Build unsigned until a developer-owned upload key is configured locally.
+            signingConfig = if (hasAllReleaseSigningValues) {
+                signingConfigs.getByName("release")
+            } else {
+                null
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 import 'dart:ui' show DartPluginRegistrant;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
@@ -83,6 +84,8 @@ void daisthBackgroundNotificationResponse(NotificationResponse response) async {
     await routineRepo.closeChanges();
     await definitions.closeChanges();
   } catch (error, stackTrace) {
-    debugPrint('Daisth reminder action failed: $error\n$stackTrace');
+    if (kDebugMode) {
+      debugPrint('Daisth reminder action failed: $error\n$stackTrace');
+    }
   }
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- Keep local SQLite data out of Android cloud backups. -->
+        <exclude domain="database" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <!-- Cross-device continuity uses optional Daisth sync, not SQLite copying. -->
+        <exclude domain="database" path="." />
+    </device-transfer>
+</data-extraction-rules>
