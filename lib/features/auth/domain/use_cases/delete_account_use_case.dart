@@ -1,4 +1,5 @@
 import '../models/auth_session.dart';
+import '../models/auth_user.dart';
 import '../repositories/auth_repository.dart';
 import '../../../sync/domain/repositories/cloud_data_repository.dart';
 import '../../../sync/domain/repositories/sync_local_repository.dart';
@@ -12,6 +13,7 @@ enum DeleteAccountOutcome {
   networkUnavailable,
   cloudDeleteFailed,
   accountDeleteFailed,
+  appleTokenRevocationFailed,
   serviceUnavailable,
 }
 
@@ -37,7 +39,12 @@ class DeleteAccountUseCase {
     }
 
     try {
-      final reauthenticated = await authRepository.reauthenticateWithGoogle();
+      final reauthenticated = switch (session.user.provider) {
+        AuthProviderKind.google =>
+          await authRepository.reauthenticateWithGoogle(),
+        AuthProviderKind.apple =>
+          await authRepository.reauthenticateWithApple(),
+      };
       if (reauthenticated.uid != expectedUid) {
         return DeleteAccountOutcome.wrongAccount;
       }
@@ -53,6 +60,14 @@ class DeleteAccountUseCase {
       };
     } catch (_) {
       return DeleteAccountOutcome.serviceUnavailable;
+    }
+
+    if (session.user.provider == AuthProviderKind.apple) {
+      try {
+        await authRepository.revokeAppleAuthorizationToken();
+      } catch (_) {
+        return DeleteAccountOutcome.appleTokenRevocationFailed;
+      }
     }
 
     try {
@@ -82,7 +97,11 @@ class DeleteAccountUseCase {
       await syncLocalRepository.clearLinkForDeletedAccount(expectedUid);
     }
     try {
-      await authRepository.disconnectGoogle();
+      if (session.user.provider == AuthProviderKind.google) {
+        await authRepository.disconnectGoogle();
+      } else {
+        await authRepository.signOut();
+      }
     } catch (_) {
       try {
         await authRepository.signOut();

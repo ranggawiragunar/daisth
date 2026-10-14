@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/components/daisth_notice.dart';
@@ -5,6 +6,7 @@ import '../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
 import '../domain/models/auth_session.dart';
+import '../domain/models/auth_user.dart';
 import '../domain/use_cases/delete_account_use_case.dart';
 import 'auth_view_model.dart';
 import '../../sync/domain/models/sync_entity.dart';
@@ -53,6 +55,12 @@ class _AccountScreenState extends State<AccountScreen> {
     if (widget.viewModel.failure != AuthFailure.cancelled) _notice(success);
   }
 
+  Future<void> _signInWithApple() async {
+    final success = await widget.viewModel.signInWithApple();
+    if (!mounted) return;
+    if (widget.viewModel.failure != AuthFailure.cancelled) _notice(success);
+  }
+
   Future<void> _signOut() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -86,12 +94,16 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<void> _deleteAccount(AuthSignedIn session) async {
     final useCase = widget.deleteAccountUseCase;
     if (useCase == null) return;
+    final providerName = switch (session.user.provider) {
+      AuthProviderKind.google => 'Google',
+      AuthProviderKind.apple => 'Apple',
+    };
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hapus akun Daisth?'),
-        content: const Text(
-          'Data Daisth yang tersimpan di cloud untuk akun ini akan dihapus permanen. Data yang tersimpan di perangkat ini tetap ada. Anda akan diminta memverifikasi akun Google sebelum penghapusan.',
+        content: Text(
+          'Data Daisth di cloud untuk akun ini akan dihapus permanen. Data di perangkat tetap ada. Anda akan diminta memverifikasi akun $providerName sebelum penghapusan.',
         ),
         actions: [
           TextButton(
@@ -121,7 +133,11 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<void> _activateSync(AuthSignedIn session) async {
     final syncViewModel = widget.syncViewModel;
     if (syncViewModel == null) return;
-    final email = session.user.email ?? 'akun Google ini';
+    final providerName = switch (session.user.provider) {
+      AuthProviderKind.google => 'Google',
+      AuthProviderKind.apple => 'Apple',
+    };
+    final email = session.user.email ?? 'akun $providerName ini';
     final activate = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -287,10 +303,31 @@ class _AccountScreenState extends State<AccountScreen> {
                         ),
                         const SizedBox(height: DaisthSpacing.sm),
                         Text(
-                          'Hubungkan akun Google untuk menggunakan fitur berbasis akun saat tersedia.',
+                          'Hubungkan akun untuk menggunakan fitur berbasis akun saat tersedia.',
                           style: theme.textTheme.bodyMedium,
                         ),
                         const SizedBox(height: DaisthSpacing.lg),
+                        if (!kIsWeb &&
+                            defaultTargetPlatform == TargetPlatform.iOS) ...[
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size.fromHeight(48),
+                            ),
+                            onPressed: loading ? null : _signInWithApple,
+                            child: loading
+                                ? const SizedBox.square(
+                                    dimension: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Lanjutkan dengan Apple'),
+                          ),
+                          const SizedBox(height: DaisthSpacing.sm),
+                        ],
                         OutlinedButton.icon(
                           onPressed: loading ? null : _signIn,
                           icon: loading
@@ -320,7 +357,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    session.user.displayName ?? 'Akun Google',
+                                    session.user.displayName ??
+                                        switch (session.user.provider) {
+                                          AuthProviderKind.google =>
+                                            'Akun Google',
+                                          AuthProviderKind.apple =>
+                                            'Akun Apple',
+                                        },
                                     style: theme.textTheme.titleMedium,
                                   ),
                                   if (session.user.email case final email?)

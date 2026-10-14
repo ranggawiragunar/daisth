@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 abstract final class DaisthTypography {
   static const fontFamily = 'Plus Jakarta Sans';
@@ -8,7 +7,7 @@ abstract final class DaisthTypography {
   static const arabicReaderFontFamily = null;
 
   static TextStyle _font(TextStyle style) =>
-      GoogleFonts.plusJakartaSans(textStyle: style);
+      style.copyWith(fontFamily: fontFamily);
 
   static final displayLarge = _font(
     const TextStyle(fontSize: 30, height: 38 / 30, fontWeight: FontWeight.w600),

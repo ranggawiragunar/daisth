@@ -38,7 +38,6 @@ dependencies:
   flutter_timezone: ^5.1.1
   geolocator: ^14.1.1
   go_router: ^18.0.2
-  google_fonts: ^8.2.1
   google_sign_in: ^7.2.0
   http: ^1.6.0
   path: ^1.9.1
@@ -78,6 +77,11 @@ flutter:
     - assets/launcher/
     - assets/motifs/
     - assets/splash/
+
+  fonts:
+    - family: Plus Jakarta Sans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-Variable.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

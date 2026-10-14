@@ -93,10 +93,17 @@ class _MemoryAuthRepository implements AuthRepository {
   @override
   Future<AuthUser> signInWithGoogle() async => (_session as AuthSignedIn).user;
   @override
+  Future<AuthUser> signInWithApple() async => (_session as AuthSignedIn).user;
+  @override
   Future<void> signOut() async {}
   @override
   Future<AuthUser> reauthenticateWithGoogle() async =>
       (_session as AuthSignedIn).user;
+  @override
+  Future<AuthUser> reauthenticateWithApple() async =>
+      (_session as AuthSignedIn).user;
+  @override
+  Future<void> revokeAppleAuthorizationToken() async {}
   @override
   Future<void> deleteCurrentUser() async {}
   @override

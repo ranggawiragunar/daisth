@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:daisth/features/auth/domain/models/auth_session.dart';
+import 'package:daisth/features/auth/domain/models/auth_user.dart';
 import 'package:daisth/features/auth/presentation/auth_view_model.dart';
 import 'package:daisth/core/app_settings/domain/models/app_settings.dart';
 import 'package:daisth/core/time/domain/models/calendar_day.dart';
@@ -22,6 +23,50 @@ void main() {
     expect(session.user.email, 'person@example.com');
     expect(session.user.displayName, 'Test User');
     expect(viewModel.message, 'Akun Google berhasil dihubungkan.');
+  });
+
+  test('Apple sign-in accepts a provider user without email or name', () async {
+    final repository = FakeAuthRepository();
+    final viewModel = AuthViewModel(repository);
+    addTearDown(viewModel.dispose);
+    addTearDown(repository.dispose);
+
+    expect(await viewModel.signInWithApple(), isTrue);
+    final session = viewModel.session as AuthSignedIn;
+    expect(session.user.uid, 'test-uid');
+    expect(session.user.email, isNull);
+    expect(session.user.displayName, isNull);
+    expect(session.user.provider, AuthProviderKind.apple);
+    expect(viewModel.message, 'Akun Apple berhasil dihubungkan.');
+    expect(repository.appleSignInRequests, 1);
+  });
+
+  test('Apple sign-in cancellation returns quietly to idle', () async {
+    final repository = FakeAuthRepository()
+      ..nextFailure = AuthFailure.cancelled;
+    final viewModel = AuthViewModel(repository);
+    addTearDown(viewModel.dispose);
+    addTearDown(repository.dispose);
+
+    expect(await viewModel.signInWithApple(), isFalse);
+    expect(viewModel.failure, AuthFailure.cancelled);
+    expect(viewModel.message, isNull);
+    expect(viewModel.operation, AuthOperationState.idle);
+  });
+
+  test('Apple sign-in failure maps to calm network feedback', () async {
+    final repository = FakeAuthRepository()
+      ..nextFailure = AuthFailure.networkUnavailable;
+    final viewModel = AuthViewModel(repository);
+    addTearDown(viewModel.dispose);
+    addTearDown(repository.dispose);
+
+    expect(await viewModel.signInWithApple(), isFalse);
+    expect(viewModel.failure, AuthFailure.networkUnavailable);
+    expect(
+      viewModel.message,
+      'Koneksi tidak tersedia. Coba lagi saat terhubung ke internet.',
+    );
   });
 
   test('Google sign-in failures map to calm domain feedback', () async {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../domain/models/auth_session.dart';
@@ -20,6 +21,7 @@ class FirebaseAuthService {
   FirebaseAuth? _auth;
   final GoogleSignIn _googleSignIn;
   static Future<void>? _googleInitialization;
+  String? _pendingAppleAuthorizationCode;
   final StreamController<AuthSession> _sessions = StreamController.broadcast();
   StreamSubscription<User?>? _authSubscription;
 
@@ -66,7 +68,20 @@ class FirebaseAuthService {
     if (user == null) {
       throw const AuthOperationException(AuthFailure.credentialRejected);
     }
-    return _user(user);
+    return _user(user, provider: AuthProviderKind.google);
+  });
+
+  Future<AuthUser> signInWithApple() => _mapOperation(() async {
+    _requireApplePlatform();
+    final provider = AppleAuthProvider()
+      ..addScope('email')
+      ..addScope('name');
+    final result = await _auth!.signInWithProvider(provider);
+    final user = result.user;
+    if (user == null) {
+      throw const AuthOperationException(AuthFailure.credentialRejected);
+    }
+    return _user(user, provider: AuthProviderKind.apple);
   });
 
   Future<AuthUser> reauthenticateWithGoogle() => _mapOperation(() async {
@@ -86,7 +101,44 @@ class FirebaseAuthService {
     if (user == null || user.uid != current.uid) {
       throw const AuthOperationException(AuthFailure.credentialRejected);
     }
-    return _user(user);
+    return _user(user, provider: AuthProviderKind.google);
+  });
+
+  Future<AuthUser> reauthenticateWithApple() => _mapOperation(() async {
+    _requireApplePlatform();
+    final current = _auth!.currentUser;
+    if (current == null) {
+      throw const AuthOperationException(AuthFailure.serviceUnavailable);
+    }
+    _pendingAppleAuthorizationCode = null;
+    final provider = AppleAuthProvider()
+      ..addScope('email')
+      ..addScope('name');
+    final result = await current.reauthenticateWithProvider(provider);
+    final user = result.user;
+    if (user == null || user.uid != current.uid) {
+      throw const AuthOperationException(AuthFailure.credentialRejected);
+    }
+    _pendingAppleAuthorizationCode =
+        result.additionalUserInfo?.authorizationCode;
+    if (_pendingAppleAuthorizationCode == null ||
+        _pendingAppleAuthorizationCode!.isEmpty) {
+      throw const AuthOperationException(AuthFailure.configurationError);
+    }
+    return _user(user, provider: AuthProviderKind.apple);
+  });
+
+  Future<void> revokeAppleAuthorizationToken() => _mapOperation(() async {
+    _requireApplePlatform();
+    final authorizationCode = _pendingAppleAuthorizationCode;
+    if (authorizationCode == null || authorizationCode.isEmpty) {
+      throw const AuthOperationException(AuthFailure.configurationError);
+    }
+    try {
+      await _auth!.revokeTokenWithAuthorizationCode(authorizationCode);
+    } finally {
+      _pendingAppleAuthorizationCode = null;
+    }
   });
 
   Future<void> deleteCurrentUser() => _mapOperation(() async {
@@ -115,6 +167,12 @@ class FirebaseAuthService {
   Future<void> _ensureGoogleInitialized() =>
       _googleInitialization ??= _googleSignIn.initialize();
 
+  void _requireApplePlatform() {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) {
+      throw const AuthOperationException(AuthFailure.serviceUnavailable);
+    }
+  }
+
   Future<T> _mapOperation<T>(Future<T> Function() operation) async {
     if (_auth == null) {
       throw const AuthOperationException(AuthFailure.serviceUnavailable);
@@ -137,11 +195,16 @@ class FirebaseAuthService {
   AuthSession _session(User? user) =>
       user == null ? const AuthSignedOut() : AuthSignedIn(_user(user));
 
-  AuthUser _user(User user) => AuthUser(
+  AuthUser _user(User user, {AuthProviderKind? provider}) => AuthUser(
     uid: user.uid,
     email: user.email,
     displayName: user.displayName,
     photoUrl: user.photoURL,
+    provider:
+        provider ??
+        (user.providerData.any((info) => info.providerId == 'apple.com')
+            ? AuthProviderKind.apple
+            : AuthProviderKind.google),
   );
 
   AuthFailure _googleFailure(GoogleSignInExceptionCode code) => switch (code) {

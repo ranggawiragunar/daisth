@@ -9,6 +9,7 @@ class FakeAuthRepository implements AuthRepository {
   AuthSession session = const AuthSignedOut();
   AuthFailure? nextFailure;
   int googleSignInRequests = 0;
+  int appleSignInRequests = 0;
   int signOutRequests = 0;
 
   void _emit(AuthSession value) {
@@ -36,6 +37,27 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<AuthUser> reauthenticateWithGoogle() => signInWithGoogle();
+
+  @override
+  Future<AuthUser> signInWithApple() async {
+    appleSignInRequests++;
+    _failIfNeeded();
+    const user = AuthUser(
+      uid: 'test-uid',
+      email: null,
+      displayName: null,
+      photoUrl: null,
+      provider: AuthProviderKind.apple,
+    );
+    _emit(const AuthSignedIn(user));
+    return user;
+  }
+
+  @override
+  Future<AuthUser> reauthenticateWithApple() => signInWithApple();
+
+  @override
+  Future<void> revokeAppleAuthorizationToken() async {}
 
   @override
   Future<void> deleteCurrentUser() async => signOut();

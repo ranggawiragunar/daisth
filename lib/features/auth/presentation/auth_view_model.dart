@@ -44,6 +44,11 @@ class AuthViewModel extends ChangeNotifier {
     return 'Akun Google berhasil dihubungkan.';
   });
 
+  Future<bool> signInWithApple() => _run(() async {
+    await repository.signInWithApple();
+    return 'Akun Apple berhasil dihubungkan.';
+  });
+
   Future<bool> signOut() => _run(() async {
     await repository.signOut();
     session = const AuthSignedOut();
@@ -105,13 +110,13 @@ class AuthViewModel extends ChangeNotifier {
     AuthFailure.networkUnavailable =>
       'Koneksi tidak tersedia. Coba lagi saat terhubung ke internet.',
     AuthFailure.configurationError =>
-      'Google Sign-In belum dapat digunakan. Coba lagi nanti.',
+      'Pilihan akun belum dapat digunakan. Coba lagi nanti.',
     AuthFailure.credentialRejected =>
-      'Akun Google tidak dapat digunakan. Coba pilih akun lain.',
+      'Akun ini tidak dapat digunakan. Coba pilih akun lain.',
     AuthFailure.accountDisabled => 'Akun ini tidak dapat digunakan.',
     AuthFailure.tooManyRequests => 'Terlalu banyak percobaan. Coba lagi nanti.',
     AuthFailure.needsReauthentication =>
-      'Verifikasi ulang akun Google untuk melanjutkan.',
+      'Verifikasi ulang akun untuk melanjutkan.',
     AuthFailure.serviceUnavailable =>
       'Layanan akun belum tersedia. Daisth tetap bisa digunakan.',
     AuthFailure.unknown => 'Terjadi kendala. Coba lagi.',
@@ -140,14 +145,16 @@ class AuthViewModel extends ChangeNotifier {
       } else {
         message = switch (outcome) {
           DeleteAccountOutcome.wrongAccount =>
-            'Gunakan akun Google yang saat ini terhubung ke Daisth.',
+            'Gunakan akun yang saat ini terhubung ke Daisth.',
           DeleteAccountOutcome.needsReauthentication =>
-            'Verifikasi ulang dengan akun Google Daisth, lalu coba lagi.',
+            'Verifikasi ulang akun Daisth, lalu coba lagi.',
           DeleteAccountOutcome.networkUnavailable ||
           DeleteAccountOutcome.cloudDeleteFailed =>
             'Akun belum dapat dihapus. Data di perangkat tetap aman. Coba lagi saat koneksi tersedia.',
           DeleteAccountOutcome.accountDeleteFailed =>
             'Akun belum dapat dihapus. Data di perangkat tetap aman. Coba lagi.',
+          DeleteAccountOutcome.appleTokenRevocationFailed =>
+            'Izin Apple belum dapat dicabut. Akun dan data masih aman; coba lagi.',
           DeleteAccountOutcome.serviceUnavailable =>
             'Layanan akun belum tersedia. Data di perangkat tetap aman.',
           DeleteAccountOutcome.success || DeleteAccountOutcome.cancelled => '',
