@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:daisth/features/reader/data/catalog/reader_content_catalog.dart';
+import 'package:daisth/features/reader/domain/models/reader_content.dart';
 
 void main() {
   test('bedtime Reader IDs resolve only within Penutup Hari', () {
@@ -56,7 +57,135 @@ void main() {
     );
     expect(
       ReaderContentCatalog.byRoute('sholat-malam', 'doa-sebelum-tidur'),
-      same(ReaderContentCatalog.bedtimeDua),
+      isNull,
+    );
+  });
+
+  test('Taubat reading contains only the two selected supplications', () {
+    final content = ReaderContentCatalog.byRoute(
+      'sholat-malam',
+      'taubat-after-prayer',
+    )!;
+    expect(content.sections.map((section) => section.heading), [
+      'Istighfar',
+      'Sayyidul Istighfar',
+    ]);
+    expect(
+      content.sections.first.arabic,
+      'أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ',
+    );
+    expect(
+      content.sections.first.transliteration,
+      'Astaghfirullāhal-‘aẓīma wa atūbu ilaih.',
+    );
+    expect(content.sections.last.arabic, contains('اللَّهُمَّ أَنْتَ رَبِّي'));
+    expect(
+      content.sections.last.arabic,
+      contains('فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ'),
+    );
+    expect(content.sections.last.sourceLabel, 'Sahih al-Bukhari 6306');
+    expect(content.sections.last.translationEn, contains('You are my Lord'));
+    expect(content.titleFor('en'), 'After Taubat Prayer');
+    expect(content.sections.last.headingFor('en'), 'Sayyidul Istighfar');
+    expect(
+      content.sections.last.translationFor('en'),
+      contains('forgives sins'),
+    );
+
+    final allText = _allContentText(content).toLowerCase();
+    for (final excluded in [
+      'niat',
+      'rakaat',
+      'doa pribadi',
+      'hal yang perlu diperhatikan',
+      '.png',
+      '.jpg',
+    ]) {
+      expect(allText, isNot(contains(excluded)));
+    }
+  });
+
+  test('Hajat reading contains only the selected praise and dua', () {
+    final content = ReaderContentCatalog.byRoute(
+      'sholat-malam',
+      'hajat-after-prayer',
+    )!;
+    expect(content.sections.map((section) => section.heading), [
+      'Pujian & Sholawat',
+      'Doa Hajat',
+    ]);
+    expect(
+      content.sections.first.arabic,
+      contains('سُبْحَانَ الَّذِي لَبِسَ الْعِزَّ'),
+    );
+    expect(content.sections.first.sourceLabel, isNull);
+    expect(content.sections.first.note, isNull);
+    expect(
+      content.sections.last.arabic,
+      contains('لَا إِلَهَ إِلَّا اللَّهُ الْحَلِيمُ الْكَرِيمُ'),
+    );
+    expect(
+      content.sections.last.arabic,
+      contains('يَا أَرْحَمَ الرَّاحِمِينَ'),
+    );
+    expect(content.sections.last.sourceLabel, "Jami' at-Tirmidhi 479");
+    expect(
+      content.sections.last.note,
+      'Sanad riwayat ini memiliki catatan kelemahan.',
+    );
+    expect(
+      content.sections.last.noteEn,
+      'The chain of this narration has noted weakness.',
+    );
+    expect(content.titleFor('en'), 'After Hajat Prayer');
+    expect(content.sections.first.headingFor('en'), 'Praise & Sholawat');
+    expect(content.sections.last.translationFor('en'), contains('Forbearing'));
+
+    final allText = _allContentText(content).toLowerCase();
+    for (final excluded in [
+      'niat',
+      'rakaat',
+      'al-fatihah',
+      'al-ikhlas',
+      'ayat kursi',
+      'tata cara',
+      'doa pribadi',
+      'sahih al-bukhari',
+      'sahih muslim',
+      '.png',
+      '.jpg',
+    ]) {
+      expect(allText, isNot(contains(excluded)));
+    }
+    expect(
+      ReaderContentCatalog.byRoute('penutup-hari', 'taubat-after-prayer'),
+      isNull,
+    );
+    expect(
+      ReaderContentCatalog.byRoute('penutup-hari', 'hajat-after-prayer'),
+      isNull,
     );
   });
 }
+
+String _allContentText(ReaderContent content) => [
+  content.id,
+  content.title,
+  content.titleEn,
+  content.context,
+  content.contextEn,
+  content.sourceLabel,
+  content.sourceLabelEn,
+  for (final section in content.sections) ...[
+    section.heading,
+    section.headingEn,
+    section.arabic,
+    section.transliteration,
+    section.translation,
+    section.translationEn,
+    section.sourceLabel,
+    section.sourceLabelEn,
+    section.note,
+    section.noteEn,
+  ],
+].whereType<String>().join('\n');

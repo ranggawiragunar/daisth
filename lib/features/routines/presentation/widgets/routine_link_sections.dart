@@ -15,6 +15,7 @@ class RoutineLinkItem {
     this.meta,
     this.readerContentId,
     this.actionId,
+    this.semanticLabel,
     this.icon = PhosphorIconsRegular.bookOpenText,
     this.isActionAvailable = true,
   });
@@ -24,6 +25,7 @@ class RoutineLinkItem {
   final String? meta;
   final String? readerContentId;
   final String? actionId;
+  final String? semanticLabel;
   final IconData icon;
   final bool isActionAvailable;
 }
@@ -32,19 +34,23 @@ class RoutineGuidanceSection extends StatelessWidget {
   const RoutineGuidanceSection({
     required this.items,
     required this.onTap,
+    this.title,
     super.key,
   });
 
   final List<RoutineLinkItem> items;
   final ValueChanged<RoutineLinkItem> onTap;
+  final String? title;
 
   @override
   Widget build(BuildContext context) => _RoutineLinkSection(
-    title: DaisthLocalizations.text(
-      context,
-      id: 'Panduan & Bacaan',
-      en: 'Guidance & Readings',
-    ),
+    title:
+        title ??
+        DaisthLocalizations.text(
+          context,
+          id: 'Panduan & Bacaan',
+          en: 'Guidance & Readings',
+        ),
     items: items,
     onTap: onTap,
   );
@@ -169,7 +175,7 @@ class _RoutineLinkTile extends StatelessWidget {
     final secondary = theme.colorScheme.onSurfaceVariant;
     return Semantics(
       button: true,
-      label: '${item.title}. ${item.subtitle}',
+      label: item.semanticLabel ?? '${item.title}. ${item.subtitle}',
       child: Material(
         color: Colors.transparent,
         child: InkWell(

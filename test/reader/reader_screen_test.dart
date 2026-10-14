@@ -55,7 +55,7 @@ void main() {
     );
   });
 
-  testWidgets('Reader opens from Routine Detail and back preserves it', (
+  testWidgets('Taubat and Hajat readings open without changing progress', (
     tester,
   ) async {
     final harness = _ReaderRouterHarness(
@@ -69,19 +69,42 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Belum dimulai'), findsOneWidget);
+    expect(find.text('Bacaan Zikir & Sholawat'), findsOneWidget);
+    expect(find.text('Bacaan setelah Sholat Taubat'), findsOneWidget);
+    expect(find.text('Bacaan setelah Sholat Hajat'), findsOneWidget);
+    expect(find.text('Doa setelah Tahajud'), findsNothing);
+    expect(find.text('Panduan Witir'), findsNothing);
+    expect(find.text('Doa Sebelum Tidur'), findsNothing);
+    expect(find.text('Tahajud'), findsOneWidget);
+    expect(find.text('Witir'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Doa Sebelum Tidur'));
-    await tester.tap(
-      find.byKey(const ValueKey('routine-link-Doa Sebelum Tidur')),
-    );
+    final day = CalendarDay.fromDateTime(DateTime.now());
+    await tester.ensureVisible(find.text('Bacaan setelah Sholat Taubat'));
+    await tester.tap(find.text('Bacaan setelah Sholat Taubat'));
     await tester.pumpAndSettle();
 
     expect(
       harness.router.routeInformationProvider.value.uri.path,
-      '/routines/sholat-malam/reader/doa-sebelum-tidur',
+      '/routines/sholat-malam/reader/taubat-after-prayer',
     );
     expect(find.byType(ReaderScreen), findsOneWidget);
+    expect(find.text('Istighfar'), findsOneWidget);
+    expect(find.text('Sayyidul Istighfar'), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
+    expect(
+      await harness.dependencies.routineRecordRepository.getRoutineRecord(
+        day,
+        'sholat-malam',
+      ),
+      isNull,
+    );
+    expect(
+      await harness.dependencies.routineRecordRepository.getStepRecords(
+        day,
+        'sholat-malam',
+      ),
+      isEmpty,
+    );
 
     expect(await tester.binding.handlePopRoute(), isTrue);
     await tester.pumpAndSettle();
@@ -90,13 +113,37 @@ void main() {
       '/routines/sholat-malam',
     );
     expect(find.text('Belum dimulai'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Bacaan setelah Sholat Hajat'));
+    await tester.tap(find.text('Bacaan setelah Sholat Hajat'));
+    await tester.pumpAndSettle();
+    expect(
+      harness.router.routeInformationProvider.value.uri.path,
+      '/routines/sholat-malam/reader/hajat-after-prayer',
+    );
+    expect(find.text('Pujian & Sholawat'), findsOneWidget);
+    expect(find.text('Doa Hajat'), findsOneWidget);
+    expect(
+      await harness.dependencies.routineRecordRepository.getRoutineRecord(
+        day,
+        'sholat-malam',
+      ),
+      isNull,
+    );
+    expect(
+      await harness.dependencies.routineRecordRepository.getStepRecords(
+        day,
+        'sholat-malam',
+      ),
+      isEmpty,
+    );
   });
 
   testWidgets('direct Reader route renders content and display controls', (
     tester,
   ) async {
     final harness = _ReaderRouterHarness(
-      initialLocation: '/routines/sholat-malam/reader/doa-sebelum-tidur',
+      initialLocation: '/routines/penutup-hari/reader/doa-sebelum-tidur',
     );
     addTearDown(harness.dispose);
     await tester.pumpWidget(harness.app);
@@ -168,6 +215,46 @@ void main() {
     harness.router.go('/routines/zuhur/reader/doa-sebelum-tidur');
     await tester.pumpAndSettle();
     expect(find.byType(ReaderUnavailableScreen), findsOneWidget);
+    harness.router.go('/routines/sholat-malam/reader/doa-sebelum-tidur');
+    await tester.pumpAndSettle();
+    expect(find.byType(ReaderUnavailableScreen), findsOneWidget);
+  });
+
+  testWidgets('post-prayer Reader localizes labels and meanings', (
+    tester,
+  ) async {
+    final harness = _ReaderRouterHarness(
+      initialLocation: '/routines/sholat-malam/reader/hajat-after-prayer',
+      locale: const Locale('en'),
+    );
+    addTearDown(harness.dispose);
+    await tester.pumpWidget(harness.app);
+    await tester.pumpAndSettle();
+
+    expect(find.text('After Hajat Prayer'), findsOneWidget);
+    expect(find.text('Praise & Sholawat'), findsOneWidget);
+    expect(find.text('Dua for Hajat'), findsOneWidget);
+    expect(find.text('Arabic'), findsWidgets);
+    expect(find.text('Transliteration'), findsWidgets);
+    expect(find.text('Meaning'), findsWidgets);
+    expect(find.text('Source'), findsOneWidget);
+    expect(find.text("Jami' at-Tirmidhi 479"), findsOneWidget);
+    expect(
+      find.text('The chain of this narration has noted weakness.'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('There is none worthy of worship except Allah'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Lā ilāha illallāhul-ḥalīmul-karīm.'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('لَا إِلَهَ إِلَّا اللَّهُ الْحَلِيمُ الْكَرِيمُ'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Reader builds with light and dark themes at compact width', (
@@ -180,10 +267,15 @@ void main() {
 
     for (final mode in [ThemeMode.light, ThemeMode.dark]) {
       final harness = _ReaderRouterHarness(
-        initialLocation: '/routines/sholat-malam/reader/doa-sebelum-tidur',
+        initialLocation: '/routines/sholat-malam/reader/hajat-after-prayer',
         themeMode: mode,
       );
       await tester.pumpWidget(harness.app);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byTooltip('Tampilan bacaan'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('reader-scale-130')));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
@@ -196,6 +288,7 @@ class _ReaderRouterHarness {
   _ReaderRouterHarness({
     required String initialLocation,
     this.themeMode = ThemeMode.system,
+    this.locale = const Locale('id'),
   }) {
     router = createAppRouter(
       noticeController: noticeController,
@@ -206,6 +299,7 @@ class _ReaderRouterHarness {
   }
 
   final ThemeMode themeMode;
+  final Locale locale;
   final noticeController = DaisthNoticeController();
   final dependencies = AppDependencies(
     routineRepository: FakeRoutineRepository(),
@@ -215,7 +309,7 @@ class _ReaderRouterHarness {
   late final GoRouter router;
 
   Widget get app => MaterialApp.router(
-    locale: const Locale('id'),
+    locale: locale,
     supportedLocales: const [Locale('id'), Locale('en')],
     localizationsDelegates: const [
       GlobalMaterialLocalizations.delegate,

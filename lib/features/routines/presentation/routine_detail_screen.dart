@@ -493,6 +493,13 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                 RoutineGuidanceSection(
                                   items: _guidanceItems,
                                   onTap: _onGuidanceTap,
+                                  title: _routine.id == 'sholat-malam'
+                                      ? DaisthLocalizations.text(
+                                          context,
+                                          id: 'Bacaan Zikir & Sholawat',
+                                          en: 'Zikir & Sholawat Readings',
+                                        )
+                                      : null,
                                 ),
                               ],
                               if (_isMandatoryPrayer && !widget.historical) ...[
@@ -578,22 +585,29 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
 
   List<RoutineLinkItem> get _guidanceItems {
     if (_routine.id == 'sholat-malam') {
-      return const [
+      final english = DaisthLocalizations.isEnglish(context);
+      return [
         RoutineLinkItem(
-          title: 'Doa Sebelum Tidur',
-          subtitle: 'Dibaca ketika hendak tidur · Reader preview',
+          title: english
+              ? 'After Taubat Prayer'
+              : 'Bacaan setelah Sholat Taubat',
+          subtitle: 'Istighfar · Sayyidul Istighfar',
           meta: 'Reader',
-          readerContentId: 'doa-sebelum-tidur',
+          readerContentId: 'taubat-after-prayer',
+          semanticLabel: english
+              ? 'Open post-prayer reading for Taubat'
+              : 'Buka bacaan setelah Sholat Taubat',
         ),
         RoutineLinkItem(
-          title: 'Doa setelah Tahajud',
-          subtitle: 'A short reflection after prayer',
-          meta: 'Rich text',
-        ),
-        RoutineLinkItem(
-          title: 'Panduan Witir',
-          subtitle: 'Panduan singkat untuk menutup sholat malam',
-          meta: 'Reading',
+          title: english ? 'After Hajat Prayer' : 'Bacaan setelah Sholat Hajat',
+          subtitle: english
+              ? 'Praise & Sholawat · Dua for Hajat'
+              : 'Pujian & Sholawat · Doa Hajat',
+          meta: 'Reader',
+          readerContentId: 'hajat-after-prayer',
+          semanticLabel: english
+              ? 'Open post-prayer reading for Hajat'
+              : 'Buka bacaan setelah Sholat Hajat',
         ),
       ];
     }

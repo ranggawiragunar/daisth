@@ -61,6 +61,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final content = _viewModel.content;
+    final languageCode = Localizations.localeOf(context).languageCode;
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -107,14 +108,14 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    content.title,
+                    content.titleFor(languageCode),
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: DaisthSpacing.xs),
                   Text(
-                    content.context,
+                    content.contextFor(languageCode),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -141,16 +142,18 @@ class _ReaderScreenState extends State<ReaderScreen> {
                         textScale: _viewModel.textScale,
                         showTransliteration: _viewModel.transliterationVisible,
                         showTranslation: _viewModel.translationVisible,
+                        languageCode: languageCode,
                       ),
                     ),
                   const SizedBox(height: DaisthSpacing.section),
-                  Text(
-                    content.sourceLabel,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                  if (content.sourceLabelFor(languageCode) case final source?)
+                    Text(
+                      source,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

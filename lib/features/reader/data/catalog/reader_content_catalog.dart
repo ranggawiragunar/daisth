@@ -243,6 +243,184 @@ abstract final class ReaderContentCatalog {
     sourceLabel: 'Terjemah Qur’an Kemenag · 2019',
   );
 
+  static final taubatAfterPrayer = ReaderContent(
+    id: 'taubat-after-prayer',
+    title: 'Bacaan setelah Sholat Taubat',
+    titleEn: 'After Taubat Prayer',
+    context: 'Istighfar dan doa',
+    contextEn: 'Seeking forgiveness and supplication',
+    sections: const [
+      ReaderSection(
+        heading: 'Istighfar',
+        headingEn: 'Istighfar',
+        arabic: 'أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ',
+        transliteration: 'Astaghfirullāhal-‘aẓīma wa atūbu ilaih.',
+        translation:
+            'Aku memohon ampun kepada Allah Yang Maha Agung dan aku bertobat kepada-Nya.',
+        translationEn:
+            'I seek forgiveness from Allah, the Magnificent, and I repent to Him.',
+        showFieldLabels: true,
+      ),
+      ReaderSection(
+        heading: 'Sayyidul Istighfar',
+        headingEn: 'Sayyidul Istighfar',
+        arabic:
+            'اللَّهُمَّ أَنْتَ رَبِّي، لَا إِلَهَ إِلَّا أَنْتَ، '
+            'خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ '
+            'مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، '
+            'أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ لَكَ بِذَنْبِي، '
+            'فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ',
+        transliteration:
+            'Allāhumma anta rabbī, lā ilāha illā anta,\n'
+            'khalaqtanī wa anā ‘abduka,\n'
+            'wa anā ‘alā ‘ahdika wa wa‘dika mastatha‘tu.\n'
+            'A‘ūdzu bika min syarri mā shana‘tu.\n'
+            'Abū’u laka bini‘matika ‘alayya,\n'
+            'wa abū’u laka bidzanbī,\n'
+            'faghfir lī,\n'
+            'fa innahu lā yaghfirudz-dzunūba illā anta.',
+        translation:
+            'Ya Allah, Engkau adalah Tuhanku.\n'
+            'Tidak ada sesembahan yang berhak disembah selain Engkau.\n'
+            'Engkau telah menciptakanku dan aku adalah hamba-Mu.\n'
+            'Aku berpegang pada perjanjian dan janji-Mu semampuku.\n'
+            'Aku berlindung kepada-Mu dari keburukan yang telah kuperbuat.\n'
+            'Aku mengakui nikmat-Mu kepadaku dan aku mengakui dosaku.\n'
+            'Maka ampunilah aku, karena tidak ada yang mengampuni dosa selain Engkau.',
+        translationEn:
+            'O Allah, You are my Lord.\n'
+            'There is none worthy of worship except You.\n'
+            'You created me and I am Your servant.\n'
+            'I remain faithful to Your covenant and promise as much as I am able.\n'
+            'I seek refuge in You from the evil of what I have done.\n'
+            'I acknowledge Your blessings upon me, and I acknowledge my sins.\n'
+            'So forgive me, for no one forgives sins except You.',
+        sourceLabel: 'Sahih al-Bukhari 6306',
+        sourceLabelEn: 'Sahih al-Bukhari 6306',
+        showFieldLabels: true,
+      ),
+    ],
+  );
+
+  static final hajatAfterPrayer = ReaderContent(
+    id: 'hajat-after-prayer',
+    title: 'Bacaan setelah Sholat Hajat',
+    titleEn: 'After Hajat Prayer',
+    context: 'Pujian, sholawat, dan doa',
+    contextEn: 'Praise, sholawat, and supplication',
+    sections: const [
+      ReaderSection(
+        heading: 'Pujian & Sholawat',
+        headingEn: 'Praise & Sholawat',
+        arabic:
+            'سُبْحَانَ الَّذِي لَبِسَ الْعِزَّ وَقَالَ بِهِ، '
+            'سُبْحَانَ الَّذِي تَعَطَّفَ بِالْمَجْدِ وَتَكَرَّمَ بِهِ، '
+            'سُبْحَانَ ذِي الْعِزِّ وَالْكَرَمِ، سُبْحَانَ ذِي الطَّوْلِ، '
+            'أَسْأَلُكَ بِمَعَاقِدِ الْعِزِّ مِنْ عَرْشِكَ، '
+            'وَمُنْتَهَى الرَّحْمَةِ مِنْ كِتَابِكَ، وَبِاسْمِكَ الْأَعْظَمِ، '
+            'وَجَدِّكَ الْأَعْلَى، وَكَلِمَاتِكَ التَّامَّاتِ الْعَامَّاتِ '
+            'الَّتِي لَا يُجَاوِزُهُنَّ بَرٌّ وَلَا فَاجِرٌ، '
+            'أَنْ تُصَلِّيَ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ',
+        transliteration:
+            'Subḥānalladzī labisal-‘izza wa qāla bih.\n'
+            'Subḥānalladzī ta‘aththafa bil-majdi wa takarrama bih.\n'
+            'Subḥāna dzil-‘izzi wal-karam.\n'
+            'Subḥāna dzith-thaul.\n'
+            'As’aluka bima‘āqidil-‘izzi min ‘arsyik,\n'
+            'wa muntahar-raḥmati min kitābik,\n'
+            'wa bismikal-a‘ẓam,\n'
+            'wa jaddikal-a‘lā,\n'
+            'wa kalimātikat-tāmmātil-‘āmmātil-latī\n'
+            'lā yujāwizuhunna barrun wa lā fājir,\n'
+            'an tushalliya ‘alā Muḥammadin\n'
+            'wa ‘alā āli Muḥammad.',
+        translation:
+            'Maha Suci Dia yang mengenakan kemuliaan dan berkuasa dengannya.\n'
+            'Maha Suci Dia yang berselimut keagungan dan memuliakan diri dengannya.\n'
+            'Maha Suci Pemilik kemuliaan dan kemurahan.\n'
+            'Maha Suci Pemilik karunia yang luas.\n'
+            'Aku memohon kepada-Mu dengan ikatan-ikatan kemuliaan dari ‘Arsy-Mu,\n'
+            'puncak rahmat dari kitab-Mu,\n'
+            'dengan nama-Mu Yang Maha Agung,\n'
+            'keagungan-Mu Yang Mahatinggi,\n'
+            'dan kalimat-kalimat-Mu yang sempurna dan menyeluruh\n'
+            'yang tidak dapat dilampaui oleh orang baik maupun orang durhaka,\n'
+            'agar Engkau melimpahkan sholawat kepada Muhammad\n'
+            'dan keluarga Muhammad.',
+        translationEn:
+            'Glory be to the One clothed in might and sovereign through it.\n'
+            'Glory be to the One adorned with majesty and honored through it.\n'
+            'Glory be to the Possessor of might and generosity.\n'
+            'Glory be to the Possessor of abundant bounty.\n'
+            'I ask You by the bonds of might from Your Throne,\n'
+            'by the utmost mercy in Your Book,\n'
+            'by Your Greatest Name,\n'
+            'by Your highest majesty,\n'
+            'and by Your perfect and all-encompassing words\n'
+            'which neither the righteous nor the wicked can surpass,\n'
+            'to bestow blessings upon Muhammad\n'
+            'and the family of Muhammad.',
+        showFieldLabels: true,
+      ),
+      ReaderSection(
+        heading: 'Doa Hajat',
+        headingEn: 'Dua for Hajat',
+        arabic:
+            'لَا إِلَهَ إِلَّا اللَّهُ الْحَلِيمُ الْكَرِيمُ، '
+            'سُبْحَانَ اللَّهِ رَبِّ الْعَرْشِ الْعَظِيمِ، '
+            'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ، '
+            'أَسْأَلُكَ مُوجِبَاتِ رَحْمَتِكَ، وَعَزَائِمَ مَغْفِرَتِكَ، '
+            'وَالْغَنِيمَةَ مِنْ كُلِّ بِرٍّ، وَالسَّلَامَةَ مِنْ كُلِّ إِثْمٍ، '
+            'لَا تَدَعْ لِي ذَنْبًا إِلَّا غَفَرْتَهُ، '
+            'وَلَا هَمًّا إِلَّا فَرَّجْتَهُ، '
+            'وَلَا حَاجَةً هِيَ لَكَ رِضًا إِلَّا قَضَيْتَهَا، '
+            'يَا أَرْحَمَ الرَّاحِمِينَ',
+        transliteration:
+            'Lā ilāha illallāhul-ḥalīmul-karīm.\n'
+            'Subḥānallāhi rabbil-‘arsyil-‘aẓīm.\n'
+            'Al-ḥamdu lillāhi rabbil-‘ālamīn.\n'
+            'As’aluka mūjibāti raḥmatik,\n'
+            'wa ‘azā’ima maghfiratik,\n'
+            'wal-ghanīmata min kulli birr,\n'
+            'was-salāmata min kulli itsm.\n'
+            'Lā tada‘ lī dzanban illā ghafartah,\n'
+            'wa lā hamman illā farrajtah,\n'
+            'wa lā ḥājatan hiya laka riḍan illā qaḍaitahā,\n'
+            'yā arḥamar-rāḥimīn.',
+        translation:
+            'Tidak ada sesembahan yang berhak disembah selain Allah, '
+            'Yang Maha Penyantun lagi Maha Mulia.\n'
+            'Maha Suci Allah, Tuhan ‘Arsy yang agung.\n'
+            'Segala puji bagi Allah, Tuhan seluruh alam.\n\n'
+            'Aku memohon kepada-Mu segala hal yang mendatangkan rahmat-Mu,\n'
+            'segala sebab yang membawa ampunan-Mu,\n'
+            'keuntungan dari setiap kebaikan,\n'
+            'dan keselamatan dari setiap dosa.\n\n'
+            'Jangan Engkau biarkan satu dosa pun bagiku kecuali Engkau mengampuninya,\n'
+            'satu kesusahan pun kecuali Engkau melapangkannya,\n'
+            'dan satu kebutuhan yang Engkau ridhai kecuali Engkau memenuhinya,\n'
+            'wahai Yang Maha Pengasih di antara para pengasih.',
+        translationEn:
+            'There is none worthy of worship except Allah, the Forbearing, the Generous.\n'
+            'Glory be to Allah, Lord of the Magnificent Throne.\n'
+            'All praise belongs to Allah, Lord of all worlds.\n\n'
+            'I ask You for everything that brings about Your mercy,\n'
+            'for the means that lead to Your forgiveness,\n'
+            'for the gain of every good deed,\n'
+            'and for safety from every sin.\n\n'
+            'Leave no sin of mine except that You forgive it,\n'
+            'no worry except that You relieve it,\n'
+            'and no need that pleases You except that You fulfill it,\n'
+            'O Most Merciful of those who show mercy.',
+        sourceLabel: "Jami' at-Tirmidhi 479",
+        sourceLabelEn: "Jami' at-Tirmidhi 479",
+        note: 'Sanad riwayat ini memiliki catatan kelemahan.',
+        noteEn: 'The chain of this narration has noted weakness.',
+        showFieldLabels: true,
+      ),
+    ],
+  );
+
   static const _basmala = ReaderSection(
     heading: 'Pembuka',
     arabic: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ',
@@ -251,8 +429,12 @@ abstract final class ReaderContentCatalog {
   );
 
   static ReaderContent? byRoute(String routineId, String contentId) {
-    if (routineId == 'sholat-malam' && contentId == bedtimeDua.id) {
-      return bedtimeDua;
+    if (routineId == 'sholat-malam') {
+      return switch (contentId) {
+        'taubat-after-prayer' => taubatAfterPrayer,
+        'hajat-after-prayer' => hajatAfterPrayer,
+        _ => null,
+      };
     }
     if (routineId != 'penutup-hari') return null;
     return switch (contentId) {

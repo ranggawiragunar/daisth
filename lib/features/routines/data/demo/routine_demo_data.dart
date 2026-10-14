@@ -17,8 +17,6 @@ abstract final class RoutineDemoData {
         title: 'Tahajud',
         subtitle: '4 rakaat',
         rakaatCount: 4,
-        guidanceTitle: 'Doa setelah Tahajud',
-        guidanceType: 'Rich text',
       ),
       RoutineStep(
         id: 'taubat',
@@ -37,8 +35,6 @@ abstract final class RoutineDemoData {
         title: 'Witir',
         subtitle: '3 rakaat',
         rakaatCount: 3,
-        guidanceTitle: 'Panduan Witir',
-        guidanceType: 'Reading',
       ),
     ],
   );

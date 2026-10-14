@@ -255,20 +255,29 @@ void main() {
     expect(find.text('2 rakaat'), findsOneWidget);
   });
 
-  testWidgets('step guidance opens a sheet and Reader uses an Daisth notice', (
+  testWidgets('Night Prayer has only Taubat and Hajat reading actions', (
     tester,
   ) async {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller);
 
-    await tester.tap(find.text('Tahajud'));
-    await _settle(tester);
-    expect(find.text('Guidance'), findsOneWidget);
-    await tester.tap(find.text('Open Reading'));
-    await _settle(tester);
-    expect(find.text('Reader is coming soon'), findsOneWidget);
-    await _dismissNotice(tester, controller);
+    expect(find.text('Zikir & Sholawat Readings'), findsOneWidget);
+    expect(find.text('After Taubat Prayer'), findsOneWidget);
+    expect(find.text('After Hajat Prayer'), findsOneWidget);
+    expect(find.text('Doa setelah Tahajud'), findsNothing);
+    expect(find.text('Panduan Witir'), findsNothing);
+    expect(find.text('Doa Sebelum Tidur'), findsNothing);
+    expect(find.text('Tahajud'), findsOneWidget);
+    expect(find.text('Witir'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('routine-link-After Taubat Prayer')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('routine-link-After Hajat Prayer')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('detail page builds in light and dark at compact width', (
