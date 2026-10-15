@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:daisth/core/app_settings/domain/repositories/app_settings_repository.dart';
 import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
 import 'package:daisth/core/location/domain/models/location_access_status.dart';
+import 'package:daisth/core/location/domain/models/location_unavailable_exception.dart';
 import 'package:daisth/core/location/domain/repositories/location_repository.dart';
 import 'package:daisth/core/location/domain/use_cases/resolve_current_location_use_case.dart';
 import 'package:daisth/core/timezone/domain/models/device_timezone.dart';
@@ -116,6 +117,22 @@ void main() {
     expect(fixture.viewModel.errorMessage, contains('Izinkan notifikasi'));
   });
 
+  test('location failure explains why reminders remain off', () async {
+    final fixture = _fixture(locationUnavailable: true, hasSchedule: false);
+    addTearDown(fixture.viewModel.dispose);
+    addTearDown(fixture.session.dispose);
+
+    await fixture.viewModel.initialize();
+
+    expect(await fixture.viewModel.enableReminders(), isFalse);
+    expect(fixture.viewModel.remindersEnabled, isFalse);
+    expect(fixture.repository.scheduled, isEmpty);
+    expect(
+      fixture.viewModel.errorMessage,
+      contains('Muat waktu salat di Pengaturan'),
+    );
+  });
+
   test(
     'app resume refreshes device permissions while reminders are off',
     () async {
@@ -153,19 +170,27 @@ _fixture({
   ReminderPermissionStatus requestedPermission =
       ReminderPermissionStatus.granted,
   AppSettingsRepository? appSettingsRepository,
+  bool locationUnavailable = false,
+  bool hasSchedule = true,
 }) {
   final now = DateTime(2026, 10, 13);
   final schedule = _schedule();
-  final session = PrayerScheduleSession(_loadScheduleUseCase());
-  session.schedule = schedule;
-  session.lastUpdated = now;
+  final session = PrayerScheduleSession(
+    _loadScheduleUseCase(locationUnavailable: locationUnavailable),
+  );
+  if (hasSchedule) {
+    session.schedule = schedule;
+    session.lastUpdated = now;
+  }
   final repository = _ReminderRepository(
     requestedPermission: requestedPermission,
   );
   final useCase = ScheduleTodayRemindersUseCase(
     reminderRepository: repository,
     timezoneRepository: _TimezoneRepository(),
-    loadTodayPrayerSchedule: _loadScheduleUseCase(),
+    loadTodayPrayerSchedule: _loadScheduleUseCase(
+      locationUnavailable: locationUnavailable,
+    ),
     buildTodayReminderPlan: BuildTodayReminderPlanUseCase(),
     clock: () => now,
   );
@@ -192,13 +217,16 @@ ScheduleTodayRemindersUseCase _scheduleUseCase(ReminderRepository repository) =>
       clock: () => DateTime(2026, 10, 13),
     );
 
-LoadTodayPrayerScheduleUseCase _loadScheduleUseCase() =>
-    LoadTodayPrayerScheduleUseCase(
-      resolveCurrentLocation: ResolveCurrentLocationUseCase(
-        locationRepository: _LocationRepository(),
-      ),
-      prayerTimeRepository: _PrayerRepository(),
-    );
+LoadTodayPrayerScheduleUseCase _loadScheduleUseCase({
+  bool locationUnavailable = false,
+}) => LoadTodayPrayerScheduleUseCase(
+  resolveCurrentLocation: ResolveCurrentLocationUseCase(
+    locationRepository: _LocationRepository(
+      locationUnavailable: locationUnavailable,
+    ),
+  ),
+  prayerTimeRepository: _PrayerRepository(),
+);
 
 PrayerDaySchedule _schedule() => PrayerDaySchedule(
   date: DateTime(2026, 10, 13),
@@ -292,6 +320,10 @@ class _ReminderRepository implements ReminderRepository {
 }
 
 class _LocationRepository implements LocationRepository {
+  _LocationRepository({this.locationUnavailable = false});
+
+  final bool locationUnavailable;
+
   @override
   Future<LocationAccessStatus> checkAccess() async =>
       LocationAccessStatus.granted;
@@ -299,8 +331,11 @@ class _LocationRepository implements LocationRepository {
   Future<LocationAccessStatus> requestAccess() async =>
       LocationAccessStatus.granted;
   @override
-  Future<GeoCoordinate> getCurrentLocation() async =>
-      const GeoCoordinate(latitude: -6.2, longitude: 106.8);
+  Future<GeoCoordinate> getCurrentLocation() async {
+    if (locationUnavailable) throw const LocationUnavailableException();
+    return const GeoCoordinate(latitude: -6.2, longitude: 106.8);
+  }
+
   @override
   Future<GeoCoordinate?> getLastKnownLocation() async => null;
   @override

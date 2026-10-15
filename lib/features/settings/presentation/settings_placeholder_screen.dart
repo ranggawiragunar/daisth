@@ -448,6 +448,7 @@ class _LanguageSelector extends StatelessWidget {
 
   Future<void> _showPicker(BuildContext context) => showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     useSafeArea: true,
     showDragHandle: true,
     builder: (sheetContext) => SafeArea(

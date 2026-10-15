@@ -957,6 +957,12 @@ String _localizedSettingsError(
       id: message,
       en: 'Allow notifications to schedule reminders.',
     ),
+  'Lokasi belum tersedia. Muat waktu salat di Pengaturan → Waktu Salat & Lokasi terlebih dahulu.' =>
+    DaisthLocalizations.text(
+      context,
+      id: message,
+      en: 'Location is unavailable. Load prayer times in Settings → Prayer & Location first.',
+    ),
   'Pengingat belum dapat dijadwalkan. Coba lagi nanti.' =>
     DaisthLocalizations.text(
       context,

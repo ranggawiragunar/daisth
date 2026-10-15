@@ -1,0 +1,15 @@
+{
+  "name": "daisth-firestore-rules-tests",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project demo-daisth-rules --config ../../firebase.json \"node check.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "4.0.1",
+    "firebase": "11.10.0"
+  }
+}

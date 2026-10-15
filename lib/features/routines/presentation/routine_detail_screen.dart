@@ -148,20 +148,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   @override
   void initState() {
     super.initState();
-    final content = widget.userContent;
-    if (content != null && content.hasMeaningfulText) {
-      try {
-        _notesController = QuillController(
-          document: Document.fromJson(
-            jsonDecode(content.serializedDelta) as List,
-          ),
-          selection: const TextSelection.collapsed(offset: 0),
-          readOnly: true,
-        );
-      } catch (_) {
-        _notesController = null;
-      }
-    }
+    _notesController = _createNotesController(widget.userContent);
     _viewModel = RoutineDetailViewModel(
       routine: widget.routine,
       repository: widget.routineRecordRepository,
@@ -173,6 +160,32 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     _viewModel.addListener(_onViewModelChanged);
     widget.prayerScheduleSession?.addListener(_onViewModelChanged);
     unawaited(_viewModel.initialize());
+  }
+
+  @override
+  void didUpdateWidget(covariant RoutineDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.userContent?.serializedDelta ==
+        widget.userContent?.serializedDelta) {
+      return;
+    }
+    _notesController?.dispose();
+    _notesController = _createNotesController(widget.userContent);
+  }
+
+  QuillController? _createNotesController(RoutineContent? content) {
+    if (content == null || !content.hasMeaningfulText) return null;
+    try {
+      return QuillController(
+        document: Document.fromJson(
+          jsonDecode(content.serializedDelta) as List,
+        ),
+        selection: const TextSelection.collapsed(offset: 0),
+        readOnly: true,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   @override

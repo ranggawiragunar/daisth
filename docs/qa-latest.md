@@ -1,11 +1,16 @@
 # Daisth — QA Report for Final QA Planning
 
+> Current production-readiness closure status and new evidence: see
+> [`docs/qa/production-readiness-qa.md`](qa/production-readiness-qa.md). This
+> file and `docs/qa-ledger.md` remain the detailed historical device evidence;
+> the newer report supersedes only checks it explicitly repeated.
+
 **Updated:** 15 October 2026 (Asia/Jakarta)  
 **Repository:** `/Users/user/Projects/Flutter Projects/daisth`  
 **Android device used:** Xiaomi 23122PCD1G, Android 16 / API 36  
-**Package:** `com.rendev.daisth` · **app version:** `1.0.0+1005` in the recorded device audit  
-**Current automation:** 282 passing tests  
-**Latest overall gate:** **BLOCKED pending a live Firestore tombstone check**
+**Package:** `com.rendev.daisth` · prior device audit `1.0.0+1005`; latest Owner debug install `1.0.0+1`
+**Latest full suite:** 286 passing tests; `flutter analyze` passes.
+**Latest overall gate:** **OPEN — release QA remains incomplete**
 
 This report consolidates the device checks, automated verification, defects,
 limitations, and latest retest results recorded in `docs/qa-ledger.md`. It is
@@ -28,20 +33,40 @@ same behavior and only when the later test actually exercised it.
   persistence, then archived; it disappeared from active Routines and Today.
   That final routine pass did not cover every requested field or reminder and
   progress behavior.
+- In the latest closure attempt, the user opened the custom routine editor,
+  entered formatted and plain notes with Reminder off, and confirmed the
+  unsaved-changes dialog. The saved routine remained visible on Today after a
+  force-stop/relaunch. After the Notes controller fix, Routine Detail shows
+  both rich and plain Notes after relaunch (`/tmp/daisth_qa_20261015/notes-postfix-detail.png`). A synthetic image was attached, opened in the viewer, removed then cancelled (it remained), and finally removed and saved; it stayed absent after restart. The generated image was cleaned from XSpace and `/tmp`. Xiaomi blocks injected taps; current taps require the user.
+- Routine Detail did not display Notes after restart. The route initially builds
+  with optional content still loading and reused its state after the query
+  completed. `RoutineDetailScreen.didUpdateWidget` now rebuilds its read-only
+  Quill controller when serialized Notes change. The focused regression passed and the new debug APK installed preserving XSpace data. Routine Detail now visibly renders Notes after relaunch.
+- In primary Owner, prayer times loaded and manual refresh succeeded. Reminder
+  Health showed global reminders On with upcoming alarms. A custom QA reminder
+  delivered with Done/Snooze/Open. Its first Snooze exposed a production bug:
+  the background parser rejected generated custom routine IDs. After the parser
+  fix and a data-preserving debug APK update, Snooze queued and delivered one
+  +10-minute follow-up; Done completed the QA routine and removed its pending
+  reminder. The real Asar notification was left untouched. Owner Open was not
+  retested because the user needed a faster closeout; prior Second Space Open
+  evidence is historical only. XSpace still could not load prayer times in its
+  own profile.
 - A live Reflection tombstone was observed before the latest full-document
   replacement fix, and that observation exposed the stale-field defect. The
   later replacement fix has automated coverage, but its **live post-fix result
   is unverified**. On 15 October, the supplied UID had no Firestore user root
   and its Reflection collection was empty, so there was no live document to
   compare before and after deletion.
-- Latest automated run: `flutter analyze` passed, `flutter test --no-pub`
-  passed (**282 tests**), source/test format check passed (298 files, zero
-  changed), and `git diff --check` passed. Debug and release APK builds passed
-  earlier for the audited source; no APK rebuild was needed for the latest
-  documentation-only update.
+- Latest verification after the custom reminder payload fix: `dart format lib test`,
+  `flutter analyze`, `flutter test` (**286 tests**), and `git diff --check` pass.
+  Arm64 debug APK was installed to Owner with data preserved. Release APK
+  (226.2 MB) and app bundle (223.9 MB) both build successfully.
 - Do not treat this as store-release approval. Physical iOS, iOS notification
   actions, two-device convergence, and the latest tombstone replacement behavior
-  remain open. Legal URLs are also not configured.
+  remain open. Local Firestore Emulator rules tests pass from
+  `tooling/firestore_rules_tests`; they do not verify production rules/deployment.
+  Legal URLs are also not configured.
 
 ## Device and profile safety
 
@@ -57,7 +82,9 @@ same behavior and only when the later test actually exercised it.
   primary-profile data and the unlinked local outbox were preserved.
 - Xiaomi previously rejected an in-place install for user 10 with
   `INSTALL_FAILED_USER_RESTRICTED`; no device security setting was changed.
-  The current session was left in Second Space on Today.
+  The final reminder verification was performed in Owner. The local QA routine
+  `QA Reminder Test` remains in Owner as Completed; it was not deleted during
+  this quick closeout.
 
 ## Functional QA results
 
@@ -79,8 +106,8 @@ same behavior and only when the later test actually exercised it.
 | Reader / Qur'an and supplications | **PASS** | Six Penutup Hari readings opened; RTL Arabic, translation/transliteration visibility, text size, light/dark, source metadata, scrolling, and back flow were checked. Opening a reading alone did not complete its routine step. Content source/transliteration audit is documented separately in `docs/penutup-hari.md`. |
 | Dhikr Counter | **PASS** | Increment, stage auto-advance, undo across boundary, confirmed reset, full 100-count/four-stage completion, return to Routine Detail, and optional-step isolation were checked. |
 | Penutup Hari | **PASS** | One required step gave Partial; all six required readings gave Completed while optional Wudu remained untouched; undo returned to Partial; state survived restart. Temporary required states were restored. |
-| Reminder settings and permissions | **PASS** | Notification permission, exact-alarm capability, precision status, timezone, Reminder Health, permission denial/settings round-trip, and a test notification were checked. Permission and reminder preference were restored. |
-| Notification actions | **PASS on Android** | Terminated Done and Snooze were exercised in the earlier Second Space pass. Done persisted required progress without optional Dhikr. Snooze created one +10-minute item and suppressed follow-up; repeat snooze remained one logical reminder. Open navigation was also checked. A later primary-user test notification displayed Done/Snooze/Open, but actions were not invoked there because it contained user data. |
+| Reminder settings and permissions | **PASS in Owner; XSpace profile limitation** | Owner prayer schedule and refresh worked; Reminder Health was On with exact alarms and upcoming entries. XSpace prayer schedule refresh continued to fail, so its global switch stayed Off. |
+| Notification actions | **PASS for Owner custom Snooze and Done; Open not retested in Owner** | Owner QA reminder delivered. After fixing generated custom routine ID parsing, Snooze scheduled and delivered one +10-minute follow-up; Done completed the custom routine and cleared its next alarm. The real Asar notification was not touched. Earlier Second Space Open coverage remains historical, not a current Owner retest. |
 | Follow-up reminders | **PASS with timing limitation** | A representative follow-up remained unique through reconciliation; completion cancelled snooze. Waiting for the actual hours-later delivery was not done. |
 | Google Sign-In / auth lifecycle | **PASS with limits** | Sign-in, persistence through process replacement, and ordinary sign-out were checked with an approved test account. Initial picker auto-selected its authorized account, so initial sign-in cancellation was not observed. |
 | Firestore initial/basic sync | **PASS historically** | Earlier link/basic record and Reflection sync were verified by targeted Firestore reads; offline outbox queued while offline then flushed after reconnect. Offline restart variant was not completed. |

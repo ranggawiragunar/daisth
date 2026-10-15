@@ -22,7 +22,9 @@ Xcode installed.
 
 Daily records and app preferences are stored in the local SQLite database
 `daisth.db`; see `docs/persistence.md` for schema and date semantics. History
-and routine management remain future work.
+provides bounded, editable daily records, and routine management supports
+customization of built-in and user-created routines. See `docs/history.md` and
+`docs/routines.md` for their current behavior.
 
 ## Architecture
 

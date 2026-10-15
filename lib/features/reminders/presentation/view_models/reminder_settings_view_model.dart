@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../../../core/app_settings/domain/repositories/app_settings_repository.dart';
+import '../../../../core/location/domain/models/location_unavailable_exception.dart';
 import '../../../../core/timezone/domain/models/device_timezone.dart';
 import '../../../../core/timezone/domain/repositories/timezone_repository.dart';
 import '../../../prayer_times/presentation/prayer_schedule_session.dart';
@@ -130,6 +131,10 @@ class ReminderSettingsViewModel extends ChangeNotifier {
       remindersEnabled = true;
       await _refreshPending();
       return true;
+    } on LocationUnavailableException {
+      errorMessage =
+          'Lokasi belum tersedia. Muat waktu salat di Pengaturan → Waktu Salat & Lokasi terlebih dahulu.';
+      return false;
     } catch (_) {
       errorMessage = 'Pengingat belum dapat dijadwalkan. Coba lagi nanti.';
       return false;

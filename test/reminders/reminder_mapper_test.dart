@@ -110,6 +110,22 @@ void main() {
     },
   );
 
+  test('custom routine payloads are accepted for notification actions', () {
+    const customId = 'custom-199cbe82a10-0123456789ab';
+    final reminder = _routine(customId);
+    final data = mapper.toScheduleData(reminder);
+
+    expect(data.actionable, isTrue);
+    expect(ReminderPayload.tryParse(data.payload)?.routineId, customId);
+    expect(mapper.routeForPayload(data.payload), '/routines/$customId');
+    expect(
+      ReminderPayload.tryParse(
+        data.payload.replaceFirst(customId, 'custom-untrusted'),
+      ),
+      isNull,
+    );
+  });
+
   test('stable ids differ by kind and match across mapper instances', () {
     final first = ReminderMapper();
     final second = ReminderMapper();

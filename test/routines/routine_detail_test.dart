@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
 import 'package:daisth/core/design_system/theme/daisth_theme.dart';
 import 'package:daisth/core/time/domain/models/calendar_day.dart';
@@ -11,6 +12,7 @@ import 'package:daisth/core/location/domain/repositories/location_repository.dar
 import 'package:daisth/features/dhikr/data/demo/dhikr_demo_data.dart';
 import 'package:daisth/features/routines/data/demo/routine_demo_data.dart';
 import 'package:daisth/features/routines/domain/models/routine.dart';
+import 'package:daisth/features/routines/domain/models/routine_content.dart';
 import 'package:daisth/features/routines/domain/use_cases/mark_routine_complete_use_case.dart';
 import 'package:daisth/features/routines/domain/use_cases/mark_routine_not_today_use_case.dart';
 import 'package:daisth/features/routines/domain/use_cases/resolve_routine_status_use_case.dart';
@@ -25,6 +27,37 @@ import '../support/fake_routine_record_repository.dart';
 import '../support/test_persistence.dart';
 
 void main() {
+  testWidgets('Routine Detail renders Notes loaded after the first frame', (
+    tester,
+  ) async {
+    final controller = DaisthNoticeController();
+    addTearDown(controller.dispose);
+    final routine = RoutineDemoData.sholatMalam;
+
+    await _pumpRoutine(tester, routine, controller);
+    expect(find.text('Notes'), findsNothing);
+
+    await _pumpRoutine(
+      tester,
+      routine,
+      controller,
+      userContent: RoutineContent(
+        routineId: routine.id,
+        serializedDelta: '[{"insert":"Loaded QA notes\\n"}]',
+        plainText: 'Loaded QA notes',
+        formatVersion: 1,
+        createdAt: DateTime.utc(2026, 10, 15),
+        updatedAt: DateTime.utc(2026, 10, 15),
+      ),
+    );
+
+    expect(find.text('Notes'), findsOneWidget);
+    await tester.ensureVisible(find.text('Notes'));
+    await _settle(tester);
+    final notesEditor = tester.widget<QuillEditor>(find.byType(QuillEditor));
+    expect(notesEditor.controller.document.toPlainText(), 'Loaded QA notes\n');
+  });
+
   testWidgets('Night Prayer tracks partial progress, completion, and undo', (
     tester,
   ) async {
@@ -381,6 +414,7 @@ Future<void> _pumpRoutine(
   Locale? locale,
   bool historical = false,
   CalendarDay? calendarDay,
+  RoutineContent? userContent,
 }) async {
   final repository = FakeRoutineRecordRepository();
   final resolveStatus = const ResolveRoutineStatusUseCase();
@@ -408,6 +442,7 @@ Future<void> _pumpRoutine(
         prayerScheduleSession: prayerScheduleSession,
         historical: historical,
         calendarDay: calendarDay,
+        userContent: userContent,
       ),
     ),
   );

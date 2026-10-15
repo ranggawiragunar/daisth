@@ -39,6 +39,30 @@ void main() {
   });
 
   testWidgets(
+    'language picker opens above the shell dock and keeps English tappable',
+    (tester) async {
+      final harness = _RouterHarness(initialLocation: RoutePaths.settings);
+      addTearDown(harness.dispose);
+      await tester.pumpWidget(harness.app);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('settings-language')));
+      await tester.pumpAndSettle();
+      expect(find.text('Choose language'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('language-option-english')),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byKey(const ValueKey('language-option-english')));
+      await tester.pumpAndSettle();
+      expect(find.text('Choose language'), findsNothing);
+      expect(find.byKey(const ValueKey('navigation-settings')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'History day opens an editable historical routine and clear restores Unrecorded',
     (tester) async {
       final records = FakeRoutineRecordRepository();

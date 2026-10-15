@@ -35,7 +35,7 @@ class ReminderPayload {
       final title = json['title'];
       final zone = json['tz'];
       if (routine is! String ||
-          (!isReflection && !_supported.contains(routine)) ||
+          (!isReflection && !_isSupportedRoutineId(routine)) ||
           (isReflection && json['target'] != 'reflection') ||
           date is! String ||
           !_validDate(date) ||
@@ -80,6 +80,10 @@ class ReminderPayload {
   static bool _validTimezone(String value) =>
       value == 'UTC' ||
       RegExp(r'^[A-Za-z_+-]+(?:/[A-Za-z0-9_+.-]+)+$').hasMatch(value);
+
+  static bool _isSupportedRoutineId(String value) =>
+      _supported.contains(value) ||
+      RegExp(r'^custom-[0-9a-f]+-[0-9a-f]{12}$').hasMatch(value);
 
   static const _supported = {
     'sholat-malam',
