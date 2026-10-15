@@ -82,11 +82,9 @@ flutter:
   assets:
     - assets/brand/
     - assets/fonts/OFL-PlusJakartaSans.txt
-    - assets/illustrations/
-    - assets/empty_states/
     - assets/launcher/
-    - assets/motifs/
     - assets/splash/
+    - assets/visuals/3d/
 
   fonts:
     - family: Plus Jakarta Sans

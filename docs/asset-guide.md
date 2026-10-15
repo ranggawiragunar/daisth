@@ -15,7 +15,6 @@ mark or launcher artwork.
 
 - Launcher masters and Android monochrome/notification sources: `assets/launcher/`
 - Light and dark launch screens: `assets/splash/`
-- Mosque brand hero references: `assets/illustrations/daisth_mosque_hero_light.png` and `daisth_mosque_hero_dark.png`
 
 The launcher icon uses the supplied light master, the adaptive foreground uses
 the supplied transparent foreground, and Android uses the provided
@@ -24,10 +23,11 @@ notification symbol for its small icon.
 
 ## Feature artwork
 
-Keep the existing Today hero, routine progress, reflection, Reader, onboarding,
-empty-state, and motif assets. They support feature content and do not need to
-change with the product name. Today continues to use its current light/dark
-hero; the mosque hero artwork remains available without changing Mosque Finder.
+The 30 app-ready illustrations live in `assets/visuals/3d/` and are registered
+through `DaisthAssets`. Only that app-ready set is declared for Flutter runtime
+use. The old in-app illustration and empty-state exports were removed after
+their replacement call sites were verified. `assets/motifs/` remains as
+design reference material and is not bundled at runtime.
 
 Functional interface icons use Phosphor. Do not substitute them with bitmap
 brand artwork.

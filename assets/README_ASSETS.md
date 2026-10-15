@@ -19,16 +19,27 @@ Production-oriented brand assets prepared from the approved Daisth direction.
 - `splash/splash_light.png` 1242×2688.
 - `splash/splash_dark.png` 1242×2688.
 
-## Illustrations
-- `illustrations/daisth_mosque_hero_light.png` 1920×1080.
-- `illustrations/daisth_mosque_hero_dark.png` 1920×1080.
+## Feature artwork
+- `visuals/3d/`: 30 approved app-ready PNGs used by Today, onboarding, routines,
+  Reader, Zikir, Reflection, History, location, Settings, Account, and shared
+  states. Their semantic names and call sites are centralized in
+  `DaisthAssets`.
+- The app-ready PNGs are the only 3D artwork declared in Flutter's runtime
+  bundle. Source masters are not included in the runtime asset set.
 
 ## References
 - `references/daisth_brand_board.png`: approved direction board.
 - `references/tagline_reference.png`.
 - `references/palette.txt`.
 
+## Design references
+- `motifs/`: retained SVG design references; they are not included in the
+  Flutter runtime bundle.
+- `references/`: approved direction board, asset preview, palette, and tagline
+  reference; documentation only.
+
 Notes:
-- Keep existing routine, reader, reflection, empty-state, and motif artwork unless a feature-specific change explicitly replaces it.
+- Superseded in-app 2D illustrations and empty-state exports were removed
+  after the 3D replacements were wired and verified.
 - Android/iOS final generated launcher resources should be produced from these masters by the existing Flutter tooling.
 - Notification small icon is intentionally monochrome/white-on-transparent to satisfy Android system rendering.

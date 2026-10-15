@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design_system/components/daisth_button.dart';
+import '../../../core/design_system/components/daisth_feature_visual.dart';
 import '../../../core/design_system/components/daisth_notice.dart';
 import '../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../core/localization/daisth_localizations.dart';
 import '../../../app/router/route_paths.dart';
+import '../../../core/design_system/assets/daisth_assets.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({
@@ -104,28 +106,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       itemBuilder: (context, index) => Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          if (index == 0)
-                            Image.asset(
-                              'assets/illustrations/onboarding_scene.png',
-                              height: 220,
-                              fit: BoxFit.contain,
-                            )
-                          else
-                            Container(
-                              width: 144,
-                              height: 144,
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primaryContainer,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                index == 1
-                                    ? Icons.event_available_rounded
-                                    : Icons.spa_rounded,
-                                size: 56,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
+                          DaisthFeatureVisual(
+                            asset: switch (index) {
+                              0 => DaisthAssets.onboardingIntro,
+                              1 => DaisthAssets.onboardingRoutine,
+                              _ => DaisthAssets.onboardingCalm,
+                            },
+                            height: index == 0 ? 220 : 176,
+                          ),
                           const SizedBox(height: DaisthSpacing.xxxl),
                           Text(
                             DaisthLocalizations.text(

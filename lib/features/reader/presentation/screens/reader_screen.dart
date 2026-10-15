@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../../app/router/route_paths.dart';
+import '../../../../core/design_system/assets/daisth_assets.dart';
+import '../../../../core/design_system/components/daisth_feature_visual.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../../core/localization/daisth_localizations.dart';
 import '../../domain/models/reader_content.dart';
@@ -129,6 +131,18 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       ),
                     ),
                   ],
+                  const SizedBox(height: DaisthSpacing.md),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: DaisthFeatureVisual(
+                      asset: switch (content.id) {
+                        'taubat-after-prayer' => DaisthAssets.taubatReading,
+                        'hajat-after-prayer' => DaisthAssets.hajatReading,
+                        _ => DaisthAssets.readerHeader,
+                      },
+                      height: 84,
+                    ),
+                  ),
                   const SizedBox(height: DaisthSpacing.massive),
                   for (var index = 0; index < content.sections.length; index++)
                     Padding(
@@ -197,10 +211,9 @@ class ReaderUnavailableScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  PhosphorIconsRegular.bookOpenText,
-                  size: 40,
-                  color: theme.colorScheme.onSurfaceVariant,
+                const DaisthFeatureVisual(
+                  asset: DaisthAssets.comingSoon,
+                  height: 112,
                 ),
                 const SizedBox(height: DaisthSpacing.lg),
                 Text(

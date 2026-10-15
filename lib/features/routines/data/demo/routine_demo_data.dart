@@ -1,3 +1,4 @@
+import '../../../../core/design_system/assets/daisth_assets.dart';
 import '../../domain/models/routine.dart';
 import '../../domain/models/routine_requirement.dart';
 import '../../domain/models/routine_step.dart';
@@ -10,7 +11,7 @@ abstract final class RoutineDemoData {
     preferredTime: '03:00',
     contextLabel: 'Before Subuh',
     isOptional: true,
-    illustrationAsset: 'assets/illustrations/routine_progress.png',
+    illustrationAsset: DaisthAssets.routineProgress,
     steps: [
       RoutineStep(
         id: 'tahajud',
@@ -46,7 +47,7 @@ abstract final class RoutineDemoData {
     preferredTime: '07:00',
     contextLabel: 'Window open',
     isOptional: true,
-    illustrationAsset: 'assets/illustrations/routine_progress.png',
+    illustrationAsset: DaisthAssets.routineProgress,
     steps: [
       RoutineStep(
         id: 'dhuha-minimum',

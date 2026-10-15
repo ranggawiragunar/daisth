@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../core/location/domain/models/location_access_status.dart';
 import '../../../core/localization/daisth_localizations.dart';
@@ -427,7 +428,7 @@ class _PrayerScheduleSetupCard extends StatelessWidget {
                 )
               else
                 Icon(
-                  Icons.location_on_outlined,
+                  PhosphorIconsRegular.mapPin,
                   color: theme.colorScheme.primary,
                 ),
               const SizedBox(width: DaisthSpacing.sm),
@@ -471,7 +472,7 @@ class _LastKnownScheduleNotice extends StatelessWidget {
     child: Row(
       children: [
         Icon(
-          Icons.info_outline_rounded,
+          PhosphorIconsRegular.info,
           size: 18,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),

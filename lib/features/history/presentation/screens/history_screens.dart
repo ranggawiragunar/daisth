@@ -7,6 +7,8 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 import '../../../../app/dependencies/app_dependencies.dart';
 import '../../../../app/router/route_paths.dart';
 import '../../../../core/design_system/components/daisth_button.dart';
+import '../../../../core/design_system/assets/daisth_assets.dart';
+import '../../../../core/design_system/components/daisth_feature_visual.dart';
 import '../../../../core/design_system/components/daisth_empty_state.dart';
 import '../../../../core/design_system/components/daisth_surface.dart';
 import '../../../../core/localization/daisth_terminology.dart';
@@ -95,7 +97,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (!_model.hasMeaningfulHistory) {
       return Scaffold(
         body: DaisthEmptyState(
-          imageAsset: 'assets/empty_states/empty_history_2048.png',
+          imageAsset: DaisthAssets.emptyHistory,
           bottomContentPadding: widget.bottomContentPadding,
           title: DaisthLocalizations.text(
             context,
@@ -127,11 +129,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
               DaisthSpacing.xl,
               widget.bottomContentPadding,
             ),
-            itemCount: _model.days.length + (_model.hasEarlier ? 1 : 0),
+            itemCount: _model.days.length + (_model.hasEarlier ? 1 : 0) + 1,
             separatorBuilder: (_, _) =>
                 const SizedBox(height: DaisthSpacing.sm),
             itemBuilder: (context, index) {
-              if (index == _model.days.length) {
+              if (index == 0) {
+                return const Align(
+                  alignment: Alignment.centerRight,
+                  child: DaisthFeatureVisual(
+                    asset: DaisthAssets.historySummary,
+                    height: 64,
+                  ),
+                );
+              }
+              final dayIndex = index - 1;
+              if (dayIndex == _model.days.length) {
                 return Padding(
                   padding: const EdgeInsets.only(top: DaisthSpacing.md),
                   child: Center(
@@ -151,7 +163,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 );
               }
-              final item = _model.days[index];
+              final item = _model.days[dayIndex];
               final yesterday = CalendarDay.fromDateTime(
                 DateTime.now(),
               ).addDays(-1);

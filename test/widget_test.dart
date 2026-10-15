@@ -31,8 +31,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Create Routine'), findsOneWidget);
-    await tester.drag(find.byType(ListView).last, const Offset(0, -1400));
-    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Notes'),
+      320,
+      scrollable: find.descendant(
+        of: find.byKey(const ValueKey('routine-editor-scroll-view')),
+        matching: find.byType(Scrollable).first,
+      ),
+    );
 
     expect(find.text('Notes'), findsOneWidget);
     expect(tester.takeException(), isNull);

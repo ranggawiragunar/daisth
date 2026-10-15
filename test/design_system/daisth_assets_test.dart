@@ -10,8 +10,6 @@ void main() {
       DaisthAssets.mark,
       DaisthAssets.wordmark,
       DaisthAssets.lockup,
-      DaisthAssets.mosqueHeroLight,
-      DaisthAssets.mosqueHeroDark,
     ]) {
       await rootBundle.load(path);
     }

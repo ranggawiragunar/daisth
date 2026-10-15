@@ -1,6 +1,27 @@
 # Daisth Visual Asset Inventory
 
-Audit-only snapshot of the checked-out repository, prepared 2026-10-15. Product files and visual assets were inspected but not changed. This report is the only intended change from this audit.
+The inventory tables below are a **pre-overhaul snapshot** prepared 2026-10-15.
+They record the source tree before the integration pass and remain as historical
+evidence. The current state and cleanup decisions are recorded in the closure
+audit below.
+
+## Full visual overhaul closure audit — 2026-10-15
+
+- Runtime artwork now lives in `assets/visuals/3d/`; all 30 app-ready assets
+  are referenced by production screens/components through `DaisthAssets`.
+- `pubspec.yaml` bundles the brand, launcher, splash, font/license, and 3D
+  runtime assets. It no longer bundles legacy illustrations, old empty-state
+  exports, or motif reference files.
+- The old in-app 2D artwork and empty-state exports listed in the historical
+  tables were removed after checking Dart, tests, platform resources,
+  pubspec/config, and manifests. Demo routine data now uses the 3D routine
+  progress asset.
+- The three `assets/motifs/*.svg` files remain as design/reference source files;
+  they have no runtime renderer and are excluded from the Flutter bundle.
+- Brand, launcher, splash, Android notification, font/license, third-party
+  auth, and OpenStreetMap attribution assets/treatments remain protected.
+- The routine editor localization widget test now scrolls the editor's keyed
+  outer scrollable until `Notes` is visible. Its assertion remains unchanged.
 
 ## Scope and counting
 

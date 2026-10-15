@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../../app/dependencies/app_dependencies.dart';
+import '../../../../core/design_system/assets/daisth_assets.dart';
+import '../../../../core/design_system/components/daisth_feature_visual.dart';
 import '../../../../core/design_system/components/daisth_notice.dart';
 import '../../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../../core/design_system/components/daisth_surface.dart';
@@ -271,6 +273,20 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
                         ),
                         const SizedBox(height: DaisthSpacing.md),
                       ],
+                      const SizedBox(
+                        height: 0,
+                        child: Align(
+                          alignment: Alignment.topRight,
+                          child: OverflowBox(
+                            maxHeight: 36,
+                            child: DaisthFeatureVisual(
+                              asset: DaisthAssets.reflectionMain,
+                              height: 36,
+                              width: 56,
+                            ),
+                          ),
+                        ),
+                      ),
                       Text(
                         DaisthLocalizations.text(
                           context,

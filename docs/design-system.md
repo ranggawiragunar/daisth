@@ -54,32 +54,25 @@ unrecorded, and not scheduled today. The palette adapts for dark mode.
 
 ## Hero art, timeline, and assets
 
-Today's focus card selects the approved `today_hero_light.png` or
-`today_hero_dark.png` to match the active theme, as a clipped, right-weighted
+Today's focus card selects `DaisthAssets.todayFocusLight` or
+`DaisthAssets.todayFocusDark` to match the active theme, as a clipped, right-weighted
 background layer with a left text scrim. The timeline keeps
 completed entries compact, gives the next routine a sage highlight and ring
 node, and softens upcoming connectors. The current timeline state and card use
 tonal surfaces instead of separate elevated cards.
 
-Use only approved assets from `assets/`. Do not draw, generate, or substitute
-product illustrations. Register runtime assets in `pubspec.yaml`; no runtime
-SVG renderer is used. The approved visual-direction board informed the hero
-composition, timeline emphasis, segmented progress, warm atmosphere, and
-navigation. Empty History, Routines, and Settings use their approved project
-illustrations.
+Use the approved app-ready illustrations in `assets/visuals/3d/` through
+`DaisthAssets`. Do not draw, generate, or substitute product illustrations.
+Only app-ready PNGs are included in Flutter's runtime asset bundle; design
+references remain outside it. No runtime SVG renderer is used.
 
-### Asset Pack v2 Complete
+### 3D artwork
 
-Asset Pack v2 Complete is the current visual source of truth. Runtime files are
-organized under `assets/brand/`, `assets/illustrations/`, and
-`assets/empty_states/`; approved SVG sources and optional decorative motifs
-remain in the pack but are not rendered by the app. Use the bundled raster
-sources directly, preserve their aspect ratio, and avoid `cacheWidth`,
-`cacheHeight`, reduced `ResizeImage` decoding, recompression, or lower-resolution
-derivatives. Prominent artwork uses `FilterQuality.high` and, where suitable,
-anti-aliased clipping. The Today hero uses the light or dark source selected by
-the active theme, while placeholder screens use the `*_2048.png` empty-state
-files.
+The runtime 3D set contains 30 app-ready PNGs registered in `DaisthAssets` and
+declared under `assets/visuals/3d/`. Preserve source fidelity and aspect ratio.
+Prominent artwork uses `FilterQuality.high` and, where suitable, anti-aliased
+clipping. The Today hero uses the light or dark source selected by the active
+theme. Small functional glyphs remain Phosphor vectors.
 
 ### Transient notices
 

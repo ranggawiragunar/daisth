@@ -10,7 +10,9 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/router/route_paths.dart';
+import '../../../core/design_system/assets/daisth_assets.dart';
 import '../../../core/design_system/components/daisth_button.dart';
+import '../../../core/design_system/components/daisth_feature_visual.dart';
 import '../../../core/design_system/components/daisth_notice.dart';
 import '../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../core/design_system/components/daisth_progress_bar.dart';
@@ -511,7 +513,9 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                   if (hasIllustration) ...[
                                     const SizedBox(width: DaisthSpacing.md),
                                     _RoutineIllustration(
-                                      asset: _routine.illustrationAsset!,
+                                      asset: _routine.id == 'sholat-malam'
+                                          ? DaisthAssets.sholatMalam
+                                          : DaisthAssets.routineProgress,
                                     ),
                                   ],
                                 ],
@@ -524,6 +528,14 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                 ),
                               ),
                               const SizedBox(height: DaisthSpacing.xl),
+                              const Align(
+                                alignment: Alignment.centerRight,
+                                child: DaisthFeatureVisual(
+                                  asset: DaisthAssets.routineDetailSupport,
+                                  height: 50,
+                                ),
+                              ),
+                              const SizedBox(height: DaisthSpacing.xs),
                               _RoutineProgressSummary(
                                 status: _statusLabel(context),
                                 completedRequired: _completedRequiredCount,
@@ -1061,8 +1073,8 @@ class _RoutineAttachmentTileState extends State<_RoutineAttachmentTile> {
         return DaisthSurface(
           child: Icon(
             snapshot.connectionState == ConnectionState.waiting
-                ? Icons.downloading_outlined
-                : Icons.image_not_supported_outlined,
+                ? PhosphorIconsRegular.cloudArrowDown
+                : PhosphorIconsRegular.imageBroken,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         );
@@ -1143,10 +1155,9 @@ class RoutineUnavailableScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    PhosphorIconsRegular.magnifyingGlass,
-                    size: 42,
-                    color: theme.colorScheme.onSurfaceVariant,
+                  const DaisthFeatureVisual(
+                    asset: DaisthAssets.genericError,
+                    height: 104,
                   ),
                   const SizedBox(height: DaisthSpacing.lg),
                   Text(
@@ -1222,6 +1233,14 @@ class _RoutineProgressSummary extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Text(status, style: theme.textTheme.titleSmall)),
+              if (progress >= 1) ...[
+                const DaisthFeatureVisual(
+                  asset: DaisthAssets.genericSuccess,
+                  height: 30,
+                  width: 38,
+                ),
+                const SizedBox(width: DaisthSpacing.xs),
+              ],
               Text(
                 DaisthLocalizations.text(
                   context,

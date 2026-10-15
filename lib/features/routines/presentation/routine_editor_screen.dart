@@ -8,7 +8,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../app/dependencies/app_dependencies.dart';
+import '../../../core/design_system/assets/daisth_assets.dart';
 import '../../../core/design_system/components/daisth_button.dart';
+import '../../../core/design_system/components/daisth_feature_visual.dart';
 import '../../../core/design_system/components/daisth_notice.dart';
 import '../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
@@ -690,7 +692,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
           ),
           centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(PhosphorIconsRegular.arrowLeft),
             onPressed: () async {
               if (await _confirmDiscard() && context.mounted) {
                 Navigator.maybePop(context);
@@ -699,6 +701,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
           ),
         ),
         body: ListView(
+          key: const ValueKey('routine-editor-scroll-view'),
           padding: const EdgeInsets.fromLTRB(
             DaisthSpacing.screenHorizontal,
             DaisthSpacing.md,
@@ -706,6 +709,17 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
             DaisthSpacing.xl,
           ),
           children: [
+            const SizedBox(
+              height: 42,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: DaisthFeatureVisual(
+                  asset: DaisthAssets.routineEditorHeader,
+                  height: 42,
+                  width: 60,
+                ),
+              ),
+            ),
             if (_isCustom) ...[
               _section(
                 context,
@@ -751,7 +765,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
                   DaisthLocalizations.text(context, id: 'Waktu', en: 'Time'),
                 ),
                 subtitle: Text(_time.format(context)),
-                trailing: const Icon(Icons.access_time),
+                trailing: const Icon(PhosphorIconsRegular.clock),
                 onTap: _pickTime,
               ),
               SwitchListTile(
@@ -794,7 +808,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
                   onPressed: _addStep,
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(PhosphorIconsRegular.plus),
                   label: Text(
                     DaisthLocalizations.text(
                       context,
@@ -855,7 +869,9 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
                           en: 'Based on prayer time',
                         ),
                 ),
-                trailing: _timeEditable ? const Icon(Icons.access_time) : null,
+                trailing: _timeEditable
+                    ? const Icon(PhosphorIconsRegular.clock)
+                    : null,
                 onTap: _timeEditable ? _pickTime : null,
               ),
               SwitchListTile(
@@ -944,12 +960,29 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
             ),
             if (_images.isEmpty && _staged.isEmpty)
               DaisthSurface(
-                child: Text(
-                  DaisthLocalizations.text(
-                    context,
-                    id: 'Tambahkan gambar dari galeri jika diperlukan.',
-                    en: 'Add images from your gallery if you like.',
-                  ),
+                child: Row(
+                  children: [
+                    const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DaisthFeatureVisual(
+                          asset: DaisthAssets.routineAttachmentEmpty,
+                          height: 58,
+                          width: 72,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: DaisthSpacing.md),
+                    Expanded(
+                      child: Text(
+                        DaisthLocalizations.text(
+                          context,
+                          id: 'Tambahkan gambar dari galeri jika diperlukan.',
+                          en: 'Add images from your gallery if you like.',
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               )
             else
@@ -973,7 +1006,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
                   onPressed: _saving ? null : _archive,
-                  icon: const Icon(Icons.archive_outlined),
+                  icon: const Icon(PhosphorIconsRegular.archive),
                   label: Text(
                     DaisthLocalizations.text(
                       context,
@@ -988,7 +1021,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
                   onPressed: _saving ? null : _resetDefault,
-                  icon: const Icon(Icons.restart_alt),
+                  icon: const Icon(PhosphorIconsRegular.arrowCounterClockwise),
                   label: Text(
                     DaisthLocalizations.text(
                       context,
@@ -1071,7 +1104,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
       ),
       IconButton(
         onPressed: () => _removeStep(index),
-        icon: const Icon(Icons.close),
+        icon: const Icon(PhosphorIconsRegular.x),
       ),
     ],
   );
@@ -1102,7 +1135,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
             builder: (context, snapshot) => snapshot.data == null
                 ? const ColoredBox(
                     color: Color(0x12000000),
-                    child: Icon(Icons.image_outlined),
+                    child: Icon(PhosphorIconsRegular.image),
                   )
                 : Image.file(
                     snapshot.data!,
@@ -1117,7 +1150,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
               onPressed: () => staged == null
                   ? _removeExisting(attachment!)
                   : _removeStaged(staged),
-              icon: const Icon(Icons.close, size: 18),
+              icon: const Icon(PhosphorIconsRegular.x, size: 18),
             ),
           ),
         ],

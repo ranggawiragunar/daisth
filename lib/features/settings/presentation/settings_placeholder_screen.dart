@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../app/router/route_paths.dart';
+import '../../../core/design_system/assets/daisth_assets.dart';
+import '../../../core/design_system/components/daisth_feature_visual.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/theme/daisth_theme_extension.dart';
 import '../../../core/design_system/tokens/daisth_radius.dart';
@@ -42,13 +44,24 @@ class SettingsPlaceholderScreen extends StatelessWidget {
               bottomContentPadding + DaisthSpacing.xxl,
             ),
             children: [
-              Text(
-                DaisthLocalizations.text(
-                  context,
-                  id: 'Pengaturan',
-                  en: 'Settings',
-                ),
-                style: theme.textTheme.headlineSmall,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Pengaturan',
+                        en: 'Settings',
+                      ),
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                  ),
+                  const DaisthFeatureVisual(
+                    asset: DaisthAssets.settingsMain,
+                    height: 42,
+                    width: 64,
+                  ),
+                ],
               ),
               const SizedBox(height: DaisthSpacing.section),
               _AppearanceSelector(
@@ -80,7 +93,7 @@ class SettingsPlaceholderScreen extends StatelessWidget {
                       id: 'Jadwal, izin lokasi, dan zona waktu',
                       en: 'Schedule, location access, and timezone',
                     ),
-                    icon: Icons.location_on_outlined,
+                    icon: PhosphorIconsRegular.mapPin,
                     onTap: () =>
                         context.push(RoutePaths.settingsPrayerLocation),
                   ),
@@ -105,7 +118,7 @@ class SettingsPlaceholderScreen extends StatelessWidget {
                       id: 'Izin, waktu pengingat, dan status perangkat',
                       en: 'Permissions, reminder times, and device status',
                     ),
-                    icon: Icons.notifications_none_rounded,
+                    icon: PhosphorIconsRegular.bellSimple,
                     onTap: () => context.push(RoutePaths.settingsNotifications),
                   ),
                 ],
@@ -129,7 +142,7 @@ class SettingsPlaceholderScreen extends StatelessWidget {
                       id: 'Google Sign-In dan sinkronisasi opsional',
                       en: 'Google Sign-In and optional sync',
                     ),
-                    icon: Icons.person_outline_rounded,
+                    icon: PhosphorIconsRegular.user,
                     onTap: () => context.push(RoutePaths.account),
                   ),
                 ],
@@ -153,7 +166,7 @@ class SettingsPlaceholderScreen extends StatelessWidget {
                       id: 'Penyimpanan lokal, sinkronisasi, dan lokasi',
                       en: 'Local storage, sync, and location',
                     ),
-                    icon: Icons.shield_outlined,
+                    icon: PhosphorIconsRegular.shieldCheck,
                     onTap: () => context.push(RoutePaths.settingsPrivacy),
                   ),
                 ],
@@ -177,7 +190,7 @@ class SettingsPlaceholderScreen extends StatelessWidget {
                       id: 'Informasi aplikasi dan lisensi sumber terbuka',
                       en: 'App information and open-source licenses',
                     ),
-                    icon: Icons.info_outline_rounded,
+                    icon: PhosphorIconsRegular.info,
                     onTap: () => context.push(RoutePaths.settingsAbout),
                   ),
                 ],
@@ -243,7 +256,7 @@ class _SettingsDestination extends StatelessWidget {
         leading: Icon(icon, color: theme.colorScheme.primary),
         title: Text(title),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right_rounded),
+        trailing: const Icon(PhosphorIconsRegular.caretRight),
         onTap: onTap,
       ),
     );
@@ -426,7 +439,7 @@ class _LanguageSelector extends StatelessWidget {
             DaisthLocalizations.text(context, id: 'Bahasa', en: 'Language'),
           ),
           subtitle: Text(label),
-          trailing: const Icon(Icons.chevron_right_rounded),
+          trailing: const Icon(PhosphorIconsRegular.caretRight),
           onTap: () => _showPicker(context),
         ),
       ),
@@ -472,10 +485,10 @@ class _LanguageSelector extends StatelessWidget {
                   subtitle: Text(_optionDescription(sheetContext, option)),
                   trailing: preference == option
                       ? Icon(
-                          Icons.check_circle_rounded,
+                          PhosphorIconsRegular.checkCircle,
                           color: Theme.of(sheetContext).colorScheme.primary,
                         )
-                      : const Icon(Icons.circle_outlined),
+                      : const Icon(PhosphorIconsRegular.circle),
                   onTap: () {
                     onChanged?.call(option);
                     Navigator.of(sheetContext).pop();

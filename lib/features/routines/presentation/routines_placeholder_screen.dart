@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/components/daisth_empty_state.dart';
+import '../../../core/design_system/assets/daisth_assets.dart';
 import '../../../core/localization/daisth_localizations.dart';
 
 class RoutinesPlaceholderScreen extends StatelessWidget {
@@ -10,7 +11,7 @@ class RoutinesPlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DaisthEmptyState(
-    imageAsset: 'assets/empty_states/empty_routines_2048.png',
+    imageAsset: DaisthAssets.emptyRoutines,
     bottomContentPadding: bottomContentPadding,
     title: DaisthLocalizations.text(
       context,

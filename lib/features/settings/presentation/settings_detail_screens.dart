@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../app/router/route_paths.dart';
 import '../../../core/design_system/assets/daisth_assets.dart';
+import '../../../core/design_system/components/daisth_feature_visual.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
 import '../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../core/localization/daisth_localizations.dart';
@@ -177,6 +179,13 @@ class _PrayerLocationSettingsScreenState
         en: 'Prayer & Location',
       ),
       children: [
+        const Align(
+          alignment: Alignment.centerRight,
+          child: DaisthFeatureVisual(
+            asset: DaisthAssets.prayerLocationSettings,
+            height: 48,
+          ),
+        ),
         DaisthSurface(
           child: Column(
             children: [
@@ -279,7 +288,7 @@ class _PrayerLocationSettingsScreenState
                           dimension: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.refresh_rounded),
+                      : const Icon(PhosphorIconsRegular.arrowClockwise),
                   label: Text(
                     DaisthLocalizations.text(
                       context,
@@ -293,7 +302,7 @@ class _PrayerLocationSettingsScreenState
                 const SizedBox(height: DaisthSpacing.sm),
                 OutlinedButton.icon(
                   onPressed: _loading ? null : _requestLocation,
-                  icon: const Icon(Icons.location_on_outlined),
+                  icon: const Icon(PhosphorIconsRegular.mapPin),
                   label: Text(
                     DaisthLocalizations.text(
                       context,
@@ -308,7 +317,7 @@ class _PrayerLocationSettingsScreenState
                 const SizedBox(height: DaisthSpacing.sm),
                 OutlinedButton.icon(
                   onPressed: _openLocationSettings,
-                  icon: const Icon(Icons.settings_outlined),
+                  icon: const Icon(PhosphorIconsRegular.gear),
                   label: Text(
                     status == LocationAccessStatus.deniedForever
                         ? DaisthLocalizations.text(
@@ -484,6 +493,13 @@ class _NotificationsSettingsScreenState
         en: 'Notifications',
       ),
       children: [
+        const Align(
+          alignment: Alignment.centerRight,
+          child: DaisthFeatureVisual(
+            asset: DaisthAssets.notificationsSettings,
+            height: 48,
+          ),
+        ),
         DaisthSurface(
           padding: const EdgeInsets.all(DaisthSpacing.lg),
           child: Material(
@@ -531,7 +547,7 @@ class _NotificationsSettingsScreenState
                     onPressed: vm.isLoading
                         ? null
                         : vm.requestNotificationPermission,
-                    icon: const Icon(Icons.settings_outlined),
+                    icon: const Icon(PhosphorIconsRegular.gear),
                     label: Text(
                       DaisthLocalizations.text(
                         context,
@@ -569,7 +585,7 @@ class _NotificationsSettingsScreenState
                   if (vm.exactAlarmStatus == ExactAlarmStatus.needsPermission)
                     OutlinedButton.icon(
                       onPressed: vm.isLoading ? null : _requestPrecise,
-                      icon: const Icon(Icons.schedule_outlined),
+                      icon: const Icon(PhosphorIconsRegular.clock),
                       label: Text(
                         DaisthLocalizations.text(
                           context,
@@ -627,7 +643,7 @@ class _NotificationsSettingsScreenState
                 OutlinedButton.icon(
                   onPressed: () =>
                       _showPendingReminders(context, vm.todayPendingReminders),
-                  icon: const Icon(Icons.event_note_outlined),
+                  icon: const Icon(PhosphorIconsRegular.calendar),
                   label: Text(
                     DaisthLocalizations.text(
                       context,
@@ -652,7 +668,7 @@ class _NotificationsSettingsScreenState
                                 ReminderPermissionStatus.granted
                         ? null
                         : () => unawaited(vm.sendTestReminder()),
-                    icon: const Icon(Icons.notifications_active_outlined),
+                    icon: const Icon(PhosphorIconsRegular.bellSimpleRinging),
                     label: Text(
                       DaisthLocalizations.text(
                         context,
@@ -763,6 +779,10 @@ class DataPrivacySettingsScreen extends StatelessWidget {
       en: 'Data & Privacy',
     ),
     children: [
+      const Align(
+        alignment: Alignment.centerRight,
+        child: DaisthFeatureVisual(asset: DaisthAssets.dataPrivacy, height: 48),
+      ),
       DaisthSurface(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -815,7 +835,7 @@ class DataPrivacySettingsScreen extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: ListTile(
-            leading: const Icon(Icons.person_outline_rounded),
+            leading: const Icon(PhosphorIconsRegular.user),
             title: Text(
               DaisthLocalizations.text(
                 context,
@@ -830,7 +850,7 @@ class DataPrivacySettingsScreen extends StatelessWidget {
                 en: 'Manage your cloud account and sync',
               ),
             ),
-            trailing: const Icon(Icons.chevron_right_rounded),
+            trailing: const Icon(PhosphorIconsRegular.caretRight),
             onTap: () => context.push(RoutePaths.account),
           ),
         ),
@@ -872,7 +892,7 @@ class AboutDaisthScreen extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: ListTile(
-            leading: const Icon(Icons.article_outlined),
+            leading: const Icon(PhosphorIconsRegular.fileText),
             title: Text(
               DaisthLocalizations.text(
                 context,
@@ -880,7 +900,7 @@ class AboutDaisthScreen extends StatelessWidget {
                 en: 'Open-source licenses',
               ),
             ),
-            trailing: const Icon(Icons.chevron_right_rounded),
+            trailing: const Icon(PhosphorIconsRegular.caretRight),
             onTap: () => showLicensePage(
               context: context,
               applicationName: 'Daisth',

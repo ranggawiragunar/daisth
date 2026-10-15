@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
+import '../../../../core/design_system/assets/daisth_assets.dart';
 import '../../../../core/design_system/components/daisth_button.dart';
 import '../../../../core/design_system/theme/daisth_theme_extension.dart';
 import '../../../../core/design_system/tokens/daisth_colors.dart';
@@ -32,8 +33,8 @@ class FocusRoutineCard extends StatelessWidget {
     final extension = theme.extension<DaisthThemeExtension>()!;
     final cardColor = extension.softSurface;
     final heroAsset = isDark
-        ? 'assets/illustrations/today_hero_dark.png'
-        : 'assets/illustrations/today_hero_light.png';
+        ? DaisthAssets.todayFocusDark
+        : DaisthAssets.todayFocusLight;
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),

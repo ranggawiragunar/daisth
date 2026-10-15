@@ -5,6 +5,8 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../../app/router/route_paths.dart';
 import '../../../../core/design_system/components/daisth_button.dart';
+import '../../../../core/design_system/assets/daisth_assets.dart';
+import '../../../../core/design_system/components/daisth_feature_visual.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
 import '../../../../core/localization/daisth_terminology.dart';
 import '../../../../core/localization/daisth_localizations.dart';
@@ -336,6 +338,8 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
           ),
         ),
         const SizedBox(height: DaisthSpacing.xl),
+        const DaisthFeatureVisual(asset: DaisthAssets.zikirCounter, height: 76),
+        const SizedBox(height: DaisthSpacing.md),
         DhikrCountSurface(
           item: item,
           count: _viewModel.currentItemCount,
@@ -372,7 +376,10 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: DaisthSpacing.xl),
-        Icon(PhosphorIconsRegular.checkCircle, size: 42, color: colors.primary),
+        const DaisthFeatureVisual(
+          asset: DaisthAssets.zikirComplete,
+          height: 116,
+        ),
         const SizedBox(height: DaisthSpacing.md),
         Text(
           DaisthTerminology.languageCode(Localizations.localeOf(context)) ==

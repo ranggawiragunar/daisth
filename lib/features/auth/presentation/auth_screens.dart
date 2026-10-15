@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:phosphor_icons/phosphor_icons.dart';
 
+import '../../../core/design_system/assets/daisth_assets.dart';
+import '../../../core/design_system/components/daisth_feature_visual.dart';
 import '../../../core/design_system/components/daisth_notice.dart';
 import '../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../core/design_system/components/daisth_surface.dart';
@@ -293,6 +296,13 @@ class _AccountScreenState extends State<AccountScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const Align(
+            alignment: Alignment.centerRight,
+            child: DaisthFeatureVisual(
+              asset: DaisthAssets.accountSync,
+              height: 68,
+            ),
+          ),
           Text(title, style: theme.textTheme.titleMedium),
           const SizedBox(height: DaisthSpacing.sm),
           Text(body, style: theme.textTheme.bodyMedium),
@@ -302,7 +312,7 @@ class _AccountScreenState extends State<AccountScreen> {
           else if (!linked)
             FilledButton.icon(
               onPressed: busy ? null : () => _activateSync(session),
-              icon: const Icon(Icons.cloud_sync_outlined),
+              icon: const Icon(PhosphorIconsRegular.cloudArrowUp),
               label: Text(
                 DaisthLocalizations.text(
                   context,
@@ -319,7 +329,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       dimension: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.sync_rounded),
+                  : const Icon(PhosphorIconsRegular.arrowsClockwise),
               label: Text(
                 DaisthLocalizations.text(
                   context,
@@ -389,7 +399,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         const SizedBox(height: DaisthSpacing.md),
                         TextButton.icon(
                           onPressed: loading ? null : _retryAvailability,
-                          icon: const Icon(Icons.refresh_rounded),
+                          icon: const Icon(PhosphorIconsRegular.arrowClockwise),
                           label: Text(
                             DaisthLocalizations.text(
                               context,
@@ -406,6 +416,14 @@ class _AccountScreenState extends State<AccountScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        const Align(
+                          alignment: Alignment.center,
+                          child: DaisthFeatureVisual(
+                            asset: DaisthAssets.authSignedOut,
+                            height: 104,
+                          ),
+                        ),
+                        const SizedBox(height: DaisthSpacing.sm),
                         Text(
                           DaisthLocalizations.text(
                             context,
@@ -444,7 +462,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Icon(Icons.account_circle_outlined),
+                              : const Icon(PhosphorIconsRegular.userCircle),
                           label: Text(
                             DaisthLocalizations.text(
                               context,
@@ -529,7 +547,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                           strokeWidth: 2,
                                         ),
                                       )
-                                    : const Icon(Icons.delete_outline_rounded),
+                                    : const Icon(PhosphorIconsRegular.trash),
                                 label: Text(
                                   DaisthLocalizations.text(
                                     context,
@@ -566,7 +584,7 @@ class _AccountAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final fallback = CircleAvatar(
       child: Icon(
-        Icons.person_outline_rounded,
+        PhosphorIconsRegular.user,
         color: Theme.of(context).colorScheme.primary,
       ),
     );

@@ -1,96 +1,4 @@
 {
-  "illustrations": {
-    "daisth_mosque_hero_dark.png": {
-      "width": 1920,
-      "height": 1080,
-      "format": "PNG"
-    },
-    "daisth_mosque_hero_light.png": {
-      "width": 1920,
-      "height": 1080,
-      "format": "PNG"
-    },
-    "onboarding_scene.png": {
-      "width": 1448,
-      "height": 1086,
-      "format": "PNG"
-    },
-    "reader.png": {
-      "width": 1448,
-      "height": 1086,
-      "format": "PNG"
-    },
-    "reflection.png": {
-      "width": 1448,
-      "height": 1086,
-      "format": "PNG"
-    },
-    "routine_progress.png": {
-      "width": 1448,
-      "height": 1086,
-      "format": "PNG"
-    },
-    "today_hero_dark.png": {
-      "width": 1672,
-      "height": 941,
-      "format": "PNG"
-    },
-    "today_hero_light.png": {
-      "width": 1672,
-      "height": 941,
-      "format": "PNG"
-    }
-  },
-  "empty_states": {
-    "empty_history.svg": {
-      "type": "vector"
-    },
-    "empty_history_2048.png": {
-      "width": 2048,
-      "height": 1536,
-      "format": "PNG"
-    },
-    "empty_routines.svg": {
-      "type": "vector"
-    },
-    "empty_routines_2048.png": {
-      "width": 2048,
-      "height": 1536,
-      "format": "PNG"
-    },
-    "empty_settings.svg": {
-      "type": "vector"
-    },
-    "empty_settings_2048.png": {
-      "width": 2048,
-      "height": 1536,
-      "format": "PNG"
-    },
-    "error_state.svg": {
-      "type": "vector"
-    },
-    "error_state_2048.png": {
-      "width": 2048,
-      "height": 1536,
-      "format": "PNG"
-    },
-    "feature_coming_soon.svg": {
-      "type": "vector"
-    },
-    "feature_coming_soon_2048.png": {
-      "width": 2048,
-      "height": 1536,
-      "format": "PNG"
-    },
-    "no_location.svg": {
-      "type": "vector"
-    },
-    "no_location_2048.png": {
-      "width": 2048,
-      "height": 1536,
-      "format": "PNG"
-    }
-  },
   "brand": {
     "daisth_lockup.png": {
       "width": 2048,
@@ -166,6 +74,38 @@
       "height": 2688,
       "format": "PNG"
     }
+  },
+  "visuals_3d": {
+    "001_today_focus_light": "assets/visuals/3d/001_today_focus_light.png",
+    "002_today_focus_dark": "assets/visuals/3d/002_today_focus_dark.png",
+    "003_onboarding_intro": "assets/visuals/3d/003_onboarding_intro.png",
+    "004_onboarding_routine": "assets/visuals/3d/004_onboarding_routine.png",
+    "005_onboarding_calm": "assets/visuals/3d/005_onboarding_calm.png",
+    "006_empty_routines": "assets/visuals/3d/006_empty_routines.png",
+    "007_routine_editor_header": "assets/visuals/3d/007_routine_editor_header.png",
+    "008_routine_attachment_empty": "assets/visuals/3d/008_routine_attachment_empty.png",
+    "009_routine_progress": "assets/visuals/3d/009_routine_progress.png",
+    "010_routine_detail_support": "assets/visuals/3d/010_routine_detail_support.png",
+    "011_sholat_malam": "assets/visuals/3d/011_sholat_malam.png",
+    "012_taubat_reading": "assets/visuals/3d/012_taubat_reading.png",
+    "013_hajat_reading": "assets/visuals/3d/013_hajat_reading.png",
+    "014_reader_header": "assets/visuals/3d/014_reader_header.png",
+    "015_zikir_counter": "assets/visuals/3d/015_zikir_counter.png",
+    "016_zikir_complete": "assets/visuals/3d/016_zikir_complete.png",
+    "017_reflection_main": "assets/visuals/3d/017_reflection_main.png",
+    "018_empty_history": "assets/visuals/3d/018_empty_history.png",
+    "019_history_summary": "assets/visuals/3d/019_history_summary.png",
+    "020_no_location": "assets/visuals/3d/020_no_location.png",
+    "021_mosque_finder_header": "assets/visuals/3d/021_mosque_finder_header.png",
+    "022_prayer_location_settings": "assets/visuals/3d/022_prayer_location_settings.png",
+    "023_settings_main": "assets/visuals/3d/023_settings_main.png",
+    "024_notifications_settings": "assets/visuals/3d/024_notifications_settings.png",
+    "025_account_sync": "assets/visuals/3d/025_account_sync.png",
+    "026_data_privacy": "assets/visuals/3d/026_data_privacy.png",
+    "027_auth_signed_out": "assets/visuals/3d/027_auth_signed_out.png",
+    "028_generic_success": "assets/visuals/3d/028_generic_success.png",
+    "029_generic_error": "assets/visuals/3d/029_generic_error.png",
+    "030_coming_soon": "assets/visuals/3d/030_coming_soon.png"
   },
   "motifs": {
     "daisth_geometric_pattern.svg": {

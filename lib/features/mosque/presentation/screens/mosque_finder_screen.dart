@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_icons/phosphor_icons.dart';
 
+import '../../../../core/design_system/assets/daisth_assets.dart';
+import '../../../../core/design_system/components/daisth_feature_visual.dart';
 import '../../../../core/design_system/components/daisth_notice.dart';
 import '../../../../core/design_system/components/daisth_notice_controller.dart';
 import '../../../../core/design_system/components/daisth_surface.dart';
@@ -140,7 +143,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
                   Navigator.of(sheetContext).pop();
                   _openAttribution();
                 },
-                icon: const Icon(Icons.open_in_new_rounded),
+                icon: const Icon(PhosphorIconsRegular.arrowSquareOut),
                 label: const Text('OpenStreetMap'),
               ),
             ),
@@ -170,7 +173,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
               en: 'Map information',
             ),
             onPressed: _showMapInformation,
-            icon: const Icon(Icons.info_outline_rounded),
+            icon: const Icon(PhosphorIconsRegular.info),
           ),
         ],
       ),
@@ -200,7 +203,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
                     ),
                   ),
                 ),
-                icon: const Icon(Icons.refresh_rounded, size: 18),
+                icon: const Icon(PhosphorIconsRegular.arrowClockwise, size: 18),
                 label: Text(
                   DaisthLocalizations.text(
                     context,
@@ -458,11 +461,10 @@ class _PermissionState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset(
-              'assets/empty_states/no_location_2048.png',
+            const DaisthFeatureVisual(
+              asset: DaisthAssets.noLocation,
               width: 148,
               height: 148,
-              fit: BoxFit.contain,
             ),
             const SizedBox(height: DaisthSpacing.lg),
             Text(
@@ -508,10 +510,9 @@ class _RetryState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.location_searching_rounded,
-              size: 42,
-              color: Theme.of(context).colorScheme.primary,
+            const DaisthFeatureVisual(
+              asset: DaisthAssets.genericError,
+              height: 104,
             ),
             const SizedBox(height: DaisthSpacing.lg),
             Text(
@@ -528,7 +529,7 @@ class _RetryState extends StatelessWidget {
             const SizedBox(height: DaisthSpacing.lg),
             OutlinedButton.icon(
               onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded),
+              icon: const Icon(PhosphorIconsRegular.arrowClockwise),
               label: Text(
                 DaisthLocalizations.text(
                   context,
@@ -568,6 +569,13 @@ class _ResultsState extends StatelessWidget {
         104,
       ),
       children: [
+        const Align(
+          alignment: Alignment.centerRight,
+          child: DaisthFeatureVisual(
+            asset: DaisthAssets.mosqueFinderHeader,
+            height: 64,
+          ),
+        ),
         if (isRefreshing) ...[
           LinearProgressIndicator(
             minHeight: 2,
@@ -658,7 +666,9 @@ class _CachedResultsNotice extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            isRefreshing ? Icons.sync_rounded : Icons.history_rounded,
+            isRefreshing
+                ? PhosphorIconsRegular.arrowsClockwise
+                : PhosphorIconsRegular.clockCounterClockwise,
             size: 16,
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -700,7 +710,7 @@ class _LastKnownNotice extends StatelessWidget {
     child: Row(
       children: [
         Icon(
-          Icons.info_outline_rounded,
+          PhosphorIconsRegular.info,
           color: Theme.of(context).colorScheme.primary,
           size: 18,
         ),
@@ -737,7 +747,10 @@ class _NearestMosqueCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.mosque_rounded, color: theme.colorScheme.primary),
+              Icon(
+                PhosphorIconsRegular.mosque,
+                color: theme.colorScheme.primary,
+              ),
               const SizedBox(width: DaisthSpacing.md),
               Expanded(
                 child: Column(
@@ -768,7 +781,7 @@ class _NearestMosqueCard extends StatelessWidget {
             width: double.infinity,
             child: FilledButton.icon(
               onPressed: () => onNavigate(place),
-              icon: const Icon(Icons.directions_walk_rounded),
+              icon: const Icon(PhosphorIconsRegular.personSimpleWalk),
               label: Text(
                 DaisthLocalizations.text(
                   context,
@@ -813,7 +826,7 @@ class _MosqueResultTile extends StatelessWidget {
             style: theme.textTheme.labelMedium,
           ),
           const SizedBox(width: 6),
-          const Icon(Icons.chevron_right_rounded),
+          const Icon(PhosphorIconsRegular.caretRight),
         ],
       ),
     );
