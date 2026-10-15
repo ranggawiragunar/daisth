@@ -162,12 +162,20 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'No custom routines yet.',
+                          DaisthLocalizations.text(
+                            context,
+                            id: 'Belum ada rutinitas khusus.',
+                            en: 'No custom routines yet.',
+                          ),
                           style: theme.textTheme.titleSmall,
                         ),
                         const SizedBox(height: DaisthSpacing.xs),
                         Text(
-                          "Create one for something you'd like to keep consistent.",
+                          DaisthLocalizations.text(
+                            context,
+                            id: 'Buat rutinitas untuk hal yang ingin kamu jaga konsistensinya.',
+                            en: "Create one for something you'd like to keep consistent.",
+                          ),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),

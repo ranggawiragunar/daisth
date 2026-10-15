@@ -89,6 +89,53 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     return localized.isEmpty ? _routine.title : localized;
   }
 
+  String get _displayRoutineDescription {
+    final localized = DaisthTerminology.routineDescription(
+      _routine.id,
+      Localizations.localeOf(context),
+    );
+    return localized.isEmpty ? _routine.description : localized;
+  }
+
+  List<RoutineStep> get _displaySteps {
+    final locale = Localizations.localeOf(context);
+    return [
+      for (final step in _steps)
+        RoutineStep(
+          id: step.id,
+          title: DaisthTerminology.routineStepTitle(
+            _routine.id,
+            step.id,
+            step.title,
+            locale,
+          ),
+          subtitle: DaisthTerminology.routineStepSubtitle(
+            _routine.id,
+            step.id,
+            step.subtitle,
+            locale,
+          ),
+          requirement: step.requirement,
+          completed: step.completed,
+          badge: DaisthTerminology.routineStepBadge(step.badge, locale),
+          guidanceTitle: DaisthTerminology.routineStepGuidanceTitle(
+            _routine.id,
+            step.id,
+            step.guidanceTitle,
+            locale,
+          ),
+          guidanceType: step.guidanceType,
+          rakaatCount: step.rakaatCount,
+          sectionTitle: DaisthTerminology.routineStepSectionTitle(
+            _routine.id,
+            step.sectionTitle,
+            locale,
+          ),
+          readerContentId: step.readerContentId,
+        ),
+    ];
+  }
+
   int get _completedRequiredCount => _viewModel.completedRequiredCount;
   int get _requiredCount => _viewModel.requiredCount;
   bool get _allRequiredDone => _viewModel.allRequiredCompleted;
@@ -378,7 +425,12 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     final hasIllustration = _routine.illustrationAsset != null;
     final metadata = [
       if (!widget.historical) _scheduledPrayerTime ?? _routine.preferredTime,
-      if (!widget.historical) _routine.contextLabel,
+      if (!widget.historical)
+        DaisthTerminology.routineContextLabel(
+          _routine.id,
+          _routine.contextLabel,
+          Localizations.localeOf(context),
+        ),
     ].where((value) => value.isNotEmpty).join(' · ');
 
     return Scaffold(
@@ -399,7 +451,11 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Editing ${MaterialLocalizations.of(context).formatMediumDate(_viewModel.calendarDay.toDateTime())}',
+                          DaisthLocalizations.text(
+                            context,
+                            id: 'Mengedit ${MaterialLocalizations.of(context).formatMediumDate(_viewModel.calendarDay.toDateTime())}',
+                            en: 'Editing ${MaterialLocalizations.of(context).formatMediumDate(_viewModel.calendarDay.toDateTime())}',
+                          ),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -462,7 +518,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                               ),
                               const SizedBox(height: DaisthSpacing.md),
                               Text(
-                                _routine.description,
+                                _displayRoutineDescription,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
@@ -479,12 +535,16 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                               ),
                               const SizedBox(height: DaisthSpacing.section),
                               Text(
-                                'Rangkaian',
+                                DaisthLocalizations.text(
+                                  context,
+                                  id: 'Rangkaian',
+                                  en: 'Routine steps',
+                                ),
                                 style: theme.textTheme.titleMedium,
                               ),
                               const SizedBox(height: DaisthSpacing.md),
                               RoutineStepsCard(
-                                steps: _steps,
+                                steps: _displaySteps,
                                 onToggle: _toggleStep,
                                 onOpenStep: _openStep,
                               ),
@@ -592,7 +652,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
               ? 'After Taubat Prayer'
               : 'Bacaan setelah Sholat Taubat',
           subtitle: 'Istighfar · Sayyidul Istighfar',
-          meta: 'Reader',
+          meta: DaisthLocalizations.text(context, id: 'Pembaca', en: 'Reader'),
           readerContentId: 'taubat-after-prayer',
           semanticLabel: english
               ? 'Open post-prayer reading for Taubat'
@@ -603,7 +663,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
           subtitle: english
               ? 'Praise & Sholawat · Dua for Hajat'
               : 'Pujian & Sholawat · Doa Hajat',
-          meta: 'Reader',
+          meta: DaisthLocalizations.text(context, id: 'Pembaca', en: 'Reader'),
           readerContentId: 'hajat-after-prayer',
           semanticLabel: english
               ? 'Open post-prayer reading for Hajat'
@@ -612,11 +672,19 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
       ];
     }
     if (_routine.id == 'dhuha') {
-      return const [
+      return [
         RoutineLinkItem(
-          title: 'Panduan Sholat Dhuha',
-          subtitle: 'Bacaan dan panduan ringkas',
-          meta: 'Reading',
+          title: DaisthLocalizations.text(
+            context,
+            id: 'Panduan Sholat Dhuha',
+            en: 'Duha Prayer Guide',
+          ),
+          subtitle: DaisthLocalizations.text(
+            context,
+            id: 'Bacaan dan panduan ringkas',
+            en: 'Short reading and guidance',
+          ),
+          meta: DaisthLocalizations.text(context, id: 'Bacaan', en: 'Reading'),
         ),
       ];
     }
@@ -1047,7 +1115,11 @@ class _RoutineIllustration extends StatelessWidget {
         fit: BoxFit.contain,
         filterQuality: FilterQuality.high,
         isAntiAlias: true,
-        semanticLabel: 'Routine progress illustration',
+        semanticLabel: DaisthLocalizations.text(
+          context,
+          id: 'Ilustrasi progres rutinitas',
+          en: 'Routine progress illustration',
+        ),
       ),
     );
   }

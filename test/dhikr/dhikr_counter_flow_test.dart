@@ -40,8 +40,11 @@ void main() {
     await _settle(tester);
     expect(find.byType(DhikrCounterScreen), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
-    expect(find.text('Zikir setelah salat'), findsOneWidget);
+    expect(find.text('Zikir after prayer'), findsOneWidget);
+    expect(find.text('After each obligatory prayer'), findsOneWidget);
     expect(find.text('Sahih Muslim 597a'), findsOneWidget);
+    expect(find.text('of 33'), findsOneWidget);
+    expect(find.text('Tap to count'), findsOneWidget);
 
     expect(await tester.binding.handlePopRoute(), isTrue);
     await _settle(tester);

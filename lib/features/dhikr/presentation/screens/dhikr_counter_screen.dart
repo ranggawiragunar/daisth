@@ -253,10 +253,21 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(sequence.title, style: theme.textTheme.titleLarge),
+        Text(
+          widget.sequence.id == 'post-prayer'
+              ? DaisthTerminology.postPrayerZikirTitle(
+                  Localizations.localeOf(context),
+                )
+              : sequence.title,
+          style: theme.textTheme.titleLarge,
+        ),
         const SizedBox(height: DaisthSpacing.xxs),
         Text(
-          sequence.context,
+          DaisthTerminology.dhikrSequenceContext(
+            sequence.id,
+            sequence.context,
+            Localizations.localeOf(context),
+          ),
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -293,7 +304,14 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
           child: Column(
             key: ValueKey(item.id),
             children: [
-              Text(item.title, style: theme.textTheme.titleMedium),
+              Text(
+                DaisthTerminology.dhikrItemTitle(
+                  item.id,
+                  item.title,
+                  Localizations.localeOf(context),
+                ),
+                style: theme.textTheme.titleMedium,
+              ),
               const SizedBox(height: DaisthSpacing.md),
               SelectableText(
                 item.arabic,
@@ -392,7 +410,11 @@ class _DhikrCounterScreenState extends State<DhikrCounterScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    widget.sequence.items[index].title,
+                    DaisthTerminology.dhikrItemTitle(
+                      widget.sequence.items[index].id,
+                      widget.sequence.items[index].title,
+                      Localizations.localeOf(context),
+                    ),
                     style: theme.textTheme.bodyMedium,
                   ),
                 ),

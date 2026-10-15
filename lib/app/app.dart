@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart'
+    show FlutterQuillLocalizations;
 import 'package:go_router/go_router.dart';
 
 import '../core/app_settings/domain/models/app_settings.dart';
@@ -245,6 +247,7 @@ class _DaisthAppState extends State<DaisthApp> with WidgetsBindingObserver {
       locale: _effectiveLocale,
       supportedLocales: DaisthLocalizations.supportedLocales,
       localizationsDelegates: const [
+        FlutterQuillLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

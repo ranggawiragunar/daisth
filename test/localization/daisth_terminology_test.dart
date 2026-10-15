@@ -45,5 +45,39 @@ void main() {
       );
       expect(DaisthTerminology.routineTitle('user-custom-id', english), '');
     });
+
+    test('localizes built-in routine descriptions and step labels by IDs', () {
+      expect(
+        DaisthTerminology.routineDescription('sholat-malam', english),
+        'Complete the night prayer sequence before Fajr time.',
+      );
+      expect(
+        DaisthTerminology.routineStepTitle(
+          'sholat-malam',
+          'taubat',
+          'Sholat Taubat',
+          english,
+        ),
+        'Taubat prayer',
+      );
+      expect(
+        DaisthTerminology.routineStepTitle(
+          'sholat-malam',
+          'taubat',
+          'Sholat Taubat',
+          indonesian,
+        ),
+        'Sholat Taubat',
+      );
+      expect(
+        DaisthTerminology.routineStepTitle(
+          'custom-routine',
+          'custom-step',
+          'Baca Buku QA',
+          english,
+        ),
+        'Baca Buku QA',
+      );
+    });
   });
 }

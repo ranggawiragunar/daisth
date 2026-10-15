@@ -199,7 +199,12 @@ Future<void> showRoutineStepSheet({
           ),
           const SizedBox(height: DaisthSpacing.sm),
           Text(
-            step.guidanceTitle ?? 'Panduan ${step.title}',
+            step.guidanceTitle ??
+                DaisthLocalizations.text(
+                  context,
+                  id: 'Panduan ${step.title}',
+                  en: 'Guidance for ${step.title}',
+                ),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

@@ -16,6 +16,28 @@ import 'support/fake_routine_repository.dart';
 import 'support/fake_reflection_repository.dart';
 
 void main() {
+  testWidgets('custom routine editor provides Quill localizations', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('navigation-routines')));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -700));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Add Routine'));
+    await tester.tap(find.text('Add Routine'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Create Routine'), findsOneWidget);
+    await tester.drag(find.byType(ListView).last, const Offset(0, -1400));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Notes'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Today is the initial destination and navigation works', (
     tester,
   ) async {
@@ -38,7 +60,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(RoutineDetailScreen), findsOneWidget);
-    expect(find.text('Rangkaian'), findsOneWidget);
+    expect(find.text('Routine steps'), findsOneWidget);
     expect(find.byKey(const ValueKey('navigation-today')), findsNothing);
 
     await tester.tap(find.text('Mark Dhuhr Done'));

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/design_system/theme/daisth_theme_extension.dart';
 import '../../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../../domain/models/dhikr_item.dart';
 
 class DhikrCountSurface extends StatelessWidget {
@@ -24,8 +25,11 @@ class DhikrCountSurface extends StatelessWidget {
     return Semantics(
       button: true,
       onTap: onTap,
-      label:
-          '${item.title}, $count dari ${item.targetCount}. Tap untuk menghitung',
+      label: DaisthLocalizations.text(
+        context,
+        id: '${item.title}, $count dari ${item.targetCount}. Ketuk untuk menghitung',
+        en: '${item.title}, $count of ${item.targetCount}. Tap to count',
+      ),
       child: ExcludeSemantics(
         child: Material(
           color: extension.softSurface,
@@ -70,14 +74,22 @@ class DhikrCountSurface extends StatelessWidget {
                     ),
                     const SizedBox(height: DaisthSpacing.xxs),
                     Text(
-                      'dari ${item.targetCount}',
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'dari ${item.targetCount}',
+                        en: 'of ${item.targetCount}',
+                      ),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: DaisthSpacing.md),
                     Text(
-                      'Tap untuk menghitung',
+                      DaisthLocalizations.text(
+                        context,
+                        id: 'Ketuk untuk menghitung',
+                        en: 'Tap to count',
+                      ),
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w600,

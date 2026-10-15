@@ -374,3 +374,236 @@ Firestore convergence; manual second-account mismatch; isolated Mosque Finder
 stale-cache behavior; waiting for actual delayed follow-up delivery; ordinary
 Google picker cancellation; and the offline-outbox restart variant. No #018
 work was started.
+
+
+## Localization + Routine + Reader regression audit — 14 October 2026
+
+### Scope and changes
+
+The starting worktree was clean at `c73dce6` (`Adjustment Master Routine
+Data`). This audit found English-mode UI strings that still came from Indonesian
+defaults in Routine Detail, its checklist guidance sheet, and Dhikr. Built-in
+routine titles, descriptions, contexts, step titles/subtitles, section labels,
+badges, guidance titles, and related semantics now resolve by stable routine or
+step ID. Custom routine text continues to use its saved content. Dhikr count,
+sequence context, and the closing item are localized. A stale widget assertion
+was updated for the English heading, and a regression test covers the Dhuha
+guidance sheet title.
+
+No database, schema, dependency, notification, Reader content, or account-sync
+behavior changed. `flutter gen-l10n` is not configured in this project: the
+Flutter `generate` flag is off and the app uses its existing manual
+`DaisthLocalizations`/`DaisthTerminology` mapping without ARB files. Its
+generator command therefore exits with the expected “generate flag turned on”
+message; no generator configuration was added. `flutter pub get` did not change
+`pubspec.lock`; incidental Swift package resolution entries were reverted.
+
+### Automated verification
+
+- `dart format lib test`: PASS, 298 files checked and no edits needed.
+- `dart format .`: the repository-wide command entered generated
+  `build/ios/SourcePackages` content and stopped on its missing
+  `analysis_options.yaml`; the source and test trees were formatted separately
+  and pass.
+- Focused Routine Detail suite: PASS, 12 tests.
+- `flutter analyze`: PASS, no issues.
+- `flutter test --no-pub`: PASS, **281 tests** (276 at audit start, plus the
+  regression coverage added during this pass; no tests were removed or skipped).
+- `flutter build apk --debug --no-pub`: PASS.
+- `flutter build apk --release --no-pub`: PASS, 84.6 MB.
+- `flutter pub deps --style=compact`: PASS; no dependency was added.
+- `git diff --check`: PASS.
+
+The final test invocation showed no Google Fonts network-fetch warning. The app
+bundles Plus Jakarta Sans, and its typography asset test passes; production font
+behavior was not changed. Builds still print the existing Kotlin Gradle
+Plugin migration notice for Firebase/image-compression plugins and a
+CupertinoIcons font notice; both APK variants complete successfully.
+
+### Primary Android profile smoke test
+
+The failed user10 install attempt remained `INSTALL_FAILED_USER_RESTRICTED`.
+Following the user's instruction, the device check moved to primary user 0.
+The device is Xiaomi 23122PCD1G, Android 16/API 36. Before installation,
+`com.rendev.daisth` was present on user 0 and its installed APK certificate
+matched the debug build (SHA-256
+`8f33c6e524867e8bb66f00f1c98d7c984801c930bc53e2ce2780a5374a6b1dd1`). The
+final debug APK was installed using `adb install --user 0 -r`, preserving the
+existing app data. No uninstall, clear-data, database reset, or direct database
+access occurred.
+
+Daisth launched as the resumed user-0 activity and rendered the existing Today
+screen after startup. The visible local Today state was 0/7; this was observed,
+not edited. No routine, reflection, locale, account, reminder, cloud, or
+attachment data was changed. This confirms in-place installation and startup
+only; it is not a manual feature walkthrough.
+
+### Remaining QA gates
+
+All routine create/edit/archive and rich-text/image attachment flows, Sholat
+Malam Taubat/Hajat Reader navigation and completion isolation, reminder
+delivery/actions, cloud/outbox behavior, and iOS interaction were not exercised
+on a disposable environment in this pass. Language switching and persistence
+were later verified in Second Space as recorded below.
+The primary profile contains user data, so no test entities or preference
+changes were introduced there. Existing automated coverage passed, but does not
+replace those device checks. Any release sign-off requiring those physical,
+cloud, or iOS checks remains **BLOCKED**; no signing, distribution, or #019 work
+was started.
+
+### Second Space continuation — 14 October 2026
+
+The user provided Second Space (Android user 10) with a separate signed-in
+Google account for disposable QA. The account's Daisth sync toggle was off and
+was left off. No cloud writes, test routines, reflections, attachments, or
+account deletion were performed. The installed app remained the earlier build
+because Xiaomi returned `INSTALL_FAILED_USER_RESTRICTED: Install canceled by
+user` for the in-place debug update; the user confirmed that no install prompt
+was visible. No further install attempt or device security setting change was
+made.
+
+The already-installed build was used to check language preference persistence:
+Settings changed from System Default to Indonesian, the app was force-stopped
+and reopened, and the UI remained Indonesian. The preference was then restored
+to System Default and confirmed in Settings. This verifies language selection
+and local persistence in the test profile. During the earlier editor walkthrough
+the installed build displayed a `FlutterQuillLocalizations` runtime error in
+Notes. The source fix now registers `FlutterQuillLocalizations.delegate`, and a
+widget regression test through `DaisthApp` confirms that Notes renders without
+an exception; the fix could not yet be rechecked on-device because the APK
+update was rejected.
+
+Latest source verification after the Quill fix: `flutter analyze` PASS,
+`flutter test --no-pub` PASS (**282 tests**), debug APK build PASS, release APK
+build PASS (85.2 MB), and `git diff --check` PASS. No dependency or production
+font behavior changed. Device QA beyond the language preference check,
+including verification of the fixed rich-text editor, remains blocked by the
+OEM install restriction. The other listed cloud, reminder, attachment, and
+iOS gates remain untested.
+
+### Authorized sync and final Android continuation — 14 October 2026
+
+The user explicitly authorized enabling and testing sync for the Second Space
+QA account, including merging that profile's local routines, daily records,
+Reflection, editor content, and any attachments into its Firestore/Storage
+account. Sync was enabled in-app. The account page showed sync active and zero
+pending changes; after creating the temporary routine
+`Codex_QA_Sync_1014` (reminders off, no checklist or attachment), the last-sync
+time refreshed and pending changes returned to zero. This is UI evidence that
+the routine write reached the sync pipeline, not a direct Firestore document
+read or a two-device convergence test. Sync remains enabled. No account or
+cloud data was deleted.
+
+The temporary routine is still present in Second Space. Its editor Notes region
+on that installed build renders a red `FlutterQuillLocalizations` error that
+occupies the editor viewport and prevents reaching Archive. The attempted
+Second Space APK update again returned `INSTALL_FAILED_USER_RESTRICTED`; no
+security setting was changed. The user had previously directed QA to use
+primary space, where an in-place update succeeded with `adb install --user 0
+-r` and preserved app data. After relaunch, the Add Routine editor's Notes
+toolbar and editor rendered normally, verifying the Quill fix on device. The
+opened blank draft was discarded without saving. The older Second Space build
+and its temporary synced routine remain untouched pending a supported way to
+update that Android user.
+
+Reminder QA in primary space: notification permission was allowed, reminder
+toggle active, precision status and timezone (`Asia/Jakarta`) were shown, and
+the test notification button produced a visible Android notification titled
+`Uji aksi · Salat Dhuha`. Expanded notification UI showed Done, Snooze 10
+minutes, and Open actions. No action was invoked because this primary profile
+contains user data and Done/Snooze would mutate its routine or reminder state.
+Before sending the test notification, Reminder Health showed zero upcoming
+reminders and zero items in today's schedule; afterward both displayed one.
+No routine definition or completion was intentionally changed for this test.
+
+Mosque Finder was opened in Second Space under the user's earlier explicit
+consent to send location to Overpass. The first search and one in-app retry both
+ended in `Nearby search could not load / The data service is unavailable`.
+The map-data bottom sheet displayed OpenStreetMap attribution and its
+OpenStreetMap link button. Provider success and the attribution link's external
+destination were not verified. Location reached the app (Today showed local
+prayer times); no location accuracy service was enabled.
+
+During navigation, a coordinate tap accidentally marked Fajr complete. It was
+immediately toggled back, and the routine detail returned to `Not started`,
+`0 of 1 completed`. The visible completion state is restored; the app may retain
+an empty/incomplete local record row, so the exact pre-tap database absence was
+not re-established through UI. No other routine was intentionally changed.
+
+### Remaining gates after this continuation
+
+- Second Space: supported installation/update needed to archive the temporary
+  sync routine and verify its tombstone; direct database/Firestore mutation was
+  not used.
+- Reminder actions Done/Snooze and actual scheduled prayer delivery remain
+  untested against a disposable profile; only test notification delivery and
+  action presentation were confirmed in primary space.
+- Rich-text formatting, image attachment upload/download, routine edit/archive,
+  cloud two-device convergence/offline outbox, and account mismatch remain
+  unverified.
+- Mosque Finder provider still failed twice; live result, refresh-success, and
+  stale-cache behavior remain unverified.
+- iOS device interaction remains unverified in this environment.
+
+### #017.5C closure pass — 15 October 2026
+
+**Fresh onboarding was not repeated in this pass.** The Second Space (Android
+user 10) already had Daisth data and an established session, and the current
+install restriction prevents updating that user's APK without resetting the
+profile. The prior 14 October #017.5C entry records a successful isolated
+onboarding run: all three pages, Skip and normal completion, fresh defaults,
+and relaunch behavior. That recorded PASS remains the latest actual onboarding
+result; the primary profile was not cleared or reinstalled for this pass.
+
+**Custom routine create/edit/archive passed on the isolated device profile.**
+The previously created disposable `Codex_QA_Sync_1014` routine was opened in
+the editor. Its rich-text Notes toolbar/editor rendered without the earlier
+localization exception. A required checklist step was added, saved, reopened,
+and observed to persist; an edit to that step label also persisted on reopen.
+The routine was then archived through the app's confirmation dialog. It
+disappeared from active Routines, and Today changed from 8 routines to 7 with
+the QA routine absent. The archived object is retained by the app, consistent
+with archive semantics. This QA routine was already created while sync was
+authorized and enabled; no new account was created and no cloud/account data
+was deleted. No reminder was enabled, and no attachment was added. This does
+not cover every requested field (title, time, description, optional step,
+reminder, or progress persistence).
+
+**Latest Firestore tombstone verification remains blocked.** In Second Space,
+a temporary Oct 15 Reflection was saved through the UI, deleted through the
+normal confirmation flow, followed by Sync Now, force-stop/relaunch, and a
+second Sync Now. The app reported zero queued changes and a later last-sync
+time; the Reflection did not reappear locally after relaunch. A narrowly scoped
+read of the supplied disposable UID in project `daisthapp`, performed after
+the deletion attempt, found no root `users/{uid}` document (404) and an
+existing but empty `users/{uid}/dailyReflections` collection (HTTP 200, zero
+documents). No pre-delete Firestore snapshot was obtained, so the attempted
+Reflection's existence in Firestore before deletion was not established. Since
+no post-delete live Reflection document existed to read, no actual tombstone
+document could be inspected either. Therefore stale `note`/`rhythm` absence in
+a tombstone is **not verified**; an empty collection is not a tombstone PASS.
+No direct Firestore writes, account deletion, or account cleanup were
+performed. The app's local no-resurrection behavior passed, but this does not
+replace live tombstone verification.
+
+No source code or dependencies changed in this closure pass. The QA device was
+left in Second Space on Today; Sync remains enabled. The earlier note about an
+accidental Fajr toggle and its visible restoration remains above.
+
+Closure verification: `flutter analyze` PASS; `flutter test --no-pub` PASS
+(**282 tests**); `dart format --output=none --set-exit-if-changed lib test`
+PASS (298 files, 0 changed); `git diff --check` PASS. No APK rebuild was needed
+for this documentation-only closure update.
+
+### #017.5C final gates
+
+- Fresh onboarding: **PASS recorded 14 October; not repeated 15 October**.
+- Custom routine create/edit/archive on Second Space: **PASS** for the exercised
+  create/checklist-edit/archive path; field and progress coverage is partial.
+- Firestore replacement/tombstone behavior against an existing live document:
+  **BLOCKED** because no document existed for inspection at the supplied UID.
+- Local Reflection deletion and restart no-resurrection: **PASS**.
+- Disposable account cleanup: **not performed**; no account or cloud data was
+  deleted.
+- Physical iOS QA, iOS notification actions, two-device convergence, and manual
+  second-account mismatch remain documented **BLOCKED** for #018 risks.

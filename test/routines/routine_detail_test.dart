@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:daisth/core/design_system/components/daisth_notice_controller.dart';
 import 'package:daisth/core/design_system/theme/daisth_theme.dart';
+import 'package:daisth/core/time/domain/models/calendar_day.dart';
 import 'package:daisth/app/dependencies/app_dependencies.dart';
 import 'package:daisth/core/location/domain/models/geo_coordinate.dart';
 import 'package:daisth/core/location/domain/models/location_access_status.dart';
@@ -71,7 +73,7 @@ void main() {
 
     expect(find.text('Completed · 2 rakaat'), findsOneWidget);
     expect(find.text('Partial'), findsNothing);
-    expect(find.text('Tambahan 2 rakaat'), findsOneWidget);
+    expect(find.text('Additional 2 rakaat'), findsOneWidget);
     expect(find.text('Not Today'), findsOneWidget);
     expect(find.text('Mark Remaining Done'), findsOneWidget);
     await _dismissNotice(tester, controller);
@@ -81,6 +83,25 @@ void main() {
     expect(find.text('Completed · 4 rakaat'), findsOneWidget);
     await _dismissNotice(tester, controller);
     await _dismissNotice(tester, controller);
+  });
+
+  testWidgets('Dhuha guidance title follows the selected locale', (
+    tester,
+  ) async {
+    final controller = DaisthNoticeController();
+    addTearDown(controller.dispose);
+    await _pumpRoutine(
+      tester,
+      RoutineDemoData.dhuha,
+      controller,
+      locale: const Locale('en'),
+    );
+
+    await tester.tap(find.text('2 rakaat'));
+    await _settle(tester);
+
+    expect(find.text('Duha Prayer Guide'), findsWidgets);
+    expect(find.text('Panduan Sholat Dhuha'), findsNothing);
   });
 
   testWidgets('optional routine can be marked Not Today without a reason', (
@@ -306,6 +327,49 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('built-in Night Prayer detail localizes its routine content', (
+    tester,
+  ) async {
+    final controller = DaisthNoticeController();
+    addTearDown(controller.dispose);
+    await _pumpRoutine(
+      tester,
+      RoutineDemoData.sholatMalam,
+      controller,
+      locale: const Locale('en'),
+    );
+
+    expect(
+      find.text('Complete the night prayer sequence before Fajr time.'),
+      findsOneWidget,
+    );
+    expect(find.text('Taubat prayer'), findsOneWidget);
+    expect(find.text('Hajat prayer'), findsOneWidget);
+    expect(find.text('Routine steps'), findsOneWidget);
+    expect(find.text('Sholat Taubat'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('historical routine context follows the selected locale', (
+    tester,
+  ) async {
+    final controller = DaisthNoticeController();
+    addTearDown(controller.dispose);
+    await _pumpRoutine(
+      tester,
+      RoutineDemoData.zuhur,
+      controller,
+      locale: const Locale('id'),
+      historical: true,
+      calendarDay: const CalendarDay(year: 2026, month: 10, day: 12),
+    );
+
+    expect(find.textContaining('Mengedit'), findsOneWidget);
+    expect(find.textContaining('Editing'), findsNothing);
+    expect(find.text('Rangkaian'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<void> _pumpRoutine(
@@ -314,6 +378,9 @@ Future<void> _pumpRoutine(
   DaisthNoticeController controller, {
   bool dark = false,
   PrayerScheduleSession? prayerScheduleSession,
+  Locale? locale,
+  bool historical = false,
+  CalendarDay? calendarDay,
 }) async {
   final repository = FakeRoutineRecordRepository();
   final resolveStatus = const ResolveRoutineStatusUseCase();
@@ -322,6 +389,9 @@ Future<void> _pumpRoutine(
       theme: DaisthTheme.light,
       darkTheme: DaisthTheme.dark,
       themeMode: dark ? ThemeMode.dark : ThemeMode.light,
+      locale: locale,
+      supportedLocales: const [Locale('id'), Locale('en')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       home: RoutineDetailScreen(
         key: ValueKey('test-routine-${data.id}'),
         routine: data,
@@ -336,6 +406,8 @@ Future<void> _pumpRoutine(
         ),
         markRoutineNotToday: MarkRoutineNotTodayUseCase(repository),
         prayerScheduleSession: prayerScheduleSession,
+        historical: historical,
+        calendarDay: calendarDay,
       ),
     ),
   );

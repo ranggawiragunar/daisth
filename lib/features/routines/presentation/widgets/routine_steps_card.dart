@@ -5,6 +5,7 @@ import '../../../../core/design_system/components/daisth_surface.dart';
 import '../../../../core/design_system/theme/daisth_theme_extension.dart';
 import '../../../../core/design_system/tokens/daisth_radius.dart';
 import '../../../../core/design_system/tokens/daisth_spacing.dart';
+import '../../../../core/localization/daisth_localizations.dart';
 import '../../domain/models/routine_step.dart';
 
 class RoutineStepsCard extends StatelessWidget {
@@ -95,8 +96,11 @@ class _RoutineStepTile extends StatelessWidget {
               key: ValueKey('routine-step-toggle-${step.id}'),
               button: true,
               checked: step.completed,
-              label:
-                  '${step.title}, ${step.completed ? 'completed' : 'not completed'}',
+              label: DaisthLocalizations.text(
+                context,
+                id: '${step.title}, ${step.completed ? 'selesai' : 'belum selesai'}',
+                en: '${step.title}, ${step.completed ? 'completed' : 'not completed'}',
+              ),
               child: InkWell(
                 onTap: onToggle,
                 borderRadius: BorderRadius.circular(DaisthRadius.pill),
@@ -203,6 +207,9 @@ class _StepBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final localizedLabel = label == 'Opsional' || label == 'Optional'
+        ? DaisthLocalizations.text(context, id: 'Opsional', en: 'Optional')
+        : label;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
@@ -210,7 +217,7 @@ class _StepBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(DaisthRadius.pill),
       ),
       child: Text(
-        label,
+        localizedLabel,
         style: theme.textTheme.labelSmall?.copyWith(
           color: theme.colorScheme.primary,
           fontSize: 10,
