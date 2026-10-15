@@ -16,9 +16,87 @@ import 'package:daisth/features/mosque/domain/models/mosque_search_failure.dart'
 import 'package:daisth/features/mosque/domain/repositories/mosque_repository.dart';
 import 'package:daisth/features/mosque/domain/use_cases/find_nearby_mosques_use_case.dart';
 import 'package:daisth/features/mosque/presentation/screens/mosque_finder_screen.dart';
+import 'package:daisth/features/mosque/presentation/map/mosque_map_panel.dart';
 import 'package:daisth/features/mosque/presentation/view_models/mosque_finder_view_model.dart';
 
 void main() {
+  testWidgets('map marker selects its stable place identity', (tester) async {
+    final harness = _Harness(
+      access: LocationAccessStatus.granted,
+      places: [_place('node/101', 120)],
+    );
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Marker node/101'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('selected-map-place-node/101')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    harness.dispose();
+  });
+
+  testWidgets('map selection survives theme and locale changes', (
+    tester,
+  ) async {
+    final harness = _Harness(
+      access: LocationAccessStatus.granted,
+      places: [_place('node/101', 120)],
+    );
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Marker node/101'));
+    await tester.pumpAndSettle();
+
+    await tester.pumpWidget(
+      harness.app(theme: DaisthTheme.dark, locale: const Locale('en')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Marker node/101'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('selected-map-place-node/101')),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('Map information'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    harness.dispose();
+  });
+
+  testWidgets('map error is independent and retry keeps the place list', (
+    tester,
+  ) async {
+    var rendererBuilds = 0;
+    final harness = _Harness(
+      access: LocationAccessStatus.granted,
+      places: [_place('Masjid Al Ikhlas', 120)],
+      mapRendererBuilder: (context, request) {
+        rendererBuilds++;
+        return _FakeMapSurface(request: request, fail: rendererBuilds == 1);
+      },
+    );
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Peta belum bisa dimuat'), findsOneWidget);
+    expect(find.text('Masjid Al Ikhlas'), findsOneWidget);
+    expect(find.text('Lokasi belum tersedia'), findsNothing);
+    await tester.tap(find.text('Coba lagi'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Peta belum bisa dimuat'), findsNothing);
+    expect(find.text('Fake map'), findsOneWidget);
+    expect(find.text('Masjid Al Ikhlas'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    harness.dispose();
+  });
+
   testWidgets('renders sorted result and refresh control in dark mode', (
     tester,
   ) async {
@@ -244,6 +322,7 @@ class _Harness {
     this.launcher,
     this.cached,
     this.pendingResponse,
+    this.mapRendererBuilder,
   }) : noticeController = DaisthNoticeController() {
     mosqueRepository = _FakeMosques(
       places: places,
@@ -274,33 +353,86 @@ class _Harness {
   final ExternalUriLauncher? launcher;
   final CachedMosquePlaces? cached;
   final Completer<List<MosquePlace>>? pendingResponse;
+  final MosqueMapRendererBuilder? mapRendererBuilder;
   final DaisthNoticeController noticeController;
   late final _FakeMosques mosqueRepository;
   late final MosqueFinderViewModel viewModel;
 
-  Widget app({ThemeData? theme}) => MaterialApp(
-    locale: const Locale('id'),
-    supportedLocales: const [Locale('id'), Locale('en')],
-    localizationsDelegates: const [
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    theme: theme ?? DaisthTheme.light,
-    home: DaisthNoticeScope(
-      controller: noticeController,
-      child: MosqueFinderScreen(
-        routineId: 'zuhur',
-        viewModel: viewModel,
-        navigationService: MapNavigationService(
-          launcher: launcher ?? (_) async => true,
+  Widget app({ThemeData? theme, Locale locale = const Locale('id')}) =>
+      MaterialApp(
+        locale: locale,
+        supportedLocales: const [Locale('id'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        theme: theme ?? DaisthTheme.light,
+        home: DaisthNoticeScope(
+          controller: noticeController,
+          child: MosqueFinderScreen(
+            routineId: 'zuhur',
+            viewModel: viewModel,
+            navigationService: MapNavigationService(
+              launcher: launcher ?? (_) async => true,
+            ),
+            noticeController: noticeController,
+            mapRendererBuilder: mapRendererBuilder ?? _fakeMapRenderer,
+          ),
         ),
-        noticeController: noticeController,
-      ),
-    ),
-  );
+      );
 
   void dispose() => noticeController.dispose();
+}
+
+Widget _fakeMapRenderer(BuildContext context, MosqueMapRenderRequest request) =>
+    _FakeMapSurface(request: request);
+
+class _FakeMapSurface extends StatefulWidget {
+  const _FakeMapSurface({required this.request, this.fail = false});
+
+  final MosqueMapRenderRequest request;
+  final bool fail;
+
+  @override
+  State<_FakeMapSurface> createState() => _FakeMapSurfaceState();
+}
+
+class _FakeMapSurfaceState extends State<_FakeMapSurface> {
+  @override
+  void initState() {
+    super.initState();
+    _reportState();
+  }
+
+  @override
+  void didUpdateWidget(covariant _FakeMapSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.fail != widget.fail) _reportState();
+  }
+
+  void _reportState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.fail) {
+        widget.request.onStyleFailure();
+      } else {
+        widget.request.onStyleLoaded();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      if (!widget.fail) const Text('Fake map'),
+      for (final place in widget.request.result.places)
+        TextButton(
+          onPressed: () => widget.request.onMarkerTapped(place.id),
+          child: Text('Marker ${place.id}'),
+        ),
+    ],
+  );
 }
 
 class _FakeLocation implements LocationRepository {

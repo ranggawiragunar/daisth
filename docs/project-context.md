@@ -46,6 +46,19 @@ evaluate a replacement, proxy, or self-hosted service. Display visible
 OpenStreetMap attribution wherever its place data is shown. Location and search
 history are not persisted.
 
+The Mosque Finder results screen uses the MapLibre Flutter renderer with
+OpenFreeMap Liberty in light mode and its Dark vector style in dark mode. The
+styles are `https://tiles.openfreemap.org/styles/liberty` and
+`https://tiles.openfreemap.org/styles/dark`. This is a basemap only: nearby
+Masjid/Mushola discovery, classification, radius selection, cache, and
+directions continue to use the existing Overpass-backed result models. The map
+uses the same resolved origin as the current result and keeps the place list
+usable if the map style cannot load. MapLibre's built-in attribution control is
+enabled; the map information sheet credits OpenFreeMap, OpenMapTiles, and
+OpenStreetMap. These public tile services have no availability guarantee; see
+`docs/qa/maplibre-openfreemap-migration.md` for migration verification and
+release follow-up.
+
 The Zuhur Routine Detail includes an optional post-prayer dhikr session. It
 guides the user through 33 Subhanallah, 33 Alhamdulillah, 33 Allahu Akbar, and
 one closing tahlil, with automatic advancement between items. Completion is

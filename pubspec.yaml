@@ -54,6 +54,7 @@ dependencies:
   flutter_image_compress: ^2.5.1
   firebase_storage: ^13.6.0
   crypto: ^3.0.6
+  maplibre_gl: ^0.27.1
 
 dev_dependencies:
   flutter_test:

@@ -14,6 +14,7 @@ import '../../../../core/localization/daisth_localizations.dart';
 import '../../domain/models/mosque_place.dart';
 import '../../domain/models/mosque_place_type.dart';
 import '../../domain/models/nearby_mosque_result.dart';
+import '../map/mosque_map_panel.dart';
 import '../view_models/mosque_finder_view_model.dart';
 
 class MosqueFinderScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class MosqueFinderScreen extends StatefulWidget {
     required this.viewModel,
     required this.navigationService,
     required this.noticeController,
+    this.mapRendererBuilder,
     super.key,
   });
 
@@ -29,6 +31,7 @@ class MosqueFinderScreen extends StatefulWidget {
   final MosqueFinderViewModel viewModel;
   final MapNavigationService navigationService;
   final DaisthNoticeController noticeController;
+  final MosqueMapRendererBuilder? mapRendererBuilder;
 
   @override
   State<MosqueFinderScreen> createState() => _MosqueFinderScreenState();
@@ -340,6 +343,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
                 result: _model.result!,
                 isRefreshing: true,
                 onNavigate: _openDirections,
+                mapRendererBuilder: widget.mapRendererBuilder,
               ),
       MosqueFinderState.locationUnavailable => _RetryState(
         key: const ValueKey('location-unavailable'),
@@ -401,6 +405,7 @@ class _MosqueFinderScreenState extends State<MosqueFinderScreen>
         key: const ValueKey('results'),
         result: _model.result!,
         onNavigate: _openDirections,
+        mapRendererBuilder: widget.mapRendererBuilder,
       ),
     };
   }
@@ -545,10 +550,11 @@ class _RetryState extends StatelessWidget {
   );
 }
 
-class _ResultsState extends StatelessWidget {
+class _ResultsState extends StatefulWidget {
   const _ResultsState({
     required this.result,
     required this.onNavigate,
+    required this.mapRendererBuilder,
     this.isRefreshing = false,
     super.key,
   });
@@ -556,11 +562,24 @@ class _ResultsState extends StatelessWidget {
   final NearbyMosqueResult result;
   final ValueChanged<MosquePlace> onNavigate;
   final bool isRefreshing;
+  final MosqueMapRendererBuilder? mapRendererBuilder;
+
+  @override
+  State<_ResultsState> createState() => _ResultsStateState();
+}
+
+class _ResultsStateState extends State<_ResultsState> {
+  String? _selectedPlaceId;
 
   @override
   Widget build(BuildContext context) {
+    final result = widget.result;
     final places = result.places;
     final theme = Theme.of(context);
+    final selectedPlace = places.cast<MosquePlace?>().firstWhere(
+      (place) => place?.id == _selectedPlaceId,
+      orElse: () => null,
+    );
     return ListView(
       padding: const EdgeInsets.fromLTRB(
         DaisthSpacing.screenHorizontal,
@@ -576,7 +595,25 @@ class _ResultsState extends StatelessWidget {
             height: 64,
           ),
         ),
-        if (isRefreshing) ...[
+        MosqueMapPanel(
+          result: result,
+          selectedPlaceId: _selectedPlaceId,
+          rendererBuilder: widget.mapRendererBuilder,
+          onPlaceSelected: (placeId) => setState(() {
+            _selectedPlaceId = placeId;
+          }),
+        ),
+        if (selectedPlace != null) ...[
+          const SizedBox(height: DaisthSpacing.sm),
+          KeyedSubtree(
+            key: ValueKey('selected-map-place-${selectedPlace.id}'),
+            child: _NearestMosqueCard(
+              place: selectedPlace,
+              onNavigate: widget.onNavigate,
+            ),
+          ),
+        ],
+        if (widget.isRefreshing) ...[
           LinearProgressIndicator(
             minHeight: 2,
             color: theme.colorScheme.primary,
@@ -585,7 +622,7 @@ class _ResultsState extends StatelessWidget {
           const SizedBox(height: DaisthSpacing.sm),
         ],
         if (result.isUsingCachedResults) ...[
-          _CachedResultsNotice(isRefreshing: isRefreshing),
+          _CachedResultsNotice(isRefreshing: widget.isRefreshing),
           const SizedBox(height: DaisthSpacing.md),
         ],
         if (result.usedLastKnownLocation) ...[
@@ -599,7 +636,7 @@ class _ResultsState extends StatelessWidget {
           ),
         ),
         const SizedBox(height: DaisthSpacing.sm),
-        _NearestMosqueCard(place: places.first, onNavigate: onNavigate),
+        _NearestMosqueCard(place: places.first, onNavigate: widget.onNavigate),
         if (places.length > 1) ...[
           const SizedBox(height: DaisthSpacing.xl),
           Text(
@@ -618,7 +655,7 @@ class _ResultsState extends StatelessWidget {
                 for (var index = 1; index < places.length; index++) ...[
                   _MosqueResultTile(
                     place: places[index],
-                    onTap: () => onNavigate(places[index]),
+                    onTap: () => widget.onNavigate(places[index]),
                   ),
                   if (index < places.length - 1)
                     const Divider(height: 1, indent: 16, endIndent: 16),

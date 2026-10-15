@@ -210,6 +210,18 @@ root and owns the shared HTTP client. Mosque search requests a foreground
 position only while the Finder is open; coordinates and search history are not
 persisted.
 
+The Finder results screen renders a MapLibre basemap with OpenFreeMap Liberty
+in light mode and its Dark style in dark mode. Both style URLs, initial zoom,
+selected-place zoom, and style-load timeout live in `DaisthMapConfig`. The map
+uses the already-resolved search origin and Overpass
+place coordinates; it requests no new location permission and persists no
+coordinates. Place markers carry stable Overpass IDs, and selecting one reuses
+the result selection and directions flow. The current location is a separate
+marker. A basemap failure leaves the nearby list available and exposes map-only
+retry. MapLibre's attribution control stays visible, and the information sheet
+credits OpenFreeMap, OpenMapTiles, and OpenStreetMap. Overpass remains the POI
+provider; the vector style is only the basemap.
+
 Prayer time calculation follows the same repository boundary:
 
 ```text
