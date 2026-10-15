@@ -30,12 +30,7 @@ import '../domain/use_cases/reset_default_routine_use_case.dart';
 import '../data/catalog/default_routine_template_catalog.dart';
 
 class RoutineEditorScreen extends StatefulWidget {
-  const RoutineEditorScreen({
-    required this.dependencies,
-    required this.noticeController,
-    this.routineId,
-    super.key,
-  });
+  const RoutineEditorScreen({required this.dependencies, required this.noticeController, this.routineId, super.key});
 
   final AppDependencies dependencies;
   final DaisthNoticeController noticeController;
@@ -52,37 +47,18 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
   Future<_EditorInitial> _load() async {
     if (widget.routineId == null) {
       final now = DateTime.now().toUtc();
-      final definition = RoutineDefinition(
-        id: _routineId,
-        origin: RoutineOrigin.custom,
-        title: '',
-        description: null,
-        isEnabled: true,
-        isArchived: false,
-        schedule: RoutineSchedule.fixed(8 * 60),
-        reminderEnabled: true,
-        priority: RoutinePriority.medium,
-        sortOrder: 100,
-        createdAt: now,
-        updatedAt: now,
-      );
+      final definition = RoutineDefinition(id: _routineId, origin: RoutineOrigin.custom, title: '', description: null, isEnabled: true, isArchived: false, schedule: RoutineSchedule.fixed(8 * 60), reminderEnabled: true, priority: RoutinePriority.medium, sortOrder: 100, createdAt: now, updatedAt: now);
       return _EditorInitial(definition, const [], null, const []);
     }
     await widget.dependencies.ensureRoutineDefinitionsReady();
-    final existing = await widget.dependencies.routineRepository.getRoutine(
-      _routineId,
-    );
+    final existing = await widget.dependencies.routineRepository.getRoutine(_routineId);
     if (existing == null) {
       throw StateError('Routine not found');
     }
     final definition = existing;
-    final steps = definition.origin == RoutineOrigin.custom
-        ? await widget.dependencies.routineRepository.getSteps(_routineId)
-        : const <RoutineStepDefinition>[];
-    final content = await widget.dependencies.routineContentRepository
-        .getForRoutine(_routineId);
-    final attachments = await widget.dependencies.routineAttachmentRepository
-        .listForRoutine(_routineId);
+    final steps = definition.origin == RoutineOrigin.custom ? await widget.dependencies.routineRepository.getSteps(_routineId) : const <RoutineStepDefinition>[];
+    final content = await widget.dependencies.routineContentRepository.getForRoutine(_routineId);
+    final attachments = await widget.dependencies.routineAttachmentRepository.listForRoutine(_routineId);
     return _EditorInitial(definition, steps, content, attachments);
   }
 
@@ -100,23 +76,11 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
         return Scaffold(
           appBar: AppBar(),
           body: Center(
-            child: Text(
-              DaisthLocalizations.text(
-                context,
-                id: 'Rutinitas tidak ditemukan.',
-                en: 'Routine not found.',
-              ),
-            ),
+            child: Text(DaisthLocalizations.text(context, id: 'Rutinitas tidak ditemukan.', en: 'Routine not found.')),
           ),
         );
       }
-      return _RoutineEditorForm(
-        key: ValueKey('routine-editor-$_routineId'),
-        initial: snapshot.data!,
-        dependencies: widget.dependencies,
-        noticeController: widget.noticeController,
-        fileService: widget.dependencies.routineAttachmentFileService,
-      );
+      return _RoutineEditorForm(key: ValueKey('routine-editor-$_routineId'), initial: snapshot.data!, dependencies: widget.dependencies, noticeController: widget.noticeController, fileService: widget.dependencies.routineAttachmentFileService);
     },
   );
 }
@@ -130,13 +94,7 @@ class _EditorInitial {
 }
 
 class _RoutineEditorForm extends StatefulWidget {
-  const _RoutineEditorForm({
-    required this.initial,
-    required this.dependencies,
-    required this.noticeController,
-    required this.fileService,
-    super.key,
-  });
+  const _RoutineEditorForm({required this.initial, required this.dependencies, required this.noticeController, required this.fileService, super.key});
 
   final _EditorInitial initial;
   final AppDependencies dependencies;
@@ -149,24 +107,13 @@ class _RoutineEditorForm extends StatefulWidget {
 
 class _RoutineEditorFormState extends State<_RoutineEditorForm> {
   late final RoutineDefinition _initial = widget.initial.definition;
-  late final TextEditingController _title = TextEditingController(
-    text: _initial.title,
-  );
-  late final TextEditingController _description = TextEditingController(
-    text: _initial.description ?? '',
-  );
+  late final TextEditingController _title = TextEditingController(text: _initial.title);
+  late final TextEditingController _description = TextEditingController(text: _initial.description ?? '');
   late final QuillController _quill = _makeQuillController();
   late bool _enabled = _initial.isEnabled;
   late bool _reminder = _initial.reminderEnabled;
-  late TimeOfDay _time = _initial.schedule.minutesAfterMidnight == null
-      ? const TimeOfDay(hour: 8, minute: 0)
-      : TimeOfDay(
-          hour: _initial.schedule.minutesAfterMidnight! ~/ 60,
-          minute: _initial.schedule.minutesAfterMidnight! % 60,
-        );
-  late final List<_StepDraft> _steps = [
-    for (final step in widget.initial.steps) _StepDraft.fromDefinition(step),
-  ];
+  late TimeOfDay _time = _initial.schedule.minutesAfterMidnight == null ? const TimeOfDay(hour: 8, minute: 0) : TimeOfDay(hour: _initial.schedule.minutesAfterMidnight! ~/ 60, minute: _initial.schedule.minutesAfterMidnight! % 60);
+  late final List<_StepDraft> _steps = [for (final step in widget.initial.steps) _StepDraft.fromDefinition(step)];
   late final List<RoutineAttachment> _images = [...widget.initial.images];
   final List<_StagedDraft> _staged = [];
   final Set<String> _removedIds = {};
@@ -177,9 +124,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
 
   bool get _isCustom => _initial.origin == RoutineOrigin.custom;
   bool get _isNew => _initial.title.isEmpty && _isCustom;
-  bool get _timeEditable =>
-      _isCustom ||
-      const {'sholat-malam', 'dhuha', 'penutup-hari'}.contains(_initial.id);
+  bool get _timeEditable => _isCustom || const {'sholat-malam', 'dhuha', 'penutup-hari'}.contains(_initial.id);
 
   QuillController _makeQuillController() {
     final initial = widget.initial.content;
@@ -187,12 +132,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
       return QuillController.basic();
     }
     try {
-      return QuillController(
-        document: Document.fromJson(
-          jsonDecode(initial.serializedDelta) as List,
-        ),
-        selection: const TextSelection.collapsed(offset: 0),
-      );
+      return QuillController(document: Document.fromJson(jsonDecode(initial.serializedDelta) as List), selection: const TextSelection.collapsed(offset: 0));
     } catch (_) {
       return QuillController.basic();
     }
@@ -225,11 +165,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
     if (!_dirty && mounted) setState(() => _dirty = true);
   }
 
-  void _showNotice(String message) => widget.noticeController.show(
-    context,
-    type: DaisthNoticeType.error,
-    title: message,
-  );
+  void _showNotice(String message) => widget.noticeController.show(context, type: DaisthNoticeType.error, title: message);
 
   Future<void> _recoverPickerData() async {
     try {
@@ -242,18 +178,9 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
   }
 
   Future<void> _pickImages() async {
-    final remaining =
-        RoutineAttachment.maxAttachmentsPerRoutine -
-        _images.length -
-        _staged.length;
+    final remaining = RoutineAttachment.maxAttachmentsPerRoutine - _images.length - _staged.length;
     if (remaining <= 0) {
-      _showNotice(
-        DaisthLocalizations.text(
-          context,
-          id: 'Maksimal 8 gambar untuk satu rutinitas.',
-          en: 'A routine can have up to 8 images.',
-        ),
-      );
+      _showNotice(DaisthLocalizations.text(context, id: 'Maksimal 8 gambar untuk satu rutinitas.', en: 'A routine can have up to 8 images.'));
       return;
     }
     try {
@@ -261,59 +188,29 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
       await _stageFiles(files);
     } catch (_) {
       if (mounted) {
-        _showNotice(
-          DaisthLocalizations.text(
-            context,
-            id: 'Gambar belum dapat dibuka.',
-            en: 'Images could not be opened.',
-          ),
-        );
+        _showNotice(DaisthLocalizations.text(context, id: 'Gambar belum dapat dibuka.', en: 'Images could not be opened.'));
       }
     }
   }
 
   Future<void> _stageFiles(List<XFile> files) async {
     if (files.isEmpty || !mounted) return;
-    final remaining =
-        RoutineAttachment.maxAttachmentsPerRoutine -
-        _images.length -
-        _staged.length;
+    final remaining = RoutineAttachment.maxAttachmentsPerRoutine - _images.length - _staged.length;
     if (files.length > remaining) {
-      _showNotice(
-        DaisthLocalizations.text(
-          context,
-          id: 'Pilih maksimal $remaining gambar lagi.',
-          en: 'Select up to $remaining more images.',
-        ),
-      );
+      _showNotice(DaisthLocalizations.text(context, id: 'Pilih maksimal $remaining gambar lagi.', en: 'Select up to $remaining more images.'));
     }
     for (final file in files.take(remaining)) {
       try {
-        final image = await widget.fileService.stageImage(
-          file: file,
-          routineId: _initial.id,
-        );
+        final image = await widget.fileService.stageImage(file: file, routineId: _initial.id);
         if (mounted) setState(() => _staged.add(_StagedDraft(image)));
         _markDirty();
       } on RoutineAttachmentTooLargeException {
         if (mounted) {
-          _showNotice(
-            DaisthLocalizations.text(
-              context,
-              id: 'Gambar terlalu besar. Coba pilih gambar lain.',
-              en: 'This image is too large. Please choose another image.',
-            ),
-          );
+          _showNotice(DaisthLocalizations.text(context, id: 'Gambar terlalu besar. Coba pilih gambar lain.', en: 'This image is too large. Please choose another image.'));
         }
       } catch (_) {
         if (mounted) {
-          _showNotice(
-            DaisthLocalizations.text(
-              context,
-              id: 'Gambar belum dapat diproses.',
-              en: 'This image could not be processed.',
-            ),
-          );
+          _showNotice(DaisthLocalizations.text(context, id: 'Gambar belum dapat diproses.', en: 'This image could not be processed.'));
         }
       }
     }
@@ -359,36 +256,16 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
     final answer = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          DaisthLocalizations.text(
-            context,
-            id: 'Buang perubahan?',
-            en: 'Discard changes?',
-          ),
-        ),
-        content: Text(
-          DaisthLocalizations.text(
-            context,
-            id: 'Perubahan yang belum disimpan akan hilang.',
-            en: 'Your unsaved changes will be lost.',
-          ),
-        ),
+        title: Text(DaisthLocalizations.text(context, id: 'Buang perubahan?', en: 'Discard changes?')),
+        content: Text(DaisthLocalizations.text(context, id: 'Perubahan yang belum disimpan akan hilang.', en: 'Your unsaved changes will be lost.')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              DaisthLocalizations.text(
-                context,
-                id: 'Lanjut mengedit',
-                en: 'Keep Editing',
-              ),
-            ),
+            child: Text(DaisthLocalizations.text(context, id: 'Lanjut mengedit', en: 'Keep Editing')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              DaisthLocalizations.text(context, id: 'Buang', en: 'Discard'),
-            ),
+            child: Text(DaisthLocalizations.text(context, id: 'Buang', en: 'Discard')),
           ),
         ],
       ),
@@ -404,34 +281,15 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
     final now = DateTime.now().toUtc();
     final title = _title.text.trim();
     if (_isCustom && title.isEmpty) {
-      setState(
-        () => _formError = DaisthLocalizations.text(
-          context,
-          id: 'Masukkan nama rutinitas.',
-          en: 'Enter a routine name.',
-        ),
-      );
+      setState(() => _formError = DaisthLocalizations.text(context, id: 'Masukkan nama rutinitas.', en: 'Enter a routine name.'));
       return;
     }
     if (_isCustom && title.length > 50) {
-      setState(
-        () => _formError = DaisthLocalizations.text(
-          context,
-          id: 'Nama rutinitas maksimal 50 karakter.',
-          en: 'Routine names can be up to 50 characters.',
-        ),
-      );
+      setState(() => _formError = DaisthLocalizations.text(context, id: 'Nama rutinitas maksimal 50 karakter.', en: 'Routine names can be up to 50 characters.'));
       return;
     }
-    if (_steps.any((step) => step.controller.text.trim().isEmpty) ||
-        (_steps.isNotEmpty && !_steps.any((step) => step.required))) {
-      setState(
-        () => _formError = DaisthLocalizations.text(
-          context,
-          id: 'Periksa kembali langkah checklist.',
-          en: 'Please check the checklist steps.',
-        ),
-      );
+    if (_steps.any((step) => step.controller.text.trim().isEmpty) || (_steps.isNotEmpty && !_steps.any((step) => step.required))) {
+      setState(() => _formError = DaisthLocalizations.text(context, id: 'Periksa kembali langkah checklist.', en: 'Please check the checklist steps.'));
       return;
     }
     setState(() {
@@ -444,81 +302,23 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
       final newAttachments = <RoutineAttachment>[];
       for (var i = 0; i < _staged.length; i++) {
         final draft = _staged[i];
-        final id =
-            '${now.microsecondsSinceEpoch}-${Random.secure().nextInt(1 << 32).toRadixString(16)}';
-        final relative = await widget.fileService.moveToPermanent(
-          image: draft.image,
-          routineId: _initial.id,
-          attachmentId: id,
-        );
+        final id = '${now.microsecondsSinceEpoch}-${Random.secure().nextInt(1 << 32).toRadixString(16)}';
+        final relative = await widget.fileService.moveToPermanent(image: draft.image, routineId: _initial.id, attachmentId: id);
         permanentPaths.add(relative);
-        newAttachments.add(
-          RoutineAttachment(
-            id: id,
-            routineId: _initial.id,
-            type: 'image',
-            localRelativePath: relative,
-            originalFileName: draft.image.originalFileName,
-            mimeType: draft.image.mimeType,
-            byteSize: draft.image.byteSize,
-            width: draft.image.width,
-            height: draft.image.height,
-            sortOrder: _images.length + i,
-            contentSha256: draft.image.sha256,
-            createdAt: now,
-            updatedAt: now,
-          ),
-        );
+        newAttachments.add(RoutineAttachment(id: id, routineId: _initial.id, type: 'image', localRelativePath: relative, originalFileName: draft.image.originalFileName, mimeType: draft.image.mimeType, byteSize: draft.image.byteSize, width: draft.image.width, height: draft.image.height, sortOrder: _images.length + i, contentSha256: draft.image.sha256, createdAt: now, updatedAt: now));
       }
       final plainText = _quill.document.toPlainText().trim();
       final delta = jsonEncode(_quill.document.toDelta().toJson());
-      final content = plainText.isEmpty
-          ? null
-          : RoutineContent(
-              routineId: _initial.id,
-              serializedDelta: delta,
-              plainText: plainText,
-              formatVersion: 1,
-              createdAt: widget.initial.content?.createdAt ?? now,
-              updatedAt: now,
-            );
-      final definition = _initial.copyWith(
-        title: _isCustom ? title : null,
-        description: _isCustom ? _description.text.trim() : null,
-        clearDescription: _isCustom && _description.text.trim().isEmpty,
-        isEnabled: _enabled,
-        reminderEnabled: _reminder,
-        schedule: _timeEditable
-            ? RoutineSchedule.fixed(_time.hour * 60 + _time.minute)
-            : null,
-        updatedAt: now,
-      );
-      final stepDefinitions = _isCustom
-          ? [
-              for (var i = 0; i < _steps.length; i++)
-                _steps[i].toDefinition(_initial.id, i, now),
-            ]
-          : null;
-      await SaveRoutineEditorUseCase(
-        editorRepository: widget.dependencies.routineEditorRepository,
-        routines: widget.dependencies.routineRepository,
-        records: widget.dependencies.routineRecordRepository,
-      )(
-        definition: definition,
-        steps: stepDefinitions,
-        content: content,
-        attachments: [..._images, ...newAttachments],
-        removedAttachmentIds: _removedIds,
-        now: now,
-      );
+      final content = plainText.isEmpty ? null : RoutineContent(routineId: _initial.id, serializedDelta: delta, plainText: plainText, formatVersion: 1, createdAt: widget.initial.content?.createdAt ?? now, updatedAt: now);
+      final definition = _initial.copyWith(title: _isCustom ? title : null, description: _isCustom ? _description.text.trim() : null, clearDescription: _isCustom && _description.text.trim().isEmpty, isEnabled: _enabled, reminderEnabled: _reminder, schedule: _timeEditable ? RoutineSchedule.fixed(_time.hour * 60 + _time.minute) : null, updatedAt: now);
+      final stepDefinitions = _isCustom ? [for (var i = 0; i < _steps.length; i++) _steps[i].toDefinition(_initial.id, i, now)] : null;
+      await SaveRoutineEditorUseCase(editorRepository: widget.dependencies.routineEditorRepository, routines: widget.dependencies.routineRepository, records: widget.dependencies.routineRecordRepository)(definition: definition, steps: stepDefinitions, content: content, attachments: [..._images, ...newAttachments], removedAttachmentIds: _removedIds, now: now);
       databaseCommitted = true;
       for (final id in _removedIds) {
         final old = widget.initial.images.where((item) => item.id == id);
         if (old.isNotEmpty) {
           try {
-            await widget.fileService.deleteRelative(
-              old.first.localRelativePath,
-            );
+            await widget.fileService.deleteRelative(old.first.localRelativePath);
           } catch (_) {
             // Stale unreferenced files are removed by startup orphan cleanup.
           }
@@ -541,13 +341,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
         }
       }
       if (mounted) {
-        _showNotice(
-          DaisthLocalizations.text(
-            context,
-            id: 'Rutinitas belum dapat disimpan. Coba lagi.',
-            en: 'Routine could not be saved. Please try again.',
-          ),
-        );
+        _showNotice(DaisthLocalizations.text(context, id: 'Rutinitas belum dapat disimpan. Coba lagi.', en: 'Routine could not be saved. Please try again.'));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -558,32 +352,16 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          DaisthLocalizations.text(
-            context,
-            id: 'Arsipkan rutinitas?',
-            en: 'Archive this routine?',
-          ),
-        ),
-        content: Text(
-          DaisthLocalizations.text(
-            context,
-            id: 'Riwayat dan gambar tetap tersimpan.',
-            en: 'Its history and images will be kept.',
-          ),
-        ),
+        title: Text(DaisthLocalizations.text(context, id: 'Arsipkan rutinitas?', en: 'Archive this routine?')),
+        content: Text(DaisthLocalizations.text(context, id: 'Riwayat dan gambar tetap tersimpan.', en: 'Its history and images will be kept.')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel'),
-            ),
+            child: Text(DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              DaisthLocalizations.text(context, id: 'Arsipkan', en: 'Archive'),
-            ),
+            child: Text(DaisthLocalizations.text(context, id: 'Arsipkan', en: 'Archive')),
           ),
         ],
       ),
@@ -591,21 +369,12 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
     if (confirmed != true || !mounted) return;
     setState(() => _saving = true);
     try {
-      await widget.dependencies.routineRepository.archiveCustomRoutine(
-        _initial.id,
-        DateTime.now().toUtc(),
-      );
+      await widget.dependencies.routineRepository.archiveCustomRoutine(_initial.id, DateTime.now().toUtc());
       _allowPop = true;
       if (mounted) Navigator.pop(context, true);
     } catch (_) {
       if (mounted) {
-        _showNotice(
-          DaisthLocalizations.text(
-            context,
-            id: 'Rutinitas belum dapat diarsipkan.',
-            en: 'Routine could not be archived.',
-          ),
-        );
+        _showNotice(DaisthLocalizations.text(context, id: 'Rutinitas belum dapat diarsipkan.', en: 'Routine could not be archived.'));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -616,32 +385,16 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          DaisthLocalizations.text(
-            context,
-            id: 'Reset rutinitas ini?',
-            en: 'Reset this routine?',
-          ),
-        ),
-        content: Text(
-          DaisthLocalizations.text(
-            context,
-            id: 'Jadwal dan pengingat kembali ke pengaturan bawaan. Catatan dan riwayat tetap tersimpan.',
-            en: 'Schedule and reminder settings return to Daisth defaults. Notes and history stay saved.',
-          ),
-        ),
+        title: Text(DaisthLocalizations.text(context, id: 'Reset rutinitas ini?', en: 'Reset this routine?')),
+        content: Text(DaisthLocalizations.text(context, id: 'Jadwal dan pengingat kembali ke pengaturan bawaan. Catatan dan riwayat tetap tersimpan.', en: 'Schedule and reminder settings return to Daisth defaults. Notes and history stay saved.')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel'),
-            ),
+            child: Text(DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              DaisthLocalizations.text(context, id: 'Reset', en: 'Reset'),
-            ),
+            child: Text(DaisthLocalizations.text(context, id: 'Reset', en: 'Reset')),
           ),
         ],
       ),
@@ -649,21 +402,12 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
     if (confirmed != true || !mounted) return;
     setState(() => _saving = true);
     try {
-      await ResetDefaultRoutineUseCase(
-        repository: widget.dependencies.routineRepository,
-        templates: DefaultRoutineTemplateCatalog.definitions,
-      )(_initial.id);
+      await ResetDefaultRoutineUseCase(repository: widget.dependencies.routineRepository, templates: DefaultRoutineTemplateCatalog.definitions)(_initial.id);
       _allowPop = true;
       if (mounted) Navigator.pop(context, true);
     } catch (_) {
       if (mounted) {
-        _showNotice(
-          DaisthLocalizations.text(
-            context,
-            id: 'Rutinitas belum dapat direset.',
-            en: 'Routine could not be reset.',
-          ),
-        );
+        _showNotice(DaisthLocalizations.text(context, id: 'Rutinitas belum dapat direset.', en: 'Routine could not be reset.'));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -684,11 +428,8 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            DaisthLocalizations.text(
-              context,
-              id: _isNew ? 'Buat Rutinitas' : 'Edit Rutinitas',
-              en: _isNew ? 'Create Routine' : 'Edit Routine',
-            ),
+            DaisthLocalizations.text(context, id: _isNew ? 'Buat Rutinitas' : 'Edit Rutinitas', en: _isNew ? 'Create Routine' : 'Edit Routine'),
+            style: Theme.of(context).textTheme.titleMedium,
           ),
           centerTitle: true,
           leading: IconButton(
@@ -702,39 +443,32 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
         ),
         body: ListView(
           key: const ValueKey('routine-editor-scroll-view'),
-          padding: const EdgeInsets.fromLTRB(
-            DaisthSpacing.screenHorizontal,
-            DaisthSpacing.md,
-            DaisthSpacing.screenHorizontal,
-            DaisthSpacing.xl,
-          ),
+          padding: const EdgeInsets.fromLTRB(DaisthSpacing.screenHorizontal, DaisthSpacing.md, DaisthSpacing.screenHorizontal, DaisthSpacing.xl),
           children: [
-            const SizedBox(
-              height: 42,
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: DaisthFeatureVisual(
-                  asset: DaisthAssets.routineEditorHeader,
-                  height: 42,
-                  width: 60,
-                ),
-              ),
-            ),
             if (_isCustom) ...[
-              _section(
-                context,
-                DaisthLocalizations.text(context, id: 'Dasar', en: 'Basics'),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    DaisthLocalizations.text(context, id: 'Dasar', en: 'Basics'),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(
+                    height: 42,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: DaisthFeatureVisual(asset: DaisthAssets.routineEditorHeader, height: 42, width: 60),
+                    ),
+                  ),
+                ],
               ),
               TextField(
                 controller: _title,
                 maxLength: 50,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
-                  labelText: DaisthLocalizations.text(
-                    context,
-                    id: 'Nama rutinitas *',
-                    en: 'Routine name *',
-                  ),
+                  labelText: DaisthLocalizations.text(context, id: 'Nama rutinitas *', en: 'Routine name *'),
                 ),
               ),
               TextField(
@@ -743,36 +477,21 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
                 minLines: 1,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  labelText: DaisthLocalizations.text(
-                    context,
-                    id: 'Deskripsi',
-                    en: 'Description',
-                  ),
+                  labelText: DaisthLocalizations.text(context, id: 'Deskripsi', en: 'Description'),
                 ),
               ),
               const SizedBox(height: DaisthSpacing.md),
-              _section(
-                context,
-                DaisthLocalizations.text(
-                  context,
-                  id: 'Jadwal & pengingat',
-                  en: 'Schedule & reminder',
-                ),
-              ),
+              _section(context, DaisthLocalizations.text(context, id: 'Jadwal & pengingat', en: 'Schedule & reminder')),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(
-                  DaisthLocalizations.text(context, id: 'Waktu', en: 'Time'),
-                ),
+                title: Text(DaisthLocalizations.text(context, id: 'Waktu', en: 'Time')),
                 subtitle: Text(_time.format(context)),
                 trailing: const Icon(PhosphorIconsRegular.clock),
                 onTap: _pickTime,
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(
-                  DaisthLocalizations.text(context, id: 'Aktif', en: 'Enabled'),
-                ),
+                title: Text(DaisthLocalizations.text(context, id: 'Aktif', en: 'Enabled')),
                 value: _enabled,
                 onChanged: (value) => setState(() {
                   _enabled = value;
@@ -781,13 +500,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(
-                  DaisthLocalizations.text(
-                    context,
-                    id: 'Pengingat',
-                    en: 'Reminder',
-                  ),
-                ),
+                title: Text(DaisthLocalizations.text(context, id: 'Pengingat', en: 'Reminder')),
                 value: _reminder,
                 onChanged: (value) => setState(() {
                   _reminder = value;
@@ -795,50 +508,22 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
                 }),
               ),
               const SizedBox(height: DaisthSpacing.md),
-              _section(
-                context,
-                DaisthLocalizations.text(
-                  context,
-                  id: 'Checklist',
-                  en: 'Checklist',
-                ),
-              ),
+              _section(context, DaisthLocalizations.text(context, id: 'Checklist', en: 'Checklist')),
               for (var i = 0; i < _steps.length; i++) _stepRow(context, i),
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
                   onPressed: _addStep,
                   icon: const Icon(PhosphorIconsRegular.plus),
-                  label: Text(
-                    DaisthLocalizations.text(
-                      context,
-                      id: 'Tambah langkah',
-                      en: 'Add step',
-                    ),
-                  ),
+                  label: Text(DaisthLocalizations.text(context, id: 'Tambah langkah', en: 'Add step')),
                 ),
               ),
             ] else ...[
-              _section(
-                context,
-                DaisthLocalizations.text(
-                  context,
-                  id: 'Rutinitas bawaan',
-                  en: 'Default routine',
-                ),
-              ),
+              _section(context, DaisthLocalizations.text(context, id: 'Rutinitas bawaan', en: 'Default routine')),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(
-                  DaisthLocalizations.text(context, id: 'Aktif', en: 'Enabled'),
-                ),
-                subtitle: Text(
-                  DaisthLocalizations.text(
-                    context,
-                    id: 'Matikan untuk menyembunyikan dari Hari Ini.',
-                    en: 'Turn off to hide from Today.',
-                  ),
-                ),
+                title: Text(DaisthLocalizations.text(context, id: 'Aktif', en: 'Enabled')),
+                subtitle: Text(DaisthLocalizations.text(context, id: 'Matikan untuk menyembunyikan dari Hari Ini.', en: 'Turn off to hide from Today.')),
                 value: _enabled,
                 onChanged: (value) => setState(() {
                   _enabled = value;
@@ -847,42 +532,14 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(
-                  _timeEditable
-                      ? DaisthLocalizations.text(
-                          context,
-                          id: 'Waktu pilihan',
-                          en: 'Preferred time',
-                        )
-                      : DaisthLocalizations.text(
-                          context,
-                          id: 'Jadwal',
-                          en: 'Schedule',
-                        ),
-                ),
-                subtitle: Text(
-                  _timeEditable
-                      ? _time.format(context)
-                      : DaisthLocalizations.text(
-                          context,
-                          id: 'Mengikuti waktu salat',
-                          en: 'Based on prayer time',
-                        ),
-                ),
-                trailing: _timeEditable
-                    ? const Icon(PhosphorIconsRegular.clock)
-                    : null,
+                title: Text(_timeEditable ? DaisthLocalizations.text(context, id: 'Waktu pilihan', en: 'Preferred time') : DaisthLocalizations.text(context, id: 'Jadwal', en: 'Schedule')),
+                subtitle: Text(_timeEditable ? _time.format(context) : DaisthLocalizations.text(context, id: 'Mengikuti waktu salat', en: 'Based on prayer time')),
+                trailing: _timeEditable ? const Icon(PhosphorIconsRegular.clock) : null,
                 onTap: _timeEditable ? _pickTime : null,
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(
-                  DaisthLocalizations.text(
-                    context,
-                    id: 'Pengingat',
-                    en: 'Reminder',
-                  ),
-                ),
+                title: Text(DaisthLocalizations.text(context, id: 'Pengingat', en: 'Reminder')),
                 value: _reminder,
                 onChanged: (value) => setState(() {
                   _reminder = value;
@@ -891,32 +548,12 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
               ),
             ],
             const SizedBox(height: DaisthSpacing.md),
-            _section(
-              context,
-              DaisthLocalizations.text(context, id: 'Catatan', en: 'Notes'),
-            ),
+            _section(context, DaisthLocalizations.text(context, id: 'Catatan', en: 'Notes')),
             DaisthSurface(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
-                  QuillSimpleToolbar(
-                    controller: _quill,
-                    config: const QuillSimpleToolbarConfig(
-                      showFontFamily: false,
-                      showFontSize: false,
-                      showInlineCode: false,
-                      showColorButton: false,
-                      showBackgroundColorButton: false,
-                      showListCheck: false,
-                      showCodeBlock: false,
-                      showAlignmentButtons: false,
-                      showIndent: false,
-                      showSearchButton: false,
-                      showSubscript: false,
-                      showSuperscript: false,
-                      multiRowsDisplay: true,
-                    ),
-                  ),
+                  QuillSimpleToolbar(controller: _quill, config: const QuillSimpleToolbarConfig(showFontFamily: false, showFontSize: false, showInlineCode: false, showColorButton: false, showBackgroundColorButton: false, showListCheck: false, showCodeBlock: false, showAlignmentButtons: false, showIndent: false, showSearchButton: false, showSubscript: false, showSuperscript: false, multiRowsDisplay: true)),
                   const Divider(height: 1),
                   ConstrainedBox(
                     constraints: const BoxConstraints(minHeight: 160),
@@ -925,12 +562,9 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
                       child: QuillEditor.basic(
                         controller: _quill,
                         config: QuillEditorConfig(
-                          placeholder: DaisthLocalizations.text(
-                            context,
-                            id: 'Tambahkan catatan atau hal yang ingin diingat...',
-                            en: 'Add notes or anything you want to remember...',
-                          ),
+                          placeholder: DaisthLocalizations.text(context, id: 'Tambahkan catatan atau hal yang ingin diingat...', en: 'Add notes or anything you want to remember...'),
                           padding: EdgeInsets.zero,
+                          customStyles: DefaultStyles(placeHolder: DefaultTextBlockStyle(Theme.of(context).textTheme.bodyLarge!.copyWith(color: Colors.black45), HorizontalSpacing(1, 1), VerticalSpacing(1, 1), VerticalSpacing(1, 1), BoxDecoration())),
                           minHeight: 160,
                         ),
                       ),
@@ -943,19 +577,9 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
             Row(
               children: [
                 Expanded(
-                  child: _section(
-                    context,
-                    DaisthLocalizations.text(
-                      context,
-                      id: 'Gambar',
-                      en: 'Images',
-                    ),
-                  ),
+                  child: _section(context, DaisthLocalizations.text(context, id: 'Gambar', en: 'Images')),
                 ),
-                Text(
-                  '${_images.length + _staged.length}/${RoutineAttachment.maxAttachmentsPerRoutine}',
-                  style: theme.textTheme.labelMedium,
-                ),
+                Text('${_images.length + _staged.length}/${RoutineAttachment.maxAttachmentsPerRoutine}', style: theme.textTheme.labelMedium),
               ],
             ),
             if (_images.isEmpty && _staged.isEmpty)
@@ -964,23 +588,11 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
                   children: [
                     const Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: [
-                        DaisthFeatureVisual(
-                          asset: DaisthAssets.routineAttachmentEmpty,
-                          height: 58,
-                          width: 72,
-                        ),
-                      ],
+                      children: [DaisthFeatureVisual(asset: DaisthAssets.routineAttachmentEmpty, height: 58, width: 72)],
                     ),
                     const SizedBox(width: DaisthSpacing.md),
                     Expanded(
-                      child: Text(
-                        DaisthLocalizations.text(
-                          context,
-                          id: 'Tambahkan gambar dari galeri jika diperlukan.',
-                          en: 'Add images from your gallery if you like.',
-                        ),
-                      ),
+                      child: Text(DaisthLocalizations.text(context, id: 'Tambahkan gambar dari galeri jika diperlukan.', en: 'Add images from your gallery if you like.')),
                     ),
                   ],
                 ),
@@ -992,13 +604,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
               child: TextButton.icon(
                 onPressed: _pickImages,
                 icon: Icon(PhosphorIconsRegular.image),
-                label: Text(
-                  DaisthLocalizations.text(
-                    context,
-                    id: 'Pilih dari galeri',
-                    en: 'Choose from gallery',
-                  ),
-                ),
+                label: Text(DaisthLocalizations.text(context, id: 'Pilih dari galeri', en: 'Choose from gallery')),
               ),
             ),
             if (_isCustom && !_isNew)
@@ -1007,13 +613,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
                 child: TextButton.icon(
                   onPressed: _saving ? null : _archive,
                   icon: const Icon(PhosphorIconsRegular.archive),
-                  label: Text(
-                    DaisthLocalizations.text(
-                      context,
-                      id: 'Arsipkan rutinitas',
-                      en: 'Archive routine',
-                    ),
-                  ),
+                  label: Text(DaisthLocalizations.text(context, id: 'Arsipkan rutinitas', en: 'Archive routine')),
                 ),
               ),
             if (!_isCustom)
@@ -1022,48 +622,24 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
                 child: TextButton.icon(
                   onPressed: _saving ? null : _resetDefault,
                   icon: const Icon(PhosphorIconsRegular.arrowCounterClockwise),
-                  label: Text(
-                    DaisthLocalizations.text(
-                      context,
-                      id: 'Kembalikan ke Bawaan',
-                      en: 'Reset to Default',
-                    ),
-                  ),
+                  label: Text(DaisthLocalizations.text(context, id: 'Kembalikan ke Bawaan', en: 'Reset to Default')),
                 ),
               ),
             if (_formError != null)
               Padding(
                 padding: const EdgeInsets.only(top: DaisthSpacing.sm),
-                child: Text(
-                  _formError!,
-                  style: TextStyle(color: theme.colorScheme.error),
-                ),
+                child: Text(_formError!, style: TextStyle(color: theme.colorScheme.error)),
               ),
           ],
         ),
         bottomNavigationBar: SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              DaisthSpacing.screenHorizontal,
-              DaisthSpacing.sm,
-              DaisthSpacing.screenHorizontal,
-              DaisthSpacing.md,
-            ),
+            padding: const EdgeInsets.fromLTRB(DaisthSpacing.screenHorizontal, DaisthSpacing.sm, DaisthSpacing.screenHorizontal, DaisthSpacing.md),
             child: SizedBox(
               width: double.infinity,
               child: DaisthButton(
-                label: _saving
-                    ? DaisthLocalizations.text(
-                        context,
-                        id: 'Menyimpan...',
-                        en: 'Saving...',
-                      )
-                    : DaisthLocalizations.text(
-                        context,
-                        id: 'Simpan Rutinitas',
-                        en: 'Save Routine',
-                      ),
+                label: _saving ? DaisthLocalizations.text(context, id: 'Menyimpan...', en: 'Saving...') : DaisthLocalizations.text(context, id: 'Simpan Rutinitas', en: 'Save Routine'),
                 compact: true,
                 onPressed: _saving ? null : _save,
               ),
@@ -1087,11 +663,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
           maxLength: 80,
           onChanged: (_) => _markDirty(),
           decoration: InputDecoration(
-            labelText: DaisthLocalizations.text(
-              context,
-              id: 'Langkah ${index + 1}',
-              en: 'Step ${index + 1}',
-            ),
+            labelText: DaisthLocalizations.text(context, id: 'Langkah ${index + 1}', en: 'Step ${index + 1}'),
           ),
         ),
       ),
@@ -1102,10 +674,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
           _markDirty();
         }),
       ),
-      IconButton(
-        onPressed: () => _removeStep(index),
-        icon: const Icon(PhosphorIconsRegular.x),
-      ),
+      IconButton(onPressed: () => _removeStep(index), icon: const Icon(PhosphorIconsRegular.x)),
     ],
   );
 
@@ -1122,9 +691,7 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
   );
 
   Widget _imageTile({RoutineAttachment? attachment, _StagedDraft? staged}) {
-    final Future<File?> file = staged != null
-        ? Future.value(File(staged.image.path))
-        : widget.fileService.resolve(attachment?.localRelativePath);
+    final Future<File?> file = staged != null ? Future.value(File(staged.image.path)) : widget.fileService.resolve(attachment?.localRelativePath);
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: Stack(
@@ -1132,26 +699,12 @@ class _RoutineEditorFormState extends State<_RoutineEditorForm> {
         children: [
           FutureBuilder<File?>(
             future: file,
-            builder: (context, snapshot) => snapshot.data == null
-                ? const ColoredBox(
-                    color: Color(0x12000000),
-                    child: Icon(PhosphorIconsRegular.image),
-                  )
-                : Image.file(
-                    snapshot.data!,
-                    fit: BoxFit.cover,
-                    cacheWidth: 360,
-                  ),
+            builder: (context, snapshot) => snapshot.data == null ? const ColoredBox(color: Color(0x12000000), child: Icon(PhosphorIconsRegular.image)) : Image.file(snapshot.data!, fit: BoxFit.cover, cacheWidth: 360),
           ),
           Positioned(
             top: 4,
             right: 4,
-            child: IconButton.filledTonal(
-              onPressed: () => staged == null
-                  ? _removeExisting(attachment!)
-                  : _removeStaged(staged),
-              icon: const Icon(PhosphorIconsRegular.x, size: 18),
-            ),
+            child: IconButton.filledTonal(onPressed: () => staged == null ? _removeExisting(attachment!) : _removeStaged(staged), icon: const Icon(PhosphorIconsRegular.x, size: 18)),
           ),
         ],
       ),
@@ -1165,29 +718,19 @@ class _StagedDraft {
 }
 
 class _StepDraft {
-  _StepDraft({
-    required this.id,
-    required this.controller,
-    required this.required,
-    this.createdAt,
-  });
+  _StepDraft({required this.id, required this.controller, required this.required, this.createdAt});
   factory _StepDraft.fromDefinition(RoutineStepDefinition value) => _StepDraft(
     id: value.stepId,
     controller: TextEditingController(text: value.title),
     required: value.isRequired,
     createdAt: value.createdAt,
   );
-  factory _StepDraft.create() =>
-      _StepDraft(id: null, controller: TextEditingController(), required: true);
+  factory _StepDraft.create() => _StepDraft(id: null, controller: TextEditingController(), required: true);
   final String? id;
   final TextEditingController controller;
   bool required;
   final DateTime? createdAt;
-  RoutineStepDefinition toDefinition(
-    String routineId,
-    int order,
-    DateTime now,
-  ) => RoutineStepDefinition(
+  RoutineStepDefinition toDefinition(String routineId, int order, DateTime now) => RoutineStepDefinition(
     routineId: routineId,
     stepId: id ?? createCustomRoutineStepId(now: now),
     title: controller.text.trim(),

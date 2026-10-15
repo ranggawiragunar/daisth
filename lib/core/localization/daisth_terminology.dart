@@ -7,8 +7,7 @@ import 'dart:ui' show Locale;
 abstract final class DaisthTerminology {
   static const supportedLocales = [Locale('en'), Locale('id')];
 
-  static String languageCode(Locale locale) =>
-      locale.languageCode.toLowerCase() == 'id' ? 'id' : 'en';
+  static String languageCode(Locale locale) => locale.languageCode.toLowerCase() == 'id' ? 'id' : 'en';
 
   static String masjid(Locale locale) => 'Masjid';
   static String mushola(Locale locale) => 'Mushola';
@@ -18,7 +17,7 @@ abstract final class DaisthTerminology {
     final english = languageCode(locale) == 'en';
     return switch (routineId) {
       'subuh' => english ? 'Fajr' : 'Subuh',
-      'dhuha' => english ? 'Duha' : 'Dhuha',
+      'dhuha' => english ? 'Dhuha' : 'Dhuha',
       'zuhur' => english ? 'Dhuhr' : 'Zuhur',
       'asar' => english ? 'Asr' : 'Asar',
       'maghrib' => 'Maghrib',
@@ -27,36 +26,19 @@ abstract final class DaisthTerminology {
     };
   }
 
-  static String nightPrayer(Locale locale) =>
-      languageCode(locale) == 'en' ? 'Night Prayer' : 'Sholat Malam';
+  static String nightPrayer(Locale locale) => languageCode(locale) == 'en' ? 'Night Prayer' : 'Sholat Malam';
 
-  static String endOfDay(Locale locale) =>
-      languageCode(locale) == 'en' ? 'End of Day' : 'Penutup Hari';
+  static String endOfDay(Locale locale) => languageCode(locale) == 'en' ? 'End of Day' : 'Penutup Hari';
 
-  static String nearbyPrayerPlacesTitle(Locale locale) =>
-      languageCode(locale) == 'en'
-      ? 'Nearby Masjid & Mushola'
-      : 'Masjid & Mushola Terdekat';
+  static String nearbyPrayerPlacesTitle(Locale locale) => languageCode(locale) == 'en' ? 'Nearby Masjid & Mushola' : 'Masjid & Mushola Terdekat';
 
-  static String nearbyPrayerPlacesSubtitle(Locale locale) =>
-      languageCode(locale) == 'en'
-      ? 'Find Masjid or Mushola near you'
-      : 'Cari Masjid atau Mushola di sekitarmu';
+  static String nearbyPrayerPlacesSubtitle(Locale locale) => languageCode(locale) == 'en' ? 'Find Masjid or Mushola near you' : 'Cari Masjid atau Mushola di sekitarmu';
 
-  static String postPrayerZikirTitle(Locale locale) =>
-      languageCode(locale) == 'en'
-      ? 'Zikir after prayer'
-      : 'Zikir setelah salat';
+  static String postPrayerZikirTitle(Locale locale) => languageCode(locale) == 'en' ? 'Zikir after prayer' : 'Zikir setelah salat';
 
-  static String dhikrSequenceContext(
-    String sequenceId,
-    String fallback,
-    Locale locale,
-  ) {
+  static String dhikrSequenceContext(String sequenceId, String fallback, Locale locale) {
     if (sequenceId != 'post-prayer') return fallback;
-    return languageCode(locale) == 'en'
-        ? 'After each obligatory prayer'
-        : 'Setelah sholat fardhu';
+    return languageCode(locale) == 'en' ? 'After each obligatory prayer' : 'Setelah sholat fardhu';
   }
 
   static String dhikrItemTitle(String itemId, String fallback, Locale locale) {
@@ -86,17 +68,12 @@ abstract final class DaisthTerminology {
       'asar' => 'Perform the Asr prayer.',
       'maghrib' => 'Perform the Maghrib prayer.',
       'isya' => 'Perform the Isha prayer.',
-      'penutup-hari' =>
-        'Readings before sleep. Complete what feels right tonight.',
+      'penutup-hari' => 'Readings before sleep. Complete what feels right tonight.',
       _ => '',
     };
   }
 
-  static String routineContextLabel(
-    String routineId,
-    String fallback,
-    Locale locale,
-  ) {
+  static String routineContextLabel(String routineId, String fallback, Locale locale) {
     final english = languageCode(locale) == 'en';
     return switch (routineId) {
       'sholat-malam' => english ? 'Before Fajr' : 'Sebelum Subuh',
@@ -106,12 +83,7 @@ abstract final class DaisthTerminology {
     };
   }
 
-  static String routineStepTitle(
-    String routineId,
-    String stepId,
-    String fallback,
-    Locale locale,
-  ) {
+  static String routineStepTitle(String routineId, String stepId, String fallback, Locale locale) {
     if (languageCode(locale) != 'en') return fallback;
     return switch ((routineId, stepId)) {
       ('sholat-malam', 'taubat') => 'Taubat prayer',
@@ -128,12 +100,7 @@ abstract final class DaisthTerminology {
     };
   }
 
-  static String routineStepSubtitle(
-    String routineId,
-    String stepId,
-    String fallback,
-    Locale locale,
-  ) {
+  static String routineStepSubtitle(String routineId, String stepId, String fallback, Locale locale) {
     if (languageCode(locale) != 'en') return fallback;
     return switch ((routineId, stepId)) {
       ('dhuha', 'dhuha-minimum') => 'Start with what feels manageable',
@@ -148,25 +115,11 @@ abstract final class DaisthTerminology {
     };
   }
 
-  static String? routineStepGuidanceTitle(
-    String routineId,
-    String stepId,
-    String? fallback,
-    Locale locale,
-  ) {
+  static String? routineStepGuidanceTitle(String routineId, String stepId, String? fallback, Locale locale) {
     if (routineId == 'dhuha' && stepId == 'dhuha-minimum') {
-      return languageCode(locale) == 'en'
-          ? 'Duha Prayer Guide'
-          : (fallback ?? 'Panduan Sholat Dhuha');
+      return languageCode(locale) == 'en' ? 'Dhuha Prayer Guide' : (fallback ?? 'Panduan Sholat Dhuha');
     }
-    if (stepId == 'post-prayer-dhikr' &&
-        const {
-          'subuh',
-          'zuhur',
-          'asar',
-          'maghrib',
-          'isya',
-        }.contains(routineId)) {
+    if (stepId == 'post-prayer-dhikr' && const {'subuh', 'zuhur', 'asar', 'maghrib', 'isya'}.contains(routineId)) {
       return postPrayerZikirTitle(locale);
     }
     return fallback;
@@ -180,11 +133,7 @@ abstract final class DaisthTerminology {
     return fallback;
   }
 
-  static String? routineStepSectionTitle(
-    String routineId,
-    String? fallback,
-    Locale locale,
-  ) {
+  static String? routineStepSectionTitle(String routineId, String? fallback, Locale locale) {
     if (fallback == null || routineId != 'penutup-hari') return fallback;
     if (languageCode(locale) != 'en') return fallback;
     return switch (fallback) {

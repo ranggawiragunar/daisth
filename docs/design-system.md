@@ -61,7 +61,7 @@ completed entries compact, gives the next routine a sage highlight and ring
 node, and softens upcoming connectors. The current timeline state and card use
 tonal surfaces instead of separate elevated cards.
 
-Use the approved app-ready illustrations in `assets/visuals/3d/` through
+Use the approved app-ready illustrations in `assets/visuals/` through
 `DaisthAssets`. Do not draw, generate, or substitute product illustrations.
 Only app-ready PNGs are included in Flutter's runtime asset bundle; design
 references remain outside it. No runtime SVG renderer is used.
@@ -69,7 +69,7 @@ references remain outside it. No runtime SVG renderer is used.
 ### 3D artwork
 
 The runtime 3D set contains 30 app-ready PNGs registered in `DaisthAssets` and
-declared under `assets/visuals/3d/`. Preserve source fidelity and aspect ratio.
+declared under `assets/visuals/`. Preserve source fidelity and aspect ratio.
 Prominent artwork uses `FilterQuality.high` and, where suitable, anti-aliased
 clipping. The Today hero uses the light or dark source selected by the active
 theme. Small functional glyphs remain Phosphor vectors.

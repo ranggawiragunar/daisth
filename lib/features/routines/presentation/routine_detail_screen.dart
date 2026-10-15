@@ -42,22 +42,7 @@ import 'widgets/routine_sheets.dart';
 import 'widgets/routine_steps_card.dart';
 
 class RoutineDetailScreen extends StatefulWidget {
-  const RoutineDetailScreen({
-    required this.routine,
-    required this.noticeController,
-    required this.routineRecordRepository,
-    required this.setRoutineStepCompletion,
-    required this.markRoutineComplete,
-    required this.markRoutineNotToday,
-    this.prayerScheduleSession,
-    this.calendarDay,
-    this.historical = false,
-    this.userContent,
-    this.attachments = const [],
-    this.attachmentFileService,
-    this.resolveRemoteAttachment,
-    super.key,
-  });
+  const RoutineDetailScreen({required this.routine, required this.noticeController, required this.routineRecordRepository, required this.setRoutineStepCompletion, required this.markRoutineComplete, required this.markRoutineNotToday, this.prayerScheduleSession, this.calendarDay, this.historical = false, this.userContent, this.attachments = const [], this.attachmentFileService, this.resolveRemoteAttachment, super.key});
 
   final Routine routine;
   final DaisthNoticeController noticeController;
@@ -84,58 +69,18 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   List<RoutineStep> get _steps => _viewModel.steps;
   routine_domain.RoutineStatus get _completionState => _viewModel.status;
   String get _displayRoutineTitle {
-    final localized = DaisthTerminology.routineTitle(
-      _routine.id,
-      Localizations.localeOf(context),
-    );
+    final localized = DaisthTerminology.routineTitle(_routine.id, Localizations.localeOf(context));
     return localized.isEmpty ? _routine.title : localized;
   }
 
   String get _displayRoutineDescription {
-    final localized = DaisthTerminology.routineDescription(
-      _routine.id,
-      Localizations.localeOf(context),
-    );
+    final localized = DaisthTerminology.routineDescription(_routine.id, Localizations.localeOf(context));
     return localized.isEmpty ? _routine.description : localized;
   }
 
   List<RoutineStep> get _displaySteps {
     final locale = Localizations.localeOf(context);
-    return [
-      for (final step in _steps)
-        RoutineStep(
-          id: step.id,
-          title: DaisthTerminology.routineStepTitle(
-            _routine.id,
-            step.id,
-            step.title,
-            locale,
-          ),
-          subtitle: DaisthTerminology.routineStepSubtitle(
-            _routine.id,
-            step.id,
-            step.subtitle,
-            locale,
-          ),
-          requirement: step.requirement,
-          completed: step.completed,
-          badge: DaisthTerminology.routineStepBadge(step.badge, locale),
-          guidanceTitle: DaisthTerminology.routineStepGuidanceTitle(
-            _routine.id,
-            step.id,
-            step.guidanceTitle,
-            locale,
-          ),
-          guidanceType: step.guidanceType,
-          rakaatCount: step.rakaatCount,
-          sectionTitle: DaisthTerminology.routineStepSectionTitle(
-            _routine.id,
-            step.sectionTitle,
-            locale,
-          ),
-          readerContentId: step.readerContentId,
-        ),
-    ];
+    return [for (final step in _steps) RoutineStep(id: step.id, title: DaisthTerminology.routineStepTitle(_routine.id, step.id, step.title, locale), subtitle: DaisthTerminology.routineStepSubtitle(_routine.id, step.id, step.subtitle, locale), requirement: step.requirement, completed: step.completed, badge: DaisthTerminology.routineStepBadge(step.badge, locale), guidanceTitle: DaisthTerminology.routineStepGuidanceTitle(_routine.id, step.id, step.guidanceTitle, locale), guidanceType: step.guidanceType, rakaatCount: step.rakaatCount, sectionTitle: DaisthTerminology.routineStepSectionTitle(_routine.id, step.sectionTitle, locale), readerContentId: step.readerContentId)];
   }
 
   int get _completedRequiredCount => _viewModel.completedRequiredCount;
@@ -149,14 +94,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   void initState() {
     super.initState();
     _notesController = _createNotesController(widget.userContent);
-    _viewModel = RoutineDetailViewModel(
-      routine: widget.routine,
-      repository: widget.routineRecordRepository,
-      setStepCompletion: widget.setRoutineStepCompletion,
-      markRoutineComplete: widget.markRoutineComplete,
-      markRoutineNotToday: widget.markRoutineNotToday,
-      calendarDay: widget.calendarDay,
-    );
+    _viewModel = RoutineDetailViewModel(routine: widget.routine, repository: widget.routineRecordRepository, setStepCompletion: widget.setRoutineStepCompletion, markRoutineComplete: widget.markRoutineComplete, markRoutineNotToday: widget.markRoutineNotToday, calendarDay: widget.calendarDay);
     _viewModel.addListener(_onViewModelChanged);
     widget.prayerScheduleSession?.addListener(_onViewModelChanged);
     unawaited(_viewModel.initialize());
@@ -165,8 +103,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   @override
   void didUpdateWidget(covariant RoutineDetailScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.userContent?.serializedDelta ==
-        widget.userContent?.serializedDelta) {
+    if (oldWidget.userContent?.serializedDelta == widget.userContent?.serializedDelta) {
       return;
     }
     _notesController?.dispose();
@@ -176,13 +113,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   QuillController? _createNotesController(RoutineContent? content) {
     if (content == null || !content.hasMeaningfulText) return null;
     try {
-      return QuillController(
-        document: Document.fromJson(
-          jsonDecode(content.serializedDelta) as List,
-        ),
-        selection: const TextSelection.collapsed(offset: 0),
-        readOnly: true,
-      );
+      return QuillController(document: Document.fromJson(jsonDecode(content.serializedDelta) as List), selection: const TextSelection.collapsed(offset: 0), readOnly: true);
     } catch (_) {
       return null;
     }
@@ -209,18 +140,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
           _showNotice(
             type: DaisthNoticeType.error,
             title: switch (error) {
-              'Progress routine belum dapat dimuat.' =>
-                DaisthLocalizations.text(
-                  context,
-                  id: error,
-                  en: 'Routine progress could not be loaded.',
-                ),
-              'Progress routine belum dapat disimpan. Coba lagi.' =>
-                DaisthLocalizations.text(
-                  context,
-                  id: error,
-                  en: 'Routine progress could not be saved. Try again.',
-                ),
+              'Progress routine belum dapat dimuat.' => DaisthLocalizations.text(context, id: error, en: 'Routine progress could not be loaded.'),
+              'Progress routine belum dapat disimpan. Coba lagi.' => DaisthLocalizations.text(context, id: error, en: 'Routine progress could not be saved. Try again.'),
               _ => error,
             },
           );
@@ -232,36 +153,15 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   }
 
   String _statusLabel(BuildContext context) => switch (_completionState) {
-    routine_domain.RoutineStatus.pending =>
-      widget.historical
-          ? DaisthLocalizations.text(
-              context,
-              id: 'Belum tercatat',
-              en: 'Unrecorded',
-            )
-          : DaisthLocalizations.text(
-              context,
-              id: 'Belum dimulai',
-              en: 'Not started',
-            ),
-    routine_domain.RoutineStatus.partial => DaisthLocalizations.text(
-      context,
-      id: 'Sebagian · $_completedRequiredCount dari $_requiredCount',
-      en: 'Partial · $_completedRequiredCount of $_requiredCount',
-    ),
+    routine_domain.RoutineStatus.pending => widget.historical ? DaisthLocalizations.text(context, id: 'Belum tercatat', en: 'Unrecorded') : DaisthLocalizations.text(context, id: 'Belum dimulai', en: 'Not started'),
+    routine_domain.RoutineStatus.partial => DaisthLocalizations.text(context, id: 'Sebagian · $_completedRequiredCount dari $_requiredCount', en: 'Partial · $_completedRequiredCount of $_requiredCount'),
     routine_domain.RoutineStatus.completed => _completedStatusLabel(context),
-    routine_domain.RoutineStatus.notToday => DaisthLocalizations.text(
-      context,
-      id: 'Tidak dilakukan hari ini',
-      en: 'Not today',
-    ),
+    routine_domain.RoutineStatus.notToday => DaisthLocalizations.text(context, id: 'Tidak dilakukan hari ini', en: 'Not today'),
   };
 
   String? get _scheduledPrayerTime {
     final prayer = _prayerForRoutine(_routine.id);
-    final schedule = widget.historical
-        ? null
-        : widget.prayerScheduleSession?.schedule;
+    final schedule = widget.historical ? null : widget.prayerScheduleSession?.schedule;
     if (prayer == null || schedule == null) return null;
     return PrayerTimePresentation.time(schedule.timeFor(prayer));
   }
@@ -279,37 +179,16 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
 
   String _completedStatusLabel(BuildContext context) {
     if (_routine.id == 'dhuha') {
-      return DaisthLocalizations.text(
-        context,
-        id: 'Selesai · ${_viewModel.completedRakaat} rakaat',
-        en: 'Completed · ${_viewModel.completedRakaat} rakaat',
-      );
+      return DaisthLocalizations.text(context, id: 'Selesai · ${_viewModel.completedRakaat} rakaat', en: 'Completed · ${_viewModel.completedRakaat} rakaat');
     }
     if (_routine.id == 'zuhur' && _viewModel.justCompleted) {
-      return DaisthLocalizations.text(
-        context,
-        id: 'Baru saja dicatat',
-        en: 'Recorded just now',
-      );
+      return DaisthLocalizations.text(context, id: 'Baru saja dicatat', en: 'Recorded just now');
     }
-    return DaisthLocalizations.text(
-      context,
-      id: 'Selesai · $_completedRequiredCount dari $_requiredCount',
-      en: 'Completed · $_completedRequiredCount of $_requiredCount',
-    );
+    return DaisthLocalizations.text(context, id: 'Selesai · $_completedRequiredCount dari $_requiredCount', en: 'Completed · $_completedRequiredCount of $_requiredCount');
   }
 
-  void _showNotice({
-    required DaisthNoticeType type,
-    required String title,
-    String? message,
-  }) {
-    widget.noticeController.show(
-      context,
-      type: type,
-      title: title,
-      message: message,
-    );
+  void _showNotice({required DaisthNoticeType type, required String title, String? message}) {
+    widget.noticeController.show(context, type: type, title: title, message: message);
   }
 
   Future<void> _toggleStep(String id) async {
@@ -322,27 +201,18 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     HapticFeedback.mediumImpact();
     _showNotice(
       type: DaisthNoticeType.success,
-      title: DaisthLocalizations.text(
-        context,
-        id: '$_displayRoutineTitle dicatat',
-        en: '$_displayRoutineTitle recorded',
-      ),
+      title: DaisthLocalizations.text(context, id: '$_displayRoutineTitle dicatat', en: '$_displayRoutineTitle recorded'),
     );
   }
 
   Future<void> _markAllRemaining() async {
     final routineTitle = _displayRoutineTitle;
     final isEnglish = DaisthLocalizations.isEnglish(context);
-    final completed = _routine.id == 'penutup-hari'
-        ? await _viewModel.markRequiredStepsDone()
-        : await _viewModel.markAllRemaining();
+    final completed = _routine.id == 'penutup-hari' ? await _viewModel.markRequiredStepsDone() : await _viewModel.markAllRemaining();
     if (!completed) return;
     if (widget.historical) return;
     HapticFeedback.mediumImpact();
-    _showNotice(
-      type: DaisthNoticeType.success,
-      title: isEnglish ? '$routineTitle recorded' : '$routineTitle dicatat',
-    );
+    _showNotice(type: DaisthNoticeType.success, title: isEnglish ? '$routineTitle recorded' : '$routineTitle dicatat');
   }
 
   Future<void> _markSimplePrayerDone() async {
@@ -351,10 +221,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     if (!await _viewModel.markRequiredStepsDone()) return;
     if (widget.historical) return;
     HapticFeedback.mediumImpact();
-    _showNotice(
-      type: DaisthNoticeType.success,
-      title: isEnglish ? '$routineTitle recorded' : '$routineTitle dicatat',
-    );
+    _showNotice(type: DaisthNoticeType.success, title: isEnglish ? '$routineTitle recorded' : '$routineTitle dicatat');
   }
 
   Future<void> _markNotToday() async {
@@ -365,11 +232,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     if (widget.historical) return;
     _showNotice(
       type: DaisthNoticeType.neutral,
-      title: DaisthLocalizations.text(
-        context,
-        id: 'Status rutinitas diperbarui',
-        en: 'Routine status updated',
-      ),
+      title: DaisthLocalizations.text(context, id: 'Status rutinitas diperbarui', en: 'Routine status updated'),
       message: result.reason,
     );
   }
@@ -379,21 +242,12 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
       _openReaderContent(step.readerContentId);
       return Future<void>.value();
     }
-    return showRoutineStepSheet(
-      context: context,
-      step: step,
-      onToggle: () => unawaited(_toggleStep(step.id)),
-      onOpenReading: _openReader,
-    );
+    return showRoutineStepSheet(context: context, step: step, onToggle: () => unawaited(_toggleStep(step.id)), onOpenReading: _openReader);
   }
 
   void _openReader() => _showNotice(
     type: DaisthNoticeType.info,
-    title: DaisthLocalizations.text(
-      context,
-      id: 'Reader segera hadir',
-      en: 'Reader is coming soon',
-    ),
+    title: DaisthLocalizations.text(context, id: 'Reader segera hadir', en: 'Reader is coming soon'),
   );
 
   void _openReaderContent(String? contentId) {
@@ -403,9 +257,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     }
     final path = RoutePaths.reader(_routine.id, contentId);
     if (widget.historical) {
-      context.push(
-        '$path?historyDate=${Uri.encodeQueryComponent(_viewModel.calendarDay.toDateKey())}',
-      );
+      context.push('$path?historyDate=${Uri.encodeQueryComponent(_viewModel.calendarDay.toDateKey())}');
     } else {
       context.go(path);
     }
@@ -418,18 +270,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     }
     _showNotice(
       type: DaisthNoticeType.info,
-      title: DaisthLocalizations.text(
-        context,
-        id: 'Fitur segera hadir',
-        en: 'Feature coming soon',
-      ),
-      message: value == 'edit'
-          ? DaisthLocalizations.text(
-              context,
-              id: 'Edit rutinitas akan tersedia nanti.',
-              en: 'Routine editing will be available later.',
-            )
-          : null,
+      title: DaisthLocalizations.text(context, id: 'Fitur segera hadir', en: 'Feature coming soon'),
+      message: value == 'edit' ? DaisthLocalizations.text(context, id: 'Edit rutinitas akan tersedia nanti.', en: 'Routine editing will be available later.') : null,
     );
   }
 
@@ -438,15 +280,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     final theme = Theme.of(context);
     final extension = theme.extension<DaisthThemeExtension>()!;
     final hasIllustration = _routine.illustrationAsset != null;
-    final metadata = [
-      if (!widget.historical) _scheduledPrayerTime ?? _routine.preferredTime,
-      if (!widget.historical)
-        DaisthTerminology.routineContextLabel(
-          _routine.id,
-          _routine.contextLabel,
-          Localizations.localeOf(context),
-        ),
-    ].where((value) => value.isNotEmpty).join(' · ');
+    final metadata = [if (!widget.historical) _scheduledPrayerTime ?? _routine.preferredTime, if (!widget.historical) DaisthTerminology.routineContextLabel(_routine.id, _routine.contextLabel, Localizations.localeOf(context))].where((value) => value.isNotEmpty).join(' · ');
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -460,31 +294,18 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                   _DetailTopBar(onMenuSelected: _onMenuSelected),
                   if (widget.historical)
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: DaisthSpacing.xl,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: DaisthSpacing.xl),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          DaisthLocalizations.text(
-                            context,
-                            id: 'Mengedit ${MaterialLocalizations.of(context).formatMediumDate(_viewModel.calendarDay.toDateTime())}',
-                            en: 'Editing ${MaterialLocalizations.of(context).formatMediumDate(_viewModel.calendarDay.toDateTime())}',
-                          ),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
+                          DaisthLocalizations.text(context, id: 'Mengedit ${MaterialLocalizations.of(context).formatMediumDate(_viewModel.calendarDay.toDateTime())}', en: 'Editing ${MaterialLocalizations.of(context).formatMediumDate(_viewModel.calendarDay.toDateTime())}'),
+                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                         ),
                       ),
                     ),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(
-                        DaisthSpacing.xl,
-                        DaisthSpacing.md,
-                        DaisthSpacing.xl,
-                        DaisthSpacing.xxl,
-                      ),
+                      padding: const EdgeInsets.fromLTRB(DaisthSpacing.xl, DaisthSpacing.md, DaisthSpacing.xl, DaisthSpacing.xxl),
                       child: Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 640),
@@ -496,151 +317,60 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          _displayRoutineTitle,
-                                          style: theme.textTheme.headlineSmall
-                                              ?.copyWith(
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                        ),
-                                        if (metadata.isNotEmpty) ...[
-                                          const SizedBox(
-                                            height: DaisthSpacing.xs,
-                                          ),
-                                          Text(
-                                            metadata,
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .onSurfaceVariant,
-                                                ),
-                                          ),
-                                        ],
+                                        Text(_displayRoutineTitle, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
+                                        if (metadata.isNotEmpty) ...[const SizedBox(height: DaisthSpacing.xs), Text(metadata, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant))],
                                       ],
                                     ),
                                   ),
-                                  if (hasIllustration) ...[
-                                    const SizedBox(width: DaisthSpacing.md),
-                                    _RoutineIllustration(
-                                      asset: _routine.id == 'sholat-malam'
-                                          ? DaisthAssets.sholatMalam
-                                          : DaisthAssets.routineProgress,
-                                    ),
-                                  ],
+                                  if (hasIllustration) ...[const SizedBox(width: DaisthSpacing.md), _RoutineIllustration(asset: _routine.id == 'sholat-malam' ? DaisthAssets.sholatMalam : DaisthAssets.routineProgress)],
                                 ],
                               ),
                               const SizedBox(height: DaisthSpacing.md),
-                              Text(
-                                _displayRoutineDescription,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
+                              Text(_displayRoutineDescription, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                               const SizedBox(height: DaisthSpacing.xl),
-                              const Align(
-                                alignment: Alignment.centerRight,
-                                child: DaisthFeatureVisual(
-                                  asset: DaisthAssets.routineDetailSupport,
-                                  height: 50,
-                                ),
-                              ),
                               const SizedBox(height: DaisthSpacing.xs),
-                              _RoutineProgressSummary(
-                                status: _statusLabel(context),
-                                completedRequired: _completedRequiredCount,
-                                requiredCount: _requiredCount,
-                                progress: _requiredCount == 0
-                                    ? 0
-                                    : _completedRequiredCount / _requiredCount,
-                                notTodayReason: _notTodayReason,
-                              ),
+                              _RoutineProgressSummary(status: _statusLabel(context), completedRequired: _completedRequiredCount, requiredCount: _requiredCount, progress: _requiredCount == 0 ? 0 : _completedRequiredCount / _requiredCount, notTodayReason: _notTodayReason),
                               const SizedBox(height: DaisthSpacing.section),
                               Text(
-                                DaisthLocalizations.text(
-                                  context,
-                                  id: 'Rangkaian',
-                                  en: 'Routine steps',
-                                ),
-                                style: theme.textTheme.titleMedium,
+                                DaisthLocalizations.text(context, id: 'Rangkaian', en: 'Routine Steps'),
+                                style: theme.textTheme.titleMedium!.copyWith(fontSize: 14),
                               ),
                               const SizedBox(height: DaisthSpacing.md),
-                              RoutineStepsCard(
-                                steps: _displaySteps,
-                                onToggle: _toggleStep,
-                                onOpenStep: _openStep,
-                              ),
+                              RoutineStepsCard(steps: _displaySteps, onToggle: _toggleStep, onOpenStep: _openStep),
                               if (_guidanceItems.isNotEmpty) ...[
                                 const SizedBox(height: DaisthSpacing.section),
                                 RoutineGuidanceSection(
                                   items: _guidanceItems,
                                   onTap: _onGuidanceTap,
-                                  title: _routine.id == 'sholat-malam'
-                                      ? DaisthLocalizations.text(
-                                          context,
-                                          id: 'Bacaan Zikir & Sholawat',
-                                          en: 'Zikir & Sholawat Readings',
-                                        )
-                                      : null,
+                                  title: _routine.id == 'sholat-malam' ? DaisthLocalizations.text(context, id: 'Bacaan Zikir & Sholawat', en: 'Zikir & Sholawat Readings') : null,
                                 ),
                               ],
-                              if (_isMandatoryPrayer && !widget.historical) ...[
-                                const SizedBox(height: DaisthSpacing.section),
-                                RoutineHelpfulActions(
-                                  onTap: _openHelpfulAction,
-                                  prayerCompleted: _allRequiredDone,
-                                  dhikrCompleted: _steps.any(
-                                    (step) =>
-                                        step.id == 'post-prayer-dhikr' &&
-                                        step.completed,
-                                  ),
-                                ),
-                              ],
-                              if (_notesController != null ||
-                                  widget.attachments.isNotEmpty) ...[
+                              if (_isMandatoryPrayer && !widget.historical) ...[const SizedBox(height: DaisthSpacing.section), RoutineHelpfulActions(onTap: _openHelpfulAction, prayerCompleted: _allRequiredDone, dhikrCompleted: _steps.any((step) => step.id == 'post-prayer-dhikr' && step.completed))],
+                              if (_notesController != null || widget.attachments.isNotEmpty) ...[
                                 const SizedBox(height: DaisthSpacing.section),
                                 if (_notesController != null) ...[
                                   Text(
-                                    DaisthLocalizations.text(
-                                      context,
-                                      id: 'Catatan',
-                                      en: 'Notes',
-                                    ),
+                                    DaisthLocalizations.text(context, id: 'Catatan', en: 'Notes'),
                                     style: theme.textTheme.titleMedium,
                                   ),
                                   const SizedBox(height: DaisthSpacing.sm),
                                   DaisthSurface(
                                     child: QuillEditor.basic(
                                       controller: _notesController!,
-                                      config: QuillEditorConfig(
-                                        padding: EdgeInsets.zero,
-                                        minHeight: 12,
-                                        onLaunchUrl: _launchSafeLink,
-                                      ),
+                                      config: QuillEditorConfig(padding: EdgeInsets.zero, minHeight: 12, onLaunchUrl: _launchSafeLink),
                                     ),
                                   ),
                                 ],
                                 if (widget.attachments.isNotEmpty) ...[
-                                  if (_notesController != null)
-                                    const SizedBox(height: DaisthSpacing.lg),
+                                  if (_notesController != null) const SizedBox(height: DaisthSpacing.lg),
                                   Text(
-                                    DaisthLocalizations.text(
-                                      context,
-                                      id: 'Gambar',
-                                      en: 'Images',
-                                    ),
+                                    DaisthLocalizations.text(context, id: 'Gambar', en: 'Images'),
                                     style: theme.textTheme.titleMedium,
                                   ),
                                   const SizedBox(height: DaisthSpacing.sm),
-                                  _RoutineAttachmentGrid(
-                                    attachments: widget.attachments,
-                                    fileService: widget.attachmentFileService,
-                                    resolveRemoteAttachment:
-                                        widget.resolveRemoteAttachment,
-                                  ),
+                                  _RoutineAttachmentGrid(attachments: widget.attachments, fileService: widget.attachmentFileService, resolveRemoteAttachment: widget.resolveRemoteAttachment),
                                 ],
                               ],
                             ],
@@ -661,8 +391,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
 
   Future<void> _launchSafeLink(String value) async {
     final uri = Uri.tryParse(value);
-    if (uri == null ||
-        !const {'https', 'http', 'mailto'}.contains(uri.scheme.toLowerCase())) {
+    if (uri == null || !const {'https', 'http', 'mailto'}.contains(uri.scheme.toLowerCase())) {
       return;
     }
     await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -673,42 +402,26 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
       final english = DaisthLocalizations.isEnglish(context);
       return [
         RoutineLinkItem(
-          title: english
-              ? 'After Taubat Prayer'
-              : 'Bacaan setelah Sholat Taubat',
+          title: english ? 'After Taubat Prayer' : 'Bacaan setelah Sholat Taubat',
           subtitle: 'Istighfar · Sayyidul Istighfar',
           meta: DaisthLocalizations.text(context, id: 'Pembaca', en: 'Reader'),
           readerContentId: 'taubat-after-prayer',
-          semanticLabel: english
-              ? 'Open post-prayer reading for Taubat'
-              : 'Buka bacaan setelah Sholat Taubat',
+          semanticLabel: english ? 'Open post-prayer reading for Taubat' : 'Buka bacaan setelah Sholat Taubat',
         ),
         RoutineLinkItem(
           title: english ? 'After Hajat Prayer' : 'Bacaan setelah Sholat Hajat',
-          subtitle: english
-              ? 'Praise & Sholawat · Dua for Hajat'
-              : 'Pujian & Sholawat · Doa Hajat',
+          subtitle: english ? 'Praise & Sholawat · Dua for Hajat' : 'Pujian & Sholawat · Doa Hajat',
           meta: DaisthLocalizations.text(context, id: 'Pembaca', en: 'Reader'),
           readerContentId: 'hajat-after-prayer',
-          semanticLabel: english
-              ? 'Open post-prayer reading for Hajat'
-              : 'Buka bacaan setelah Sholat Hajat',
+          semanticLabel: english ? 'Open post-prayer reading for Hajat' : 'Buka bacaan setelah Sholat Hajat',
         ),
       ];
     }
     if (_routine.id == 'dhuha') {
       return [
         RoutineLinkItem(
-          title: DaisthLocalizations.text(
-            context,
-            id: 'Panduan Sholat Dhuha',
-            en: 'Duha Prayer Guide',
-          ),
-          subtitle: DaisthLocalizations.text(
-            context,
-            id: 'Bacaan dan panduan ringkas',
-            en: 'Short reading and guidance',
-          ),
+          title: DaisthLocalizations.text(context, id: 'Panduan Sholat Dhuha', en: 'Dhuha Prayer Guide'),
+          subtitle: DaisthLocalizations.text(context, id: 'Bacaan dan panduan ringkas', en: 'Short reading and guidance'),
           meta: DaisthLocalizations.text(context, id: 'Bacaan', en: 'Reading'),
         ),
       ];
@@ -738,39 +451,23 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     if (!_allRequiredDone) {
       _showNotice(
         type: DaisthNoticeType.info,
-        title: DaisthLocalizations.text(
-          context,
-          id: 'Selesaikan salat terlebih dahulu',
-          en: 'Complete the prayer first',
-        ),
+        title: DaisthLocalizations.text(context, id: 'Selesaikan salat terlebih dahulu', en: 'Complete the prayer first'),
       );
       return;
     }
-    if (_steps.any(
-      (step) => step.id == 'post-prayer-dhikr' && step.completed,
-    )) {
+    if (_steps.any((step) => step.id == 'post-prayer-dhikr' && step.completed)) {
       _showNotice(
         type: DaisthNoticeType.info,
-        title: DaisthLocalizations.text(
-          context,
-          id: 'Zikir sudah tercatat',
-          en: 'Zikir already recorded',
-        ),
+        title: DaisthLocalizations.text(context, id: 'Zikir sudah tercatat', en: 'Zikir already recorded'),
       );
       return;
     }
-    final completed = await context.push<bool>(
-      RoutePaths.dhikr(_routine.id, 'post-prayer'),
-    );
+    final completed = await context.push<bool>(RoutePaths.dhikr(_routine.id, 'post-prayer'));
     if (!mounted || completed != true) return;
     await _viewModel.completeOptionalStep('post-prayer-dhikr');
   }
 
-  Widget _buildBottomActions(
-    BuildContext context,
-    ThemeData theme,
-    DaisthThemeExtension extension,
-  ) {
+  Widget _buildBottomActions(BuildContext context, ThemeData theme, DaisthThemeExtension extension) {
     final isSimplePrayer = _isMandatoryPrayer;
     final showPrimary =
         _completionState != routine_domain.RoutineStatus.notToday &&
@@ -781,37 +478,19 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
             : _routine.id == 'penutup-hari'
             ? !_allRequiredDone
             : _hasRemainingSteps && _routine.isComposite);
-    final showNotToday =
-        _viewModel.isOptional &&
-        _completionState != routine_domain.RoutineStatus.notToday;
+    final showNotToday = _viewModel.isOptional && _completionState != routine_domain.RoutineStatus.notToday;
     final showClear = widget.historical && _viewModel.hasRecord;
     if (!showPrimary && !showNotToday && !showClear) {
       return const SizedBox.shrink();
     }
 
     final label = _routine.steps.isEmpty
-        ? DaisthLocalizations.text(
-            context,
-            id: 'Tandai Selesai',
-            en: 'Mark Done',
-          )
+        ? DaisthLocalizations.text(context, id: 'Tandai Selesai', en: 'Mark Done')
         : isSimplePrayer
-        ? DaisthLocalizations.text(
-            context,
-            id: 'Tandai $_displayRoutineTitle Selesai',
-            en: 'Mark $_displayRoutineTitle Done',
-          )
+        ? DaisthLocalizations.text(context, id: 'Tandai $_displayRoutineTitle Selesai', en: 'Mark $_displayRoutineTitle Done')
         : _steps.any((step) => step.completed)
-        ? DaisthLocalizations.text(
-            context,
-            id: 'Tandai Sisanya Selesai',
-            en: 'Mark Remaining Done',
-          )
-        : DaisthLocalizations.text(
-            context,
-            id: 'Tandai Semua Selesai',
-            en: 'Mark All Done',
-          );
+        ? DaisthLocalizations.text(context, id: 'Tandai Sisanya Selesai', en: 'Mark Remaining Done')
+        : DaisthLocalizations.text(context, id: 'Tandai Semua Selesai', en: 'Mark All Done');
     return SafeArea(
       top: false,
       child: Container(
@@ -819,12 +498,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
           color: theme.colorScheme.surface,
           border: Border(top: BorderSide(color: extension.divider)),
         ),
-        padding: const EdgeInsets.fromLTRB(
-          DaisthSpacing.xl,
-          DaisthSpacing.md,
-          DaisthSpacing.xl,
-          DaisthSpacing.sm,
-        ),
+        padding: const EdgeInsets.fromLTRB(DaisthSpacing.xl, DaisthSpacing.md, DaisthSpacing.xl, DaisthSpacing.sm),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 640),
@@ -833,16 +507,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
               children: [
                 if (showClear)
                   TextButton(
-                    onPressed: _viewModel.isLoading || _viewModel.isSaving
-                        ? null
-                        : _confirmClearRecord,
-                    child: Text(
-                      DaisthLocalizations.text(
-                        context,
-                        id: 'Hapus catatan',
-                        en: 'Clear record',
-                      ),
-                    ),
+                    onPressed: _viewModel.isLoading || _viewModel.isSaving ? null : _confirmClearRecord,
+                    child: Text(DaisthLocalizations.text(context, id: 'Hapus catatan', en: 'Clear record')),
                   ),
                 if (showPrimary)
                   SizedBox(
@@ -862,17 +528,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                   if (showPrimary) const SizedBox(height: DaisthSpacing.xs),
                   TextButton(
                     onPressed: _viewModel.isLoading ? null : _markNotToday,
-                    style: TextButton.styleFrom(
-                      foregroundColor: theme.colorScheme.onSurfaceVariant,
-                      minimumSize: const Size(44, 44),
-                    ),
-                    child: Text(
-                      DaisthLocalizations.text(
-                        context,
-                        id: 'Tidak Hari Ini',
-                        en: 'Not Today',
-                      ),
-                    ),
+                    style: TextButton.styleFrom(foregroundColor: theme.colorScheme.onSurfaceVariant, minimumSize: const Size(44, 44)),
+                    child: Text(DaisthLocalizations.text(context, id: 'Tidak Hari Ini', en: 'Not Today')),
                   ),
                 ],
               ],
@@ -888,42 +545,16 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     final shouldClear = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          DaisthLocalizations.text(
-            context,
-            id: 'Hapus catatan ini?',
-            en: 'Clear this record?',
-          ),
-        ),
-        content: Text(
-          mandatory
-              ? DaisthLocalizations.text(
-                  context,
-                  id: 'Hari ini akan kembali menjadi Belum tercatat.',
-                  en: 'This day will return to Unrecorded.',
-                )
-              : DaisthLocalizations.text(
-                  context,
-                  id: 'Rutinitas ini akan dihapus dari riwayat hari tersebut.',
-                  en: "This routine will be removed from this day's history.",
-                ),
-        ),
+        title: Text(DaisthLocalizations.text(context, id: 'Hapus catatan ini?', en: 'Clear this record?')),
+        content: Text(mandatory ? DaisthLocalizations.text(context, id: 'Hari ini akan kembali menjadi Belum tercatat.', en: 'This day will return to Unrecorded.') : DaisthLocalizations.text(context, id: 'Rutinitas ini akan dihapus dari riwayat hari tersebut.', en: "This routine will be removed from this day's history.")),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel'),
-            ),
+            child: Text(DaisthLocalizations.text(context, id: 'Batal', en: 'Cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              DaisthLocalizations.text(
-                context,
-                id: 'Hapus catatan',
-                en: 'Clear record',
-              ),
-            ),
+            child: Text(DaisthLocalizations.text(context, id: 'Hapus catatan', en: 'Clear record')),
           ),
         ],
       ),
@@ -953,21 +584,13 @@ class _DetailTopBar extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           Text(
-            DaisthLocalizations.text(
-              context,
-              id: 'Detail Rutinitas',
-              en: 'Routine Detail',
-            ),
+            DaisthLocalizations.text(context, id: 'Detail Rutinitas', en: 'Routine Detail'),
             style: theme.textTheme.titleMedium,
           ),
           Row(
             children: [
               IconButton(
-                tooltip: DaisthLocalizations.text(
-                  context,
-                  id: 'Kembali',
-                  en: 'Back',
-                ),
+                tooltip: DaisthLocalizations.text(context, id: 'Kembali', en: 'Back'),
                 onPressed: () {
                   if (context.canPop()) {
                     context.pop();
@@ -979,32 +602,16 @@ class _DetailTopBar extends StatelessWidget {
               ),
               const Spacer(),
               PopupMenuButton<String>(
-                tooltip: DaisthLocalizations.text(
-                  context,
-                  id: 'Opsi lainnya',
-                  en: 'More options',
-                ),
+                tooltip: DaisthLocalizations.text(context, id: 'Opsi lainnya', en: 'More options'),
                 onSelected: onMenuSelected,
                 itemBuilder: (context) => [
                   PopupMenuItem(
                     value: 'edit',
-                    child: Text(
-                      DaisthLocalizations.text(
-                        context,
-                        id: 'Edit Rutinitas',
-                        en: 'Edit Routine',
-                      ),
-                    ),
+                    child: Text(DaisthLocalizations.text(context, id: 'Edit Rutinitas', en: 'Edit Routine')),
                   ),
                   PopupMenuItem(
                     value: 'history',
-                    child: Text(
-                      DaisthLocalizations.text(
-                        context,
-                        id: 'Lihat Riwayat',
-                        en: 'View History',
-                      ),
-                    ),
+                    child: Text(DaisthLocalizations.text(context, id: 'Lihat Riwayat', en: 'View History')),
                   ),
                 ],
                 icon: const Icon(PhosphorIconsRegular.dotsThreeVertical),
@@ -1018,11 +625,7 @@ class _DetailTopBar extends StatelessWidget {
 }
 
 class _RoutineAttachmentGrid extends StatelessWidget {
-  const _RoutineAttachmentGrid({
-    required this.attachments,
-    required this.fileService,
-    required this.resolveRemoteAttachment,
-  });
+  const _RoutineAttachmentGrid({required this.attachments, required this.fileService, required this.resolveRemoteAttachment});
 
   final List<RoutineAttachment> attachments;
   final RoutineAttachmentFileService? fileService;
@@ -1033,30 +636,18 @@ class _RoutineAttachmentGrid extends StatelessWidget {
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
     itemCount: attachments.length,
-    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 2,
-      crossAxisSpacing: DaisthSpacing.sm,
-      mainAxisSpacing: DaisthSpacing.sm,
-    ),
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: DaisthSpacing.sm, mainAxisSpacing: DaisthSpacing.sm),
     itemBuilder: (context, index) {
       final attachment = attachments[index];
       final service = fileService;
       if (service == null) return const SizedBox.shrink();
-      return _RoutineAttachmentTile(
-        attachment: attachment,
-        fileService: service,
-        resolveRemoteAttachment: resolveRemoteAttachment,
-      );
+      return _RoutineAttachmentTile(attachment: attachment, fileService: service, resolveRemoteAttachment: resolveRemoteAttachment);
     },
   );
 }
 
 class _RoutineAttachmentTile extends StatefulWidget {
-  const _RoutineAttachmentTile({
-    required this.attachment,
-    required this.fileService,
-    required this.resolveRemoteAttachment,
-  });
+  const _RoutineAttachmentTile({required this.attachment, required this.fileService, required this.resolveRemoteAttachment});
 
   final RoutineAttachment attachment;
   final RoutineAttachmentFileService fileService;
@@ -1070,9 +661,7 @@ class _RoutineAttachmentTileState extends State<_RoutineAttachmentTile> {
   late final Future<File?> _file = _resolve();
 
   Future<File?> _resolve() async {
-    final local = await widget.fileService.resolve(
-      widget.attachment.localRelativePath,
-    );
+    final local = await widget.fileService.resolve(widget.attachment.localRelativePath);
     if (local != null) return local;
     return widget.resolveRemoteAttachment?.call(widget.attachment);
   }
@@ -1083,14 +672,7 @@ class _RoutineAttachmentTileState extends State<_RoutineAttachmentTile> {
     builder: (context, snapshot) {
       final file = snapshot.data;
       if (file == null) {
-        return DaisthSurface(
-          child: Icon(
-            snapshot.connectionState == ConnectionState.waiting
-                ? PhosphorIconsRegular.cloudArrowDown
-                : PhosphorIconsRegular.imageBroken,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        );
+        return DaisthSurface(child: Icon(snapshot.connectionState == ConnectionState.waiting ? PhosphorIconsRegular.cloudArrowDown : PhosphorIconsRegular.imageBroken, color: Theme.of(context).colorScheme.onSurfaceVariant));
       }
       return ClipRRect(
         borderRadius: BorderRadius.circular(DaisthRadius.large),
@@ -1102,11 +684,7 @@ class _RoutineAttachmentTileState extends State<_RoutineAttachmentTile> {
                 builder: (context) => Scaffold(
                   appBar: AppBar(),
                   body: Center(
-                    child: InteractiveViewer(
-                      minScale: 0.7,
-                      maxScale: 4,
-                      child: Image.file(file, fit: BoxFit.contain),
-                    ),
+                    child: InteractiveViewer(minScale: 0.7, maxScale: 4, child: Image.file(file, fit: BoxFit.contain)),
                   ),
                 ),
               ),
@@ -1130,21 +708,14 @@ class _RoutineIllustration extends StatelessWidget {
     return Container(
       width: 76,
       height: 76,
-      decoration: BoxDecoration(
-        color: extension.artMatte,
-        borderRadius: BorderRadius.circular(DaisthRadius.large),
-      ),
+      decoration: BoxDecoration(color: extension.artMatte, borderRadius: BorderRadius.circular(DaisthRadius.large)),
       padding: const EdgeInsets.all(DaisthSpacing.xs),
       child: Image.asset(
         asset,
         fit: BoxFit.contain,
         filterQuality: FilterQuality.high,
         isAntiAlias: true,
-        semanticLabel: DaisthLocalizations.text(
-          context,
-          id: 'Ilustrasi progres rutinitas',
-          en: 'Routine progress illustration',
-        ),
+        semanticLabel: DaisthLocalizations.text(context, id: 'Ilustrasi progres rutinitas', en: 'Routine progress illustration'),
       ),
     );
   }
@@ -1168,39 +739,22 @@ class RoutineUnavailableScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const DaisthFeatureVisual(
-                    asset: DaisthAssets.genericError,
-                    height: 104,
-                  ),
+                  const DaisthFeatureVisual(asset: DaisthAssets.genericError, height: 104),
                   const SizedBox(height: DaisthSpacing.lg),
                   Text(
-                    DaisthLocalizations.text(
-                      context,
-                      id: 'Rutinitas tidak tersedia',
-                      en: 'Routine unavailable',
-                    ),
+                    DaisthLocalizations.text(context, id: 'Rutinitas tidak tersedia', en: 'Routine unavailable'),
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleLarge,
                   ),
                   const SizedBox(height: DaisthSpacing.sm),
                   Text(
-                    DaisthLocalizations.text(
-                      context,
-                      id: 'Rutinitas ini tidak dapat ditemukan.',
-                      en: 'This routine could not be found.',
-                    ),
+                    DaisthLocalizations.text(context, id: 'Rutinitas ini tidak dapat ditemukan.', en: 'This routine could not be found.'),
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
                   const SizedBox(height: DaisthSpacing.xl),
                   DaisthButton(
-                    label: DaisthLocalizations.text(
-                      context,
-                      id: 'Kembali',
-                      en: 'Back',
-                    ),
+                    label: DaisthLocalizations.text(context, id: 'Kembali', en: 'Back'),
                     onPressed: () {
                       if (context.canPop()) {
                         context.pop();
@@ -1220,13 +774,7 @@ class RoutineUnavailableScreen extends StatelessWidget {
 }
 
 class _RoutineProgressSummary extends StatelessWidget {
-  const _RoutineProgressSummary({
-    required this.status,
-    required this.completedRequired,
-    required this.requiredCount,
-    required this.progress,
-    required this.notTodayReason,
-  });
+  const _RoutineProgressSummary({required this.status, required this.completedRequired, required this.requiredCount, required this.progress, required this.notTodayReason});
 
   final String status;
   final int completedRequired;
@@ -1239,48 +787,39 @@ class _RoutineProgressSummary extends StatelessWidget {
     final theme = Theme.of(context);
     return DaisthSurface(
       style: DaisthSurfaceStyle.softPrimary,
-      padding: const EdgeInsets.all(DaisthSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.all(DaisthSpacing.md).copyWith(top: DaisthSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              Expanded(child: Text(status, style: theme.textTheme.titleSmall)),
-              if (progress >= 1) ...[
-                const DaisthFeatureVisual(
-                  asset: DaisthAssets.genericSuccess,
-                  height: 30,
-                  width: 38,
+          DaisthFeatureVisual(asset: DaisthAssets.routineDetailSupport, height: 50),
+          const SizedBox(width: DaisthSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(child: Text(status, style: theme.textTheme.titleSmall)),
+                    if (progress >= 1) ...[const DaisthFeatureVisual(asset: DaisthAssets.genericSuccess, height: 30, width: 38), const SizedBox(width: DaisthSpacing.xs)],
+                    Text(
+                      DaisthLocalizations.text(context, id: '$completedRequired dari $requiredCount selesai', en: '$completedRequired of $requiredCount completed'),
+                      style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: DaisthSpacing.xs),
+                const SizedBox(height: DaisthSpacing.md),
+                DaisthProgressBar(value: progress, height: 5),
+                if (notTodayReason != null) ...[
+                  const SizedBox(height: DaisthSpacing.sm),
+                  Text(
+                    DaisthLocalizations.text(context, id: 'Alasan: $notTodayReason', en: 'Reason: ${_localizedNotTodayReason(notTodayReason!)}'),
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
               ],
-              Text(
-                DaisthLocalizations.text(
-                  context,
-                  id: '$completedRequired dari $requiredCount selesai',
-                  en: '$completedRequired of $requiredCount completed',
-                ),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: DaisthSpacing.sm),
-          DaisthProgressBar(value: progress, height: 5),
-          if (notTodayReason != null) ...[
-            const SizedBox(height: DaisthSpacing.sm),
-            Text(
-              DaisthLocalizations.text(
-                context,
-                id: 'Alasan: $notTodayReason',
-                en: 'Reason: ${_localizedNotTodayReason(notTodayReason!)}',
-              ),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
             ),
-          ],
+          ),
         ],
       ),
     );

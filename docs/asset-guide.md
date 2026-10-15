@@ -23,7 +23,7 @@ notification symbol for its small icon.
 
 ## Feature artwork
 
-The 30 app-ready illustrations live in `assets/visuals/3d/` and are registered
+The 30 app-ready illustrations live in `assets/visuals/` and are registered
 through `DaisthAssets`. Only that app-ready set is declared for Flutter runtime
 use. The old in-app illustration and empty-state exports were removed after
 their replacement call sites were verified. `assets/motifs/` remains as

@@ -6,14 +6,7 @@ import '../tokens/daisth_radius.dart';
 enum DaisthSurfaceStyle { standard, softPrimary, warm }
 
 class DaisthSurface extends StatelessWidget {
-  const DaisthSurface({
-    required this.child,
-    this.style = DaisthSurfaceStyle.standard,
-    this.padding = const EdgeInsets.all(16),
-    this.radius = DaisthRadius.large,
-    this.border = true,
-    super.key,
-  });
+  const DaisthSurface({required this.child, this.style = DaisthSurfaceStyle.standard, this.padding = const EdgeInsets.all(16), this.radius = DaisthRadius.large, this.border = true, super.key});
 
   final Widget child;
   final DaisthSurfaceStyle style;

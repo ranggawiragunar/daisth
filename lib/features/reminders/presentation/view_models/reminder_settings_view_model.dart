@@ -20,16 +20,7 @@ import '../../domain/use_cases/reminder_reschedule_policy.dart';
 import '../../domain/use_cases/schedule_today_reminders_use_case.dart';
 
 class ReminderSettingsViewModel extends ChangeNotifier {
-  ReminderSettingsViewModel({
-    required this.reminderRepository,
-    required this.timezoneRepository,
-    required this.scheduleTodayReminders,
-    required this.prayerScheduleSession,
-    this.appSettingsRepository,
-    this.reminderStateRepository,
-    this.languageCode = 'en',
-    DateTime Function()? clock,
-  }) : _clock = clock ?? DateTime.now {
+  ReminderSettingsViewModel({required this.reminderRepository, required this.timezoneRepository, required this.scheduleTodayReminders, required this.prayerScheduleSession, this.appSettingsRepository, this.reminderStateRepository, this.languageCode = 'en', DateTime Function()? clock}) : _clock = clock ?? DateTime.now {
     prayerScheduleSession.addListener(_onPrayerScheduleChanged);
   }
 
@@ -40,15 +31,13 @@ class ReminderSettingsViewModel extends ChangeNotifier {
   final AppSettingsRepository? appSettingsRepository;
   final RoutineReminderStateRepository? reminderStateRepository;
   final DateTime Function() _clock;
-  final ReminderReschedulePolicy _reschedulePolicy =
-      const ReminderReschedulePolicy();
+  final ReminderReschedulePolicy _reschedulePolicy = const ReminderReschedulePolicy();
   String languageCode;
 
   bool remindersEnabled = false;
   bool isLoading = false;
   String? errorMessage;
-  ReminderPermissionStatus permissionStatus =
-      ReminderPermissionStatus.unavailable;
+  ReminderPermissionStatus permissionStatus = ReminderPermissionStatus.unavailable;
   ExactAlarmStatus exactAlarmStatus = ExactAlarmStatus.unavailable;
   DeviceTimezone? deviceTimezone;
   ReminderScheduleSummary? lastSummary;
@@ -63,18 +52,12 @@ class ReminderSettingsViewModel extends ChangeNotifier {
 
   int get scheduledTodayCount {
     final now = _clock();
-    return pendingReminders
-        .where((reminder) => _sameDate(reminder.scheduledAt, now))
-        .length;
+    return pendingReminders.where((reminder) => _sameDate(reminder.scheduledAt, now)).length;
   }
 
   List<Reminder> get todayPendingReminders {
     final now = _clock();
-    return List.unmodifiable(
-      pendingReminders.where(
-        (reminder) => _sameDate(reminder.scheduledAt, now),
-      ),
-    );
+    return List.unmodifiable(pendingReminders.where((reminder) => _sameDate(reminder.scheduledAt, now)));
   }
 
   Future<void> initialize() async {
@@ -89,9 +72,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
       exactAlarmStatus = await reminderRepository.getExactAlarmStatus();
       deviceTimezone = await timezoneRepository.getDeviceTimezone();
       await _refreshPending();
-      if (remindersEnabled &&
-          permissionStatus == ReminderPermissionStatus.granted &&
-          prayerScheduleSession.schedule != null) {
+      if (remindersEnabled && permissionStatus == ReminderPermissionStatus.granted && prayerScheduleSession.schedule != null) {
         await _reschedule();
       }
       _initialized = true;
@@ -118,10 +99,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
         return false;
       }
       exactAlarmStatus = await reminderRepository.getExactAlarmStatus();
-      final summary = await scheduleTodayReminders(
-        schedule: prayerScheduleSession.schedule,
-        now: _clock(),
-      );
+      final summary = await scheduleTodayReminders(schedule: prayerScheduleSession.schedule, now: _clock());
       lastSummary = summary;
       deviceTimezone = summary.plan.timezone;
       _lastPlanDate = summary.plan.date;
@@ -132,8 +110,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
       await _refreshPending();
       return true;
     } on LocationUnavailableException {
-      errorMessage =
-          'Lokasi belum tersedia. Muat waktu salat di Pengaturan → Waktu Salat & Lokasi terlebih dahulu.';
+      errorMessage = 'Lokasi belum tersedia. Muat waktu salat di Pengaturan → Waktu Salat & Lokasi terlebih dahulu.';
       return false;
     } catch (_) {
       errorMessage = 'Pengingat belum dapat dijadwalkan. Coba lagi nanti.';
@@ -222,23 +199,8 @@ class ReminderSettingsViewModel extends ChangeNotifier {
         '${now.month.toString().padLeft(2, '0')}-'
         '${now.day.toString().padLeft(2, '0')}';
     await reminderRepository.schedule(
-      Reminder(
-        id: 'dhuha-primary-test-$dateKey',
-        routineId: 'dhuha',
-        title: languageCode == 'id'
-            ? 'Uji aksi · Salat Dhuha'
-            : 'Action test · Duha prayer',
-        body: languageCode == 'id'
-            ? 'Notifikasi lokal dan aksi pengingat berfungsi.'
-            : 'Local notifications and reminder actions are working.',
-        scheduledAt: scheduledAt,
-        priority: ReminderPriority.medium,
-        dateKey: dateKey,
-        timezoneIdentifier: deviceTimezone?.ianaName ?? 'UTC',
-      ),
-      mode: exactAlarmStatus == ExactAlarmStatus.enabled
-          ? ReminderSchedulingMode.exact
-          : ReminderSchedulingMode.inexact,
+      Reminder(id: 'dhuha-primary-test-$dateKey', routineId: 'dhuha', title: languageCode == 'id' ? 'Uji aksi · Salat Dhuha' : 'Action test · Dhuha prayer', body: languageCode == 'id' ? 'Notifikasi lokal dan aksi pengingat berfungsi.' : 'Local notifications and reminder actions are working.', scheduledAt: scheduledAt, priority: ReminderPriority.medium, dateKey: dateKey, timezoneIdentifier: deviceTimezone?.ianaName ?? 'UTC'),
+      mode: exactAlarmStatus == ExactAlarmStatus.enabled ? ReminderSchedulingMode.exact : ReminderSchedulingMode.inexact,
     );
     await _refreshPending();
     notifyListeners();
@@ -251,18 +213,12 @@ class ReminderSettingsViewModel extends ChangeNotifier {
       exactAlarmStatus = await reminderRepository.getExactAlarmStatus();
       final current = _clock();
       deviceTimezone = await timezoneRepository.getDeviceTimezone();
-      if (!remindersEnabled ||
-          permissionStatus != ReminderPermissionStatus.granted) {
+      if (!remindersEnabled || permissionStatus != ReminderPermissionStatus.granted) {
         await _refreshPending();
         notifyListeners();
         return;
       }
-      final shouldReschedule = _reschedulePolicy.shouldReschedule(
-        scheduledDate: _lastPlanDate,
-        scheduledTimezone: _lastPlanTimezone,
-        currentDate: current,
-        currentTimezone: deviceTimezone!.ianaName,
-      );
+      final shouldReschedule = _reschedulePolicy.shouldReschedule(scheduledDate: _lastPlanDate, scheduledTimezone: _lastPlanTimezone, currentDate: current, currentTimezone: deviceTimezone!.ianaName);
       if (!shouldReschedule) {
         await prayerScheduleSession.refreshIfStale(now: current);
         await _refreshPending();
@@ -278,8 +234,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
   }
 
   Future<void> onLanguageChanged() async {
-    if (!remindersEnabled ||
-        permissionStatus != ReminderPermissionStatus.granted) {
+    if (!remindersEnabled || permissionStatus != ReminderPermissionStatus.granted) {
       return;
     }
     await _reschedule(now: _clock());
@@ -295,8 +250,7 @@ class ReminderSettingsViewModel extends ChangeNotifier {
       exactAlarmStatus = await reminderRepository.getExactAlarmStatus();
       deviceTimezone = await timezoneRepository.getDeviceTimezone();
       await _refreshPending();
-      if (remindersEnabled &&
-          permissionStatus == ReminderPermissionStatus.granted) {
+      if (remindersEnabled && permissionStatus == ReminderPermissionStatus.granted) {
         await prayerScheduleSession.refresh(requestPermission: false);
         await _reschedule(now: _clock());
       }
@@ -310,28 +264,19 @@ class ReminderSettingsViewModel extends ChangeNotifier {
 
   void _onPrayerScheduleChanged() {
     final scheduleUpdatedAt = prayerScheduleSession.lastUpdated;
-    if (!remindersEnabled ||
-        permissionStatus != ReminderPermissionStatus.granted ||
-        scheduleUpdatedAt == null ||
-        scheduleUpdatedAt == _lastPrayerScheduleUpdatedAt ||
-        prayerScheduleSession.schedule == null) {
+    if (!remindersEnabled || permissionStatus != ReminderPermissionStatus.granted || scheduleUpdatedAt == null || scheduleUpdatedAt == _lastPrayerScheduleUpdatedAt || prayerScheduleSession.schedule == null) {
       return;
     }
     unawaited(_reschedule());
   }
 
   Future<void> _reschedule({DateTime? now}) async {
-    if (_rescheduleInProgress ||
-        permissionStatus != ReminderPermissionStatus.granted ||
-        prayerScheduleSession.schedule == null) {
+    if (_rescheduleInProgress || permissionStatus != ReminderPermissionStatus.granted || prayerScheduleSession.schedule == null) {
       return;
     }
     _rescheduleInProgress = true;
     try {
-      final summary = await scheduleTodayReminders(
-        schedule: prayerScheduleSession.schedule,
-        now: now ?? _clock(),
-      );
+      final summary = await scheduleTodayReminders(schedule: prayerScheduleSession.schedule, now: now ?? _clock());
       lastSummary = summary;
       deviceTimezone = summary.plan.timezone;
       _lastPlanDate = summary.plan.date;
@@ -351,15 +296,8 @@ class ReminderSettingsViewModel extends ChangeNotifier {
     pendingReminders = await reminderRepository.getPendingReminders();
     final repository = reminderStateRepository;
     if (repository != null) {
-      final states = await repository.getStatesForDay(
-        CalendarDay.fromDateTime(_clock()),
-      );
-      states.sort(
-        (a, b) => (b.lastActionAt ?? DateTime.fromMillisecondsSinceEpoch(0))
-            .compareTo(
-              a.lastActionAt ?? DateTime.fromMillisecondsSinceEpoch(0),
-            ),
-      );
+      final states = await repository.getStatesForDay(CalendarDay.fromDateTime(_clock()));
+      states.sort((a, b) => (b.lastActionAt ?? DateTime.fromMillisecondsSinceEpoch(0)).compareTo(a.lastActionAt ?? DateTime.fromMillisecondsSinceEpoch(0)));
       final last = states.where((s) => s.lastAction != null).firstOrNull;
       lastReminderAction = last?.lastAction;
       lastReminderActionAt = last?.lastActionAt;
@@ -370,15 +308,10 @@ class ReminderSettingsViewModel extends ChangeNotifier {
     final repository = appSettingsRepository;
     if (repository == null) return;
     final current = await repository.getSettings();
-    await repository.saveSettings(
-      current.copyWith(remindersEnabled: enabled, updatedAt: _clock().toUtc()),
-    );
+    await repository.saveSettings(current.copyWith(remindersEnabled: enabled, updatedAt: _clock().toUtc()));
   }
 
-  bool _sameDate(DateTime first, DateTime second) =>
-      first.year == second.year &&
-      first.month == second.month &&
-      first.day == second.day;
+  bool _sameDate(DateTime first, DateTime second) => first.year == second.year && first.month == second.month && first.day == second.day;
 
   @override
   void dispose() {

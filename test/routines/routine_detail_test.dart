@@ -27,9 +27,7 @@ import '../support/fake_routine_record_repository.dart';
 import '../support/test_persistence.dart';
 
 void main() {
-  testWidgets('Routine Detail renders Notes loaded after the first frame', (
-    tester,
-  ) async {
+  testWidgets('Routine Detail renders Notes loaded after the first frame', (tester) async {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     final routine = RoutineDemoData.sholatMalam;
@@ -41,14 +39,7 @@ void main() {
       tester,
       routine,
       controller,
-      userContent: RoutineContent(
-        routineId: routine.id,
-        serializedDelta: '[{"insert":"Loaded QA notes\\n"}]',
-        plainText: 'Loaded QA notes',
-        formatVersion: 1,
-        createdAt: DateTime.utc(2026, 10, 15),
-        updatedAt: DateTime.utc(2026, 10, 15),
-      ),
+      userContent: RoutineContent(routineId: routine.id, serializedDelta: '[{"insert":"Loaded QA notes\\n"}]', plainText: 'Loaded QA notes', formatVersion: 1, createdAt: DateTime.utc(2026, 10, 15), updatedAt: DateTime.utc(2026, 10, 15)),
     );
 
     expect(find.text('Notes'), findsOneWidget);
@@ -58,9 +49,7 @@ void main() {
     expect(notesEditor.controller.document.toPlainText(), 'Loaded QA notes\n');
   });
 
-  testWidgets('Night Prayer tracks partial progress, completion, and undo', (
-    tester,
-  ) async {
+  testWidgets('Night Prayer tracks partial progress, completion, and undo', (tester) async {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller);
@@ -68,9 +57,7 @@ void main() {
     expect(find.text('Not started'), findsOneWidget);
     expect(find.text('Mark All Done'), findsOneWidget);
 
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('routine-step-toggle-hajat')),
-    );
+    await tester.ensureVisible(find.byKey(const ValueKey('routine-step-toggle-hajat')));
     await tester.tap(find.byKey(const ValueKey('routine-step-toggle-hajat')));
     await _settle(tester);
     expect(find.text('Partial · 1 of 4'), findsOneWidget);
@@ -82,26 +69,20 @@ void main() {
     expect(find.byType(SnackBar), findsNothing);
     await _dismissNotice(tester, controller);
 
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('routine-step-toggle-hajat')),
-    );
+    await tester.ensureVisible(find.byKey(const ValueKey('routine-step-toggle-hajat')));
     await tester.tap(find.byKey(const ValueKey('routine-step-toggle-hajat')));
     await _settle(tester);
     expect(find.text('Partial · 3 of 4'), findsOneWidget);
   });
 
-  testWidgets('Dhuha completes at its minimum while extra remains optional', (
-    tester,
-  ) async {
+  testWidgets('Dhuha completes at its minimum while extra remains optional', (tester) async {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.dhuha, controller);
 
     expect(find.text('Partial'), findsNothing);
     expect(find.text('Not Today'), findsOneWidget);
-    await tester.tap(
-      find.byKey(const ValueKey('routine-step-toggle-dhuha-minimum')),
-    );
+    await tester.tap(find.byKey(const ValueKey('routine-step-toggle-dhuha-minimum')));
     await _settle(tester);
 
     expect(find.text('Completed · 2 rakaat'), findsOneWidget);
@@ -118,28 +99,19 @@ void main() {
     await _dismissNotice(tester, controller);
   });
 
-  testWidgets('Dhuha guidance title follows the selected locale', (
-    tester,
-  ) async {
+  testWidgets('Dhuha guidance title follows the selected locale', (tester) async {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
-    await _pumpRoutine(
-      tester,
-      RoutineDemoData.dhuha,
-      controller,
-      locale: const Locale('en'),
-    );
+    await _pumpRoutine(tester, RoutineDemoData.dhuha, controller, locale: const Locale('en'));
 
     await tester.tap(find.text('2 rakaat'));
     await _settle(tester);
 
-    expect(find.text('Duha Prayer Guide'), findsWidgets);
+    expect(find.text('Dhuha Prayer Guide'), findsWidgets);
     expect(find.text('Panduan Sholat Dhuha'), findsNothing);
   });
 
-  testWidgets('optional routine can be marked Not Today without a reason', (
-    tester,
-  ) async {
+  testWidgets('optional routine can be marked Not Today without a reason', (tester) async {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.dhuha, controller);
@@ -157,9 +129,7 @@ void main() {
     await _dismissNotice(tester, controller);
   });
 
-  testWidgets('Not Today saves a selected reason in this detail session', (
-    tester,
-  ) async {
+  testWidgets('Not Today saves a selected reason in this detail session', (tester) async {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller);
@@ -174,9 +144,7 @@ void main() {
     await _dismissNotice(tester, controller);
   });
 
-  testWidgets('mandatory Zuhur completes and has no Not Today action', (
-    tester,
-  ) async {
+  testWidgets('mandatory Zuhur completes and has no Not Today action', (tester) async {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.zuhur, controller);
@@ -193,43 +161,17 @@ void main() {
     await _dismissNotice(tester, controller);
   });
 
-  testWidgets('all five mandatory prayer details use calculated times', (
-    tester,
-  ) async {
+  testWidgets('all five mandatory prayer details use calculated times', (tester) async {
     final controller = DaisthNoticeController();
-    final dependencies = AppDependencies(
-      locationRepository: _TestLocation(),
-      databaseService: TestPersistence.createDatabaseService(),
-    );
+    final dependencies = AppDependencies(locationRepository: _TestLocation(), databaseService: TestPersistence.createDatabaseService());
     addTearDown(controller.dispose);
     addTearDown(dependencies.dispose);
     final day = DateTime(2026, 10, 10);
-    dependencies.prayerScheduleSession.schedule = PrayerDaySchedule(
-      date: day,
-      coordinate: const GeoCoordinate(latitude: -6.2, longitude: 106.8),
-      fajr: day.add(const Duration(hours: 4, minutes: 16)),
-      sunrise: day.add(const Duration(hours: 5, minutes: 30)),
-      dhuhr: day.add(const Duration(hours: 11, minutes: 41)),
-      asr: day.add(const Duration(hours: 14, minutes: 42)),
-      maghrib: day.add(const Duration(hours: 17, minutes: 46)),
-      isha: day.add(const Duration(hours: 18, minutes: 56)),
-      calculationSettings: PrayerCalculationSettings.defaultSettings,
-    );
-    final cases = [
-      (RoutineDemoData.subuh, '04:16', 'Mark Fajr Done'),
-      (RoutineDemoData.zuhur, '11:41', 'Mark Dhuhr Done'),
-      (RoutineDemoData.asar, '14:42', 'Mark Asr Done'),
-      (RoutineDemoData.maghrib, '17:46', 'Mark Maghrib Done'),
-      (RoutineDemoData.isya, '18:56', 'Mark Isha Done'),
-    ];
+    dependencies.prayerScheduleSession.schedule = PrayerDaySchedule(date: day, coordinate: const GeoCoordinate(latitude: -6.2, longitude: 106.8), fajr: day.add(const Duration(hours: 4, minutes: 16)), sunrise: day.add(const Duration(hours: 5, minutes: 30)), dhuhr: day.add(const Duration(hours: 11, minutes: 41)), asr: day.add(const Duration(hours: 14, minutes: 42)), maghrib: day.add(const Duration(hours: 17, minutes: 46)), isha: day.add(const Duration(hours: 18, minutes: 56)), calculationSettings: PrayerCalculationSettings.defaultSettings);
+    final cases = [(RoutineDemoData.subuh, '04:16', 'Mark Fajr Done'), (RoutineDemoData.zuhur, '11:41', 'Mark Dhuhr Done'), (RoutineDemoData.asar, '14:42', 'Mark Asr Done'), (RoutineDemoData.maghrib, '17:46', 'Mark Maghrib Done'), (RoutineDemoData.isya, '18:56', 'Mark Isha Done')];
 
     for (final (routine, time, completeLabel) in cases) {
-      await _pumpRoutine(
-        tester,
-        routine,
-        controller,
-        prayerScheduleSession: dependencies.prayerScheduleSession,
-      );
+      await _pumpRoutine(tester, routine, controller, prayerScheduleSession: dependencies.prayerScheduleSession);
       expect(find.text(time), findsOneWidget);
       expect(find.text(completeLabel), findsOneWidget);
       expect(find.text('Not Today'), findsNothing);
@@ -239,10 +181,7 @@ void main() {
     }
 
     for (final id in ['subuh', 'zuhur', 'asar', 'maghrib', 'isya']) {
-      expect(
-        DhikrDemoData.byRoute(id, 'post-prayer'),
-        same(DhikrDemoData.postPrayer),
-      );
+      expect(DhikrDemoData.byRoute(id, 'post-prayer'), same(DhikrDemoData.postPrayer));
     }
   });
 
@@ -275,13 +214,8 @@ void main() {
                     routine: routine,
                     noticeController: noticeController,
                     routineRecordRepository: repository,
-                    setRoutineStepCompletion: SetRoutineStepCompletionUseCase(
-                      repository: repository,
-                    ),
-                    markRoutineComplete: MarkRoutineCompleteUseCase(
-                      repository: repository,
-                      resolveStatus: const ResolveRoutineStatusUseCase(),
-                    ),
+                    setRoutineStepCompletion: SetRoutineStepCompletionUseCase(repository: repository),
+                    markRoutineComplete: MarkRoutineCompleteUseCase(repository: repository, resolveStatus: const ResolveRoutineStatusUseCase()),
                     markRoutineNotToday: MarkRoutineNotTodayUseCase(repository),
                     prayerScheduleSession: session,
                   ),
@@ -301,17 +235,15 @@ void main() {
     expect(await tester.binding.handlePopRoute(), isTrue);
     await _settle(tester);
 
-    await tester.ensureVisible(find.text('Duha'));
-    await tester.tap(find.text('Duha'));
+    await tester.ensureVisible(find.text('Dhuha'));
+    await tester.tap(find.text('Dhuha'));
     await _settle(tester);
     expect(find.text('Not started'), findsOneWidget);
-    expect(find.text('Duha'), findsOneWidget);
+    expect(find.text('Dhuha'), findsOneWidget);
     expect(find.text('2 rakaat'), findsOneWidget);
   });
 
-  testWidgets('Night Prayer has only Taubat and Hajat reading actions', (
-    tester,
-  ) async {
+  testWidgets('Night Prayer has only Taubat and Hajat reading actions', (tester) async {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
     await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller);
@@ -324,19 +256,11 @@ void main() {
     expect(find.text('Doa Sebelum Tidur'), findsNothing);
     expect(find.text('Tahajud'), findsOneWidget);
     expect(find.text('Witir'), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('routine-link-After Taubat Prayer')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('routine-link-After Hajat Prayer')),
-      findsOneWidget,
-    );
+    expect(find.byKey(const ValueKey('routine-link-After Taubat Prayer')), findsOneWidget);
+    expect(find.byKey(const ValueKey('routine-link-After Hajat Prayer')), findsOneWidget);
   });
 
-  testWidgets('detail page builds in light and dark at compact width', (
-    tester,
-  ) async {
+  testWidgets('detail page builds in light and dark at compact width', (tester) async {
     tester.view.physicalSize = const Size(320, 720);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -344,39 +268,19 @@ void main() {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
 
-    await _pumpRoutine(
-      tester,
-      RoutineDemoData.sholatMalam,
-      controller,
-      dark: false,
-    );
+    await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller, dark: false);
     expect(tester.takeException(), isNull);
 
-    await _pumpRoutine(
-      tester,
-      RoutineDemoData.sholatMalam,
-      controller,
-      dark: true,
-    );
+    await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller, dark: true);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('built-in Night Prayer detail localizes its routine content', (
-    tester,
-  ) async {
+  testWidgets('built-in Night Prayer detail localizes its routine content', (tester) async {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
-    await _pumpRoutine(
-      tester,
-      RoutineDemoData.sholatMalam,
-      controller,
-      locale: const Locale('en'),
-    );
+    await _pumpRoutine(tester, RoutineDemoData.sholatMalam, controller, locale: const Locale('en'));
 
-    expect(
-      find.text('Complete the night prayer sequence before Fajr time.'),
-      findsOneWidget,
-    );
+    expect(find.text('Complete the night prayer sequence before Fajr time.'), findsOneWidget);
     expect(find.text('Taubat prayer'), findsOneWidget);
     expect(find.text('Hajat prayer'), findsOneWidget);
     expect(find.text('Routine steps'), findsOneWidget);
@@ -384,19 +288,10 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('historical routine context follows the selected locale', (
-    tester,
-  ) async {
+  testWidgets('historical routine context follows the selected locale', (tester) async {
     final controller = DaisthNoticeController();
     addTearDown(controller.dispose);
-    await _pumpRoutine(
-      tester,
-      RoutineDemoData.zuhur,
-      controller,
-      locale: const Locale('id'),
-      historical: true,
-      calendarDay: const CalendarDay(year: 2026, month: 10, day: 12),
-    );
+    await _pumpRoutine(tester, RoutineDemoData.zuhur, controller, locale: const Locale('id'), historical: true, calendarDay: const CalendarDay(year: 2026, month: 10, day: 12));
 
     expect(find.textContaining('Mengedit'), findsOneWidget);
     expect(find.textContaining('Editing'), findsNothing);
@@ -405,17 +300,7 @@ void main() {
   });
 }
 
-Future<void> _pumpRoutine(
-  WidgetTester tester,
-  Routine data,
-  DaisthNoticeController controller, {
-  bool dark = false,
-  PrayerScheduleSession? prayerScheduleSession,
-  Locale? locale,
-  bool historical = false,
-  CalendarDay? calendarDay,
-  RoutineContent? userContent,
-}) async {
+Future<void> _pumpRoutine(WidgetTester tester, Routine data, DaisthNoticeController controller, {bool dark = false, PrayerScheduleSession? prayerScheduleSession, Locale? locale, bool historical = false, CalendarDay? calendarDay, RoutineContent? userContent}) async {
   final repository = FakeRoutineRecordRepository();
   final resolveStatus = const ResolveRoutineStatusUseCase();
   await tester.pumpWidget(
@@ -431,13 +316,8 @@ Future<void> _pumpRoutine(
         routine: data,
         noticeController: controller,
         routineRecordRepository: repository,
-        setRoutineStepCompletion: SetRoutineStepCompletionUseCase(
-          repository: repository,
-        ),
-        markRoutineComplete: MarkRoutineCompleteUseCase(
-          repository: repository,
-          resolveStatus: resolveStatus,
-        ),
+        setRoutineStepCompletion: SetRoutineStepCompletionUseCase(repository: repository),
+        markRoutineComplete: MarkRoutineCompleteUseCase(repository: repository, resolveStatus: resolveStatus),
         markRoutineNotToday: MarkRoutineNotTodayUseCase(repository),
         prayerScheduleSession: prayerScheduleSession,
         historical: historical,
@@ -457,8 +337,7 @@ class _TestLocation implements LocationRepository {
   @override
   Future<LocationAccessStatus> checkAccess() async => access;
   @override
-  Future<GeoCoordinate> getCurrentLocation() async =>
-      const GeoCoordinate(latitude: -6.2, longitude: 106.8);
+  Future<GeoCoordinate> getCurrentLocation() async => const GeoCoordinate(latitude: -6.2, longitude: 106.8);
   @override
   Future<GeoCoordinate?> getLastKnownLocation() async => null;
   @override
@@ -469,18 +348,13 @@ class _TestLocation implements LocationRepository {
   Future<LocationAccessStatus> requestAccess() async => access;
 }
 
-Future<void> _dismissNotice(
-  WidgetTester tester,
-  DaisthNoticeController controller,
-) async {
+Future<void> _dismissNotice(WidgetTester tester, DaisthNoticeController controller) async {
   controller.dismiss();
   await _settle(tester);
 }
 
 Future<void> _settle(WidgetTester tester) async {
   await tester.pump();
-  await tester.runAsync(
-    () => Future<void>.delayed(const Duration(milliseconds: 50)),
-  );
+  await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
   await tester.pumpAndSettle();
 }

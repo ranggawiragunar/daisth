@@ -10,10 +10,7 @@ import 'reminder_background_action.dart';
 import '../../domain/models/reminder_action.dart';
 
 class ReminderLocalNotificationsService implements ReminderNotificationGateway {
-  ReminderLocalNotificationsService({
-    FlutterLocalNotificationsPlugin? plugin,
-    this.languageCode = 'id',
-  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  ReminderLocalNotificationsService({FlutterLocalNotificationsPlugin? plugin, this.languageCode = 'id'}) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin _plugin;
   String languageCode;
@@ -33,21 +30,13 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
     }
   }
 
-  String get _highChannelName =>
-      _english ? 'Daisth · High priority' : 'Daisth · Prioritas tinggi';
-  String get _standardChannelName =>
-      _english ? 'Daisth · Routine reminders' : 'Daisth · Pengingat rutin';
-  String get _highChannelDescription => _english
-      ? 'Prayer time and Night Prayer reminders.'
-      : 'Pengingat waktu salat dan Sholat Malam.';
-  String get _standardChannelDescription => _english
-      ? 'Duha, reflection, and End of Day reminders.'
-      : 'Pengingat Dhuha, refleksi, dan Penutup Hari.';
+  String get _highChannelName => _english ? 'Daisth · High priority' : 'Daisth · Prioritas tinggi';
+  String get _standardChannelName => _english ? 'Daisth · Routine reminders' : 'Daisth · Pengingat rutin';
+  String get _highChannelDescription => _english ? 'Prayer time and Night Prayer reminders.' : 'Pengingat waktu salat dan Sholat Malam.';
+  String get _standardChannelDescription => _english ? 'Dhuha, reflection, and End of Day reminders.' : 'Pengingat Dhuha, refleksi, dan Penutup Hari.';
 
   @override
-  Future<void> initialize({
-    void Function(String? payload)? onNotificationTap,
-  }) async {
+  Future<void> initialize({void Function(String? payload)? onNotificationTap}) async {
     _onNotificationTap = onNotificationTap;
     final initialized = await _plugin.initialize(
       settings: InitializationSettings(
@@ -60,31 +49,15 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
             DarwinNotificationCategory(
               'daisth_routine_reminder',
               actions: [
-                DarwinNotificationAction.plain(
-                  ReminderActionIds.done,
-                  _english ? 'Done' : 'Selesai',
-                ),
-                DarwinNotificationAction.plain(
-                  ReminderActionIds.snooze,
-                  _english
-                      ? 'Remind me in 10 minutes'
-                      : 'Ingatkan 10 menit lagi',
-                ),
-                DarwinNotificationAction.plain(
-                  ReminderActionIds.open,
-                  _english ? 'Open' : 'Buka',
-                  options: {DarwinNotificationActionOption.foreground},
-                ),
+                DarwinNotificationAction.plain(ReminderActionIds.done, _english ? 'Done' : 'Selesai'),
+                DarwinNotificationAction.plain(ReminderActionIds.snooze, _english ? 'Remind me in 10 minutes' : 'Ingatkan 10 menit lagi'),
+                DarwinNotificationAction.plain(ReminderActionIds.open, _english ? 'Open' : 'Buka', options: {DarwinNotificationActionOption.foreground}),
               ],
             ),
             DarwinNotificationCategory(
               'daisth_reference_reminder',
               actions: [
-                DarwinNotificationAction.plain(
-                  ReminderActionIds.open,
-                  _english ? 'Open' : 'Buka',
-                  options: {DarwinNotificationActionOption.foreground},
-                ),
+                DarwinNotificationAction.plain(ReminderActionIds.open, _english ? 'Open' : 'Buka', options: {DarwinNotificationActionOption.foreground}),
               ],
             ),
           ],
@@ -92,15 +65,12 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
       ),
       onDidReceiveNotificationResponse: (response) {
         if (response.actionId?.isNotEmpty == true) {
-          _onNotificationTap?.call(
-            '${response.actionId}|${response.payload ?? ''}',
-          );
+          _onNotificationTap?.call('${response.actionId}|${response.payload ?? ''}');
         } else {
           _onNotificationTap?.call(response.payload);
         }
       },
-      onDidReceiveBackgroundNotificationResponse:
-          daisthBackgroundNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse: daisthBackgroundNotificationResponse,
     );
     if (initialized == false) {
       throw StateError('Local notification plugin initialization failed.');
@@ -108,24 +78,8 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
 
     if (defaultTargetPlatform == TargetPlatform.android) {
       final android = _androidPlugin;
-      await android?.createNotificationChannel(
-        AndroidNotificationChannel(
-          ReminderMapper.highChannelId,
-          _highChannelName,
-          description: _highChannelDescription,
-          importance: Importance.high,
-          enableVibration: true,
-        ),
-      );
-      await android?.createNotificationChannel(
-        AndroidNotificationChannel(
-          ReminderMapper.standardChannelId,
-          _standardChannelName,
-          description: _standardChannelDescription,
-          importance: Importance.defaultImportance,
-          enableVibration: true,
-        ),
-      );
+      await android?.createNotificationChannel(AndroidNotificationChannel(ReminderMapper.highChannelId, _highChannelName, description: _highChannelDescription, importance: Importance.high, enableVibration: true));
+      await android?.createNotificationChannel(AndroidNotificationChannel(ReminderMapper.standardChannelId, _standardChannelName, description: _standardChannelDescription, importance: Importance.defaultImportance, enableVibration: true));
     }
   }
 
@@ -171,10 +125,7 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
   }
 
   @override
-  Future<void> schedule(
-    ReminderScheduleData reminder, {
-    required AndroidScheduleMode scheduleMode,
-  }) {
+  Future<void> schedule(ReminderScheduleData reminder, {required AndroidScheduleMode scheduleMode}) {
     final local = timezone.local;
     final scheduledAt = reminder.scheduledAt;
     final scheduledDate = timezone.TZDateTime.from(scheduledAt, local);
@@ -187,58 +138,8 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
       payload: reminder.payload,
       androidScheduleMode: scheduleMode,
       notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          reminder.channelId,
-          highPriority ? _highChannelName : _standardChannelName,
-          channelDescription: highPriority
-              ? _highChannelDescription
-              : _standardChannelDescription,
-          importance: highPriority
-              ? Importance.high
-              : Importance.defaultImportance,
-          priority: highPriority ? Priority.high : Priority.defaultPriority,
-          enableVibration: true,
-          playSound: true,
-          icon: 'ic_daisth_notification',
-          actions: reminder.actionable
-              ? [
-                  AndroidNotificationAction(
-                    ReminderActionIds.done,
-                    _english ? 'Done' : 'Selesai',
-                    showsUserInterface: false,
-                    cancelNotification: true,
-                  ),
-                  AndroidNotificationAction(
-                    ReminderActionIds.snooze,
-                    _english
-                        ? 'Remind me in 10 minutes'
-                        : 'Ingatkan 10 menit lagi',
-                    showsUserInterface: false,
-                    cancelNotification: true,
-                  ),
-                  AndroidNotificationAction(
-                    ReminderActionIds.open,
-                    _english ? 'Open' : 'Buka',
-                    showsUserInterface: true,
-                    cancelNotification: true,
-                  ),
-                ]
-              : const [
-                  AndroidNotificationAction(
-                    ReminderActionIds.open,
-                    'Buka',
-                    showsUserInterface: true,
-                    cancelNotification: true,
-                  ),
-                ],
-        ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentSound: true,
-          categoryIdentifier: reminder.actionable
-              ? 'daisth_routine_reminder'
-              : 'daisth_reference_reminder',
-        ),
+        android: AndroidNotificationDetails(reminder.channelId, highPriority ? _highChannelName : _standardChannelName, channelDescription: highPriority ? _highChannelDescription : _standardChannelDescription, importance: highPriority ? Importance.high : Importance.defaultImportance, priority: highPriority ? Priority.high : Priority.defaultPriority, enableVibration: true, playSound: true, icon: 'ic_daisth_notification', actions: reminder.actionable ? [AndroidNotificationAction(ReminderActionIds.done, _english ? 'Done' : 'Selesai', showsUserInterface: false, cancelNotification: true), AndroidNotificationAction(ReminderActionIds.snooze, _english ? 'Remind me in 10 minutes' : 'Ingatkan 10 menit lagi', showsUserInterface: false, cancelNotification: true), AndroidNotificationAction(ReminderActionIds.open, _english ? 'Open' : 'Buka', showsUserInterface: true, cancelNotification: true)] : const [AndroidNotificationAction(ReminderActionIds.open, 'Buka', showsUserInterface: true, cancelNotification: true)]),
+        iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true, categoryIdentifier: reminder.actionable ? 'daisth_routine_reminder' : 'daisth_reference_reminder'),
       ),
     );
   }
@@ -247,8 +148,7 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
   Future<void> cancel(int notificationId) => _plugin.cancel(id: notificationId);
 
   @override
-  Future<List<PendingNotificationRequest>> getPendingRequests() =>
-      _plugin.pendingNotificationRequests();
+  Future<List<PendingNotificationRequest>> getPendingRequests() => _plugin.pendingNotificationRequests();
 
   @override
   Future<bool> openNotificationSettings() async {
@@ -261,13 +161,7 @@ class ReminderLocalNotificationsService implements ReminderNotificationGateway {
     return false;
   }
 
-  AndroidFlutterLocalNotificationsPlugin? get _androidPlugin => _plugin
-      .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin
-      >();
+  AndroidFlutterLocalNotificationsPlugin? get _androidPlugin => _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
 
-  IOSFlutterLocalNotificationsPlugin? get _iosPlugin => _plugin
-      .resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin
-      >();
+  IOSFlutterLocalNotificationsPlugin? get _iosPlugin => _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
 }

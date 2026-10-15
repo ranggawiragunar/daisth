@@ -18,13 +18,7 @@ import 'view_models/routine_management_view_model.dart';
 import '../../../app/router/route_paths.dart';
 
 class RoutinesScreen extends StatefulWidget {
-  const RoutinesScreen({
-    required this.routineRepository,
-    required this.routineRecordRepository,
-    required this.noticeController,
-    this.bottomContentPadding = 0,
-    super.key,
-  });
+  const RoutinesScreen({required this.routineRepository, required this.routineRecordRepository, required this.noticeController, this.bottomContentPadding = 0, super.key});
 
   final RoutineRepository routineRepository;
   final RoutineRecordRepository routineRecordRepository;
@@ -41,8 +35,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = RoutineManagementViewModel(widget.routineRepository)
-      ..addListener(_changed);
+    _viewModel = RoutineManagementViewModel(widget.routineRepository)..addListener(_changed);
     unawaited(_viewModel.initialize());
   }
 
@@ -77,54 +70,30 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final routines = _viewModel.routines;
-    final defaults = routines
-        .where((item) => item.origin == RoutineOrigin.defaultRoutine)
-        .toList();
-    final custom = routines
-        .where((item) => item.origin == RoutineOrigin.custom)
-        .toList();
+    final defaults = routines.where((item) => item.origin == RoutineOrigin.defaultRoutine).toList();
+    final custom = routines.where((item) => item.origin == RoutineOrigin.custom).toList();
     return SafeArea(
       child: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
           child: ListView(
-            padding: EdgeInsets.fromLTRB(
-              DaisthSpacing.screenHorizontal,
-              DaisthSpacing.lg,
-              DaisthSpacing.screenHorizontal,
-              widget.bottomContentPadding,
-            ),
+            padding: EdgeInsets.fromLTRB(DaisthSpacing.screenHorizontal, DaisthSpacing.lg, DaisthSpacing.screenHorizontal, widget.bottomContentPadding),
             children: [
               Text(
-                DaisthLocalizations.text(
-                  context,
-                  id: 'Rutinitas',
-                  en: 'Routines',
-                ),
-                style: theme.textTheme.headlineSmall,
+                DaisthLocalizations.text(context, id: 'Rutinitas', en: 'Routines'),
+                style: theme.textTheme.displaySmall!.copyWith(fontSize: 22),
               ),
               const SizedBox(height: DaisthSpacing.xl),
               _SectionTitle(
-                title: DaisthLocalizations.text(
-                  context,
-                  id: 'Bawaan',
-                  en: 'Default',
-                ),
+                title: DaisthLocalizations.text(context, id: 'Bawaan', en: 'Default'),
               ),
               const SizedBox(height: DaisthSpacing.sm),
               DaisthSurface(
                 padding: EdgeInsets.zero,
                 child: Column(
                   children: [
-                    for (var i = 0; i < defaults.length; i++) ...[
-                      _RoutineManagerRow(
-                        definition: defaults[i],
-                        onTap: () => _editDefault(defaults[i]),
-                      ),
-                      if (i != defaults.length - 1)
-                        const Divider(height: 1, indent: 16, endIndent: 16),
-                    ],
+                    for (var i = 0; i < defaults.length; i++) ...[_RoutineManagerRow(definition: defaults[i], onTap: () => _editDefault(defaults[i])), if (i != defaults.length - 1) const Divider(height: 1, indent: 16, endIndent: 16)],
                   ],
                 ),
               ),
@@ -133,23 +102,13 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                 children: [
                   Expanded(
                     child: _SectionTitle(
-                      title: DaisthLocalizations.text(
-                        context,
-                        id: 'Rutinitas Saya',
-                        en: 'My Routines',
-                      ),
+                      title: DaisthLocalizations.text(context, id: 'Rutinitas Saya', en: 'My Routines'),
                     ),
                   ),
                   TextButton.icon(
                     onPressed: _createRoutine,
                     icon: Icon(PhosphorIconsRegular.plus, size: 18),
-                    label: Text(
-                      DaisthLocalizations.text(
-                        context,
-                        id: 'Tambah Rutinitas',
-                        en: 'Add Routine',
-                      ),
-                    ),
+                    label: Text(DaisthLocalizations.text(context, id: 'Tambah Rutinitas', en: 'Add Routine')),
                   ),
                 ],
               ),
@@ -162,23 +121,13 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          DaisthLocalizations.text(
-                            context,
-                            id: 'Belum ada rutinitas khusus.',
-                            en: 'No custom routines yet.',
-                          ),
+                          DaisthLocalizations.text(context, id: 'Belum ada rutinitas khusus.', en: 'No custom routines yet.'),
                           style: theme.textTheme.titleSmall,
                         ),
                         const SizedBox(height: DaisthSpacing.xs),
                         Text(
-                          DaisthLocalizations.text(
-                            context,
-                            id: 'Buat rutinitas untuk hal yang ingin kamu jaga konsistensinya.',
-                            en: "Create one for something you'd like to keep consistent.",
-                          ),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
+                          DaisthLocalizations.text(context, id: 'Buat rutinitas untuk hal yang ingin kamu jaga konsistensinya.', en: "Create one for something you'd like to keep consistent."),
+                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -189,14 +138,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                   padding: EdgeInsets.zero,
                   child: Column(
                     children: [
-                      for (var i = 0; i < custom.length; i++) ...[
-                        _RoutineManagerRow(
-                          definition: custom[i],
-                          onTap: () => _editCustom(custom[i]),
-                        ),
-                        if (i != custom.length - 1)
-                          const Divider(height: 1, indent: 16, endIndent: 16),
-                      ],
+                      for (var i = 0; i < custom.length; i++) ...[_RoutineManagerRow(definition: custom[i], onTap: () => _editCustom(custom[i])), if (i != custom.length - 1) const Divider(height: 1, indent: 16, endIndent: 16)],
                     ],
                   ),
                 ),
@@ -212,8 +154,7 @@ class _SectionTitle extends StatelessWidget {
   const _SectionTitle({required this.title});
   final String title;
   @override
-  Widget build(BuildContext context) =>
-      Text(title, style: Theme.of(context).textTheme.titleMedium);
+  Widget build(BuildContext context) => Text(title, style: Theme.of(context).textTheme.titleMedium);
 }
 
 class _RoutineManagerRow extends StatelessWidget {
@@ -223,11 +164,7 @@ class _RoutineManagerRow extends StatelessWidget {
 
   String _scheduleLabel(BuildContext context) => switch (definition.schedule) {
     FixedRoutineSchedule(:final value) => _formatMinutes(value),
-    PrayerRoutineSchedule() => DaisthLocalizations.text(
-      context,
-      id: 'Waktu salat',
-      en: 'Prayer time',
-    ),
+    PrayerRoutineSchedule() => DaisthLocalizations.text(context, id: 'Waktu salat', en: 'Prayer time'),
   };
 
   @override
@@ -237,27 +174,15 @@ class _RoutineManagerRow extends StatelessWidget {
       color: Colors.transparent,
       child: ListTile(
         onTap: onTap,
-        title: Text(
-          _localizedDefinitionTitle(context, definition),
-          style: theme.textTheme.titleSmall,
-        ),
+        title: Text(_localizedDefinitionTitle(context, definition), style: theme.textTheme.titleSmall),
         subtitle: Text(
           '${_scheduleLabel(context)}${definition.reminderEnabled ? ' · ${DaisthLocalizations.text(context, id: 'Pengingat aktif', en: 'Reminder on')}' : ''}',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
+          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              definition.isEnabled ? 'On' : 'Off',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: definition.isEnabled
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
+            Text(definition.isEnabled ? 'On' : 'Off', style: theme.textTheme.labelSmall?.copyWith(color: definition.isEnabled ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant)),
             const SizedBox(width: 4),
             Icon(PhosphorIconsRegular.caretRight, size: 16),
           ],
@@ -268,12 +193,8 @@ class _RoutineManagerRow extends StatelessWidget {
 }
 
 String _localizedDefinitionTitle(BuildContext context, RoutineDefinition item) {
-  final localized = DaisthTerminology.routineTitle(
-    item.id,
-    Localizations.localeOf(context),
-  );
+  final localized = DaisthTerminology.routineTitle(item.id, Localizations.localeOf(context));
   return localized.isEmpty ? item.title : localized;
 }
 
-String _formatMinutes(int minutes) =>
-    '${(minutes ~/ 60).toString().padLeft(2, '0')}:${(minutes % 60).toString().padLeft(2, '0')}';
+String _formatMinutes(int minutes) => '${(minutes ~/ 60).toString().padLeft(2, '0')}:${(minutes % 60).toString().padLeft(2, '0')}';

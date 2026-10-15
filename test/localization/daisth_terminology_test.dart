@@ -17,7 +17,7 @@ void main() {
 
     test('localizes prayer names by active language without changing IDs', () {
       expect(DaisthTerminology.prayerName('subuh', english), 'Fajr');
-      expect(DaisthTerminology.prayerName('dhuha', english), 'Duha');
+      expect(DaisthTerminology.prayerName('dhuha', english), 'Dhuha');
       expect(DaisthTerminology.prayerName('zuhur', english), 'Dhuhr');
       expect(DaisthTerminology.prayerName('asar', english), 'Asr');
       expect(DaisthTerminology.prayerName('maghrib', english), 'Maghrib');
@@ -33,51 +33,18 @@ void main() {
     test('localizes routine concepts and nearby-place title', () {
       expect(DaisthTerminology.nightPrayer(english), 'Night Prayer');
       expect(DaisthTerminology.endOfDay(english), 'End of Day');
-      expect(
-        DaisthTerminology.nearbyPrayerPlacesTitle(english),
-        'Nearby Masjid & Mushola',
-      );
+      expect(DaisthTerminology.nearbyPrayerPlacesTitle(english), 'Nearby Masjid & Mushola');
       expect(DaisthTerminology.nightPrayer(indonesian), 'Sholat Malam');
       expect(DaisthTerminology.endOfDay(indonesian), 'Penutup Hari');
-      expect(
-        DaisthTerminology.nearbyPrayerPlacesTitle(indonesian),
-        'Masjid & Mushola Terdekat',
-      );
+      expect(DaisthTerminology.nearbyPrayerPlacesTitle(indonesian), 'Masjid & Mushola Terdekat');
       expect(DaisthTerminology.routineTitle('user-custom-id', english), '');
     });
 
     test('localizes built-in routine descriptions and step labels by IDs', () {
-      expect(
-        DaisthTerminology.routineDescription('sholat-malam', english),
-        'Complete the night prayer sequence before Fajr time.',
-      );
-      expect(
-        DaisthTerminology.routineStepTitle(
-          'sholat-malam',
-          'taubat',
-          'Sholat Taubat',
-          english,
-        ),
-        'Taubat prayer',
-      );
-      expect(
-        DaisthTerminology.routineStepTitle(
-          'sholat-malam',
-          'taubat',
-          'Sholat Taubat',
-          indonesian,
-        ),
-        'Sholat Taubat',
-      );
-      expect(
-        DaisthTerminology.routineStepTitle(
-          'custom-routine',
-          'custom-step',
-          'Baca Buku QA',
-          english,
-        ),
-        'Baca Buku QA',
-      );
+      expect(DaisthTerminology.routineDescription('sholat-malam', english), 'Complete the night prayer sequence before Fajr time.');
+      expect(DaisthTerminology.routineStepTitle('sholat-malam', 'taubat', 'Sholat Taubat', english), 'Taubat prayer');
+      expect(DaisthTerminology.routineStepTitle('sholat-malam', 'taubat', 'Sholat Taubat', indonesian), 'Sholat Taubat');
+      expect(DaisthTerminology.routineStepTitle('custom-routine', 'custom-step', 'Baca Buku QA', english), 'Baca Buku QA');
     });
   });
 }

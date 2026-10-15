@@ -20,7 +20,7 @@ Production-oriented brand assets prepared from the approved Daisth direction.
 - `splash/splash_dark.png` 1242×2688.
 
 ## Feature artwork
-- `visuals/3d/`: 30 approved app-ready PNGs used by Today, onboarding, routines,
+- `visuals/`: 30 approved app-ready PNGs used by Today, onboarding, routines,
   Reader, Zikir, Reflection, History, location, Settings, Account, and shared
   states. Their semantic names and call sites are centralized in
   `DaisthAssets`.

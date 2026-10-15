@@ -7,7 +7,7 @@ audit below.
 
 ## Full visual overhaul closure audit — 2026-10-15
 
-- Runtime artwork now lives in `assets/visuals/3d/`; all 30 app-ready assets
+- Runtime artwork now lives in `assets/visuals/`; all 30 app-ready assets
   are referenced by production screens/components through `DaisthAssets`.
 - `pubspec.yaml` bundles the brand, launcher, splash, font/license, and 3D
   runtime assets. It no longer bundles legacy illustrations, old empty-state
@@ -195,7 +195,7 @@ All 75 entries in the icon inventory are classified `KEEP_FUNCTIONAL_VECTOR`. Th
 
 ## Future asset naming and formats
 
-Suggested future in-app structure only (not created): `assets/visuals/3d/{onboarding,today,routines,routine_detail,reflection,reader,zikir,history,settings,location,empty_states}/`. Use predictable snake-case names such as `today_focus_light.webp` and `today_focus_dark.webp`; keep shared artwork without a theme suffix only when truly identical. Record intended display ratio and alpha in the design handoff.
+Suggested future in-app structure only (not created): `assets/visuals/{onboarding,today,routines,routine_detail,reflection,reader,zikir,history,settings,location,empty_states}/`. Use predictable snake-case names such as `today_focus_light.webp` and `today_focus_dark.webp`; keep shared artwork without a theme suffix only when truly identical. Record intended display ratio and alpha in the design handoff.
 
 - Photographic/rendered opaque scenes: WebP for app delivery when platform fidelity is verified; retain a lossless master outside delivery if needed.
 - Transparent cutout illustrations: WebP with alpha where supported by the target Flutter pipeline, or PNG for predictable alpha fidelity. Keep at least 2× max display dimensions.
